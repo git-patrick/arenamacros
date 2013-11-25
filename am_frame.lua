@@ -61,7 +61,15 @@ function amModifierFrame_New(self, button, down)
 end
 
 function amModifierFrame_Delete(self, button, down)
+    -- this actually deletes the macro!  so, need to do something about that.
     
+    am.macros:remove(am.selected_macro:am_getindex())
+    
+    local v1 = AMFrameTab1FrameView1
+    local v2 = AMFrameTab1FrameView2
+    
+    v2:Hide()
+    v1:Show()
 end
 
 function amConditionFrame_New(self, button, down)
@@ -73,8 +81,44 @@ function amConditionFrame_Save(self, button, down)
     
     v3:Hide()
     v2:Show()
+    
+    if (not am.selected_modifier) then
+        print("am: error should never happen")
+        
+        return
+    end
+    
+    local conds = { }
+    
+    for i,v in ipairs(am.conditions.frames) do
+        local t = {
+            name = v.am_name:GetText(),
+            relation = v.am_relation:GetText(),
+            value = v.am_value:GetText()
+        }
+        
+        table.insert(conds, t)
+    end
+    
+    am.selected_modifier:am_set({
+        text = v3.am_inputsf.EditBox:GetText(),
+        conditions = conds
+    })
 end
+
 function amConditionFrame_Cancel(self, button, down)
+    local v2 = AMFrameTab1FrameView2
+    local v3 = AMFrameTab1FrameView3
+    
+    v3:Hide()
+    v2:Show()
+end
+
+function amConditionFrame_Delete(self, button, down)
+    -- actually deleting the selected modifier from the macro
+    
+    am.modifiers:remove(am.selected_modifier:am_getindex())
+    
     local v2 = AMFrameTab1FrameView2
     local v3 = AMFrameTab1FrameView3
     
@@ -106,11 +150,27 @@ function amMacroModifier_OnClick(self, button, down)
     am.conditions:clear()
     am.conditions:addall(self.am_conditions)
     
+    v3.am_inputsf.EditBox:SetText(self.am_text)        -- it must be called editbox for InputScrollFrame_OnLoad
+    v3.am_name:SetText(am.selected_macro.am_name:GetText() .. " - Modifier " .. self:am_getindex())
+    
     am.selected_modifier = self
 
     v2:Hide()
     v3:Show()
 end
+
+function amMacroModifierCondition_Delete(self, button, down)
+    am.conditions:remove(self:GetParent():am_getindex())
+end
+
+function amMacroModifier_Delete(self, button, down)
+    am.modifiers:remove(self:GetParent():am_getindex())
+end
+
+function amMacro_Delete(self, button, down)
+    am.macros:remove(self:GetParent():am_getindex())
+end
+
 
 function amFrame_Show()
     ShowUIPanel(AMFrame)

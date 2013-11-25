@@ -83,7 +83,7 @@
                 </FontString>
                 <FontString parentKey="am_nummodifiers" inherits="GameFontHighlightSmall">
                     <Anchors>
-                        <Anchor point="RIGHT" x="-30" />
+                        <Anchor point="RIGHT" x="-40" />
                     </Anchors>
                 </FontString>
                 <FontString parentKey="am_macroid" inherits="GameFontHighlightSmall">
@@ -93,6 +93,13 @@
                 </FontString>
             </Layer>
         </Layers>
+        <Frames>
+            <Button parentKey="amDelete" inherits="AMMacroDeleteTemplate" frameStrata="HIGH">
+                <Anchors>
+                    <Anchor point="RIGHT" />
+                </Anchors>
+            </Button>
+        </Frames>
     </Button>
     
     <Button name="AMMacroModifierTemplate" enableMouse="true" inherits="AMFrameListItemTemplate" virtual="true">
@@ -118,6 +125,13 @@
                 </FontString>
             </Layer>
         </Layers>
+        <Frames>
+            <Button parentKey="amDelete" inherits="AMMacroModifierDeleteTemplate" frameStrata="HIGH">
+                <Anchors>
+                    <Anchor point="RIGHT" />
+                </Anchors>
+            </Button>
+        </Frames>
     </Button>
     
     <Button name="AMMacroModifierConditionTemplate" inherits="AMFrameListItemTemplate" enableMouse="true" virtual="true">
@@ -128,12 +142,12 @@
         </Anchors>
         <Layers>
             <Layer level="ARTWORK">
-                <FontString parentKey="amIntroString" inherits="GameFontDisable" text="and">
+                <FontString parentKey="am_introstring" inherits="GameFontDisable" text="and">
                     <Anchors>
                         <Anchor point="LEFT" x="10" />
                     </Anchors>
                 </FontString>
-                <FontString parentKey="amOutroString" inherits="GameFontDisable" text="then">
+                <FontString parentKey="am_outrostring" inherits="GameFontDisable" text="then">
                     <Anchors>
                         <Anchor point="RIGHT" x="-65" />
                     </Anchors>
@@ -225,23 +239,34 @@
 		<PushedTexture file="Interface\QuestFrame\UI-QuestTitleHighlight" alphaMode="ADD" />
 	</Button>
     
-    <Button name="AMMacroModifierConditionDeleteTemplate" virtual="true">
+    <Button name="AMDeleteButtonTemplate" virtual="true">
 		<Size>
 			<AbsDimension x="32" y="32"/>
 		</Size>
-		<Scripts>
-			<OnClick>
-				print("DELETE IT OMG")
-			</OnClick>
-		</Scripts>
 		<DisabledTexture file="Interface\Buttons\UI-Panel-MinimizeButton-Disabled"/>
 		<NormalTexture file="Interface\Buttons\UI-Panel-MinimizeButton-Up"/>
 		<PushedTexture file="Interface\Buttons\UI-Panel-MinimizeButton-Down"/>
 		<HighlightTexture file="Interface\Buttons\UI-Panel-MinimizeButton-Highlight" alphaMode="ADD"/>
 	</Button>
     
+    <Button name="AMMacroModifierConditionDeleteTemplate" inherits="AMDeleteButtonTemplate" virtual="true">
+        <Scripts>
+			<OnClick function="amMacroModifierCondition_Delete" />
+		</Scripts>
+    </Button>
     
-    
+    <Button name="AMMacroModifierDeleteTemplate" inherits="AMDeleteButtonTemplate" virtual="true">
+        <Scripts>
+			<OnClick function="amMacroModifier_Delete" />
+		</Scripts>
+    </Button>
+
+    <Button name="AMMacroDeleteTemplate" inherits="AMDeleteButtonTemplate" virtual="true">
+        <Scripts>
+            <OnClick function="amMacro_Delete" />
+        </Scripts>
+    </Button>
+
     
     
 	<Frame name="AMFrame" toplevel="true" movable="true" parent="UIParent" enableMouse="true" hidden="true" inherits="ButtonFrameTemplate">
@@ -327,7 +352,7 @@
                                 </Scripts>
                             </Button>
                             
-                            <ScrollFrame name="$parentScrollFrame" inherits="AMListTemplate">
+                            <ScrollFrame name="$parentList" inherits="AMListTemplate">
                                 <ScrollChild>
                                     <Frame name="AMMacroList">
                                         <Size>
@@ -415,7 +440,7 @@
                                     <OnClick function="amModifierFrame_Delete" />
                                 </Scripts>
                             </Button>
-                            <ScrollFrame name="$parentScrollFrame" inherits="AMListTemplate">
+                            <ScrollFrame name="$parentList" inherits="AMListTemplate">
                                 <ScrollChild>
                                     <Frame name="AMMacroModifierList">
                                         <Size>
@@ -429,7 +454,7 @@
                     <Frame name="$parentView3" setAllPoints="true" hidden="true">
                         <Layers>
                             <Layer level="ARTWORK">
-                                <FontString parentKey="amName" inherits="GameFontNormalLarge" justifyH="LEFT" text="Cheap Shot - Modifier 1">
+                                <FontString parentKey="am_name" inherits="GameFontNormalLarge" justifyH="LEFT">
                                     <Size x="256" y="16"/>
                                     <Anchors>
                                         <Anchor point="TOPLEFT" x="60" y="-35"/>
@@ -456,7 +481,7 @@
                                 </Scripts>
                             </Button>
                             <!-- for some reason, I can't seem to get this button's anchor relative to the other button to work -->
-                            <Button parentKey="amSave" frameStrata="HIGH" inherits="UIPanelButtonTemplate" text="Save">
+                            <Button parentKey="amSave" frameStrata="HIGH" inherits="UIPanelButtonTemplate" text="OK">
                                 <Size x="65" y="22"/>
                                 <Anchors>
                                     <Anchor point="TOPRIGHT" x="-90" y="-32" />
@@ -484,7 +509,7 @@
                                     <OnClick function="amConditionFrame_Delete" />
                                 </Scripts>
                             </Button>
-                            <ScrollFrame name="$parentScrollFrame" inherits="AMListTemplate">
+                            <ScrollFrame name="$parentList" inherits="AMListTemplate">
                                 <Anchors>
                                     <Anchor point="TOPLEFT" x="10" y="-66" />
                                     <Anchor point="BOTTOMRIGHT" y="225" x="-32" />
@@ -497,7 +522,7 @@
                                     </Frame>
                                 </ScrollChild>
                             </ScrollFrame>
-                            <ScrollFrame parentKey="amInput" name="$parentInput" inherits="UIPanelScrollFrameTemplate">
+                            <ScrollFrame parentKey="am_inputsf" name="$parentInput" inherits="UIPanelScrollFrameTemplate">
                                 <Size x="500" y="500" />
                                 <Anchors>
                                     <Anchor point="TOPLEFT" relativeTo="$parentList" relativePoint="BOTTOMLEFT" y="-13" x="2" />

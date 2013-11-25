@@ -25,6 +25,7 @@ am.blank_condition = {
     value = "true"
 }
 am.blank_modifier = {
+    text = "",
     conditions = {
         am.blank_condition
     }
