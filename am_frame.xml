@@ -1,0 +1,592 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
+    ..\..\FrameXML\UI.xsd">
+    
+	<Script file="am_frame.lua"/>
+    
+    <ScrollFrame name="AMListTemplate" parentKey="amList" inherits="UIPanelScrollFrameTemplate" virtual="true">
+        <Anchors>
+            <Anchor point="TOPLEFT" x="10" y="-66" />
+            <Anchor point="BOTTOMRIGHT" y="30" x="-32" />
+        </Anchors>
+        <Layers>
+            <Layer level="ARTWORK">
+                <Texture name="$parentTop" file="Interface\PaperDollInfoFrame\UI-Character-ScrollBar">
+                    <Size x="31" y="102"/>
+                    <Anchors>
+                        <Anchor point="TOPLEFT" relativePoint="TOPRIGHT" x="-2" y="5"/>
+                    </Anchors>
+                    <TexCoords left="0" right="0.484375" top="0" bottom="0.4"/>
+                </Texture>
+                <Texture name="$parentBottom" file="Interface\PaperDollInfoFrame\UI-Character-ScrollBar">
+                    <Size x="31" y="106"/>
+                    <Anchors>
+                        <Anchor point="BOTTOMLEFT" relativePoint="BOTTOMRIGHT" x="-2" y="-2"/>
+                    </Anchors>
+                    <TexCoords left="0.515625" right="1.0" top="0" bottom="0.4140625"/>
+                </Texture>
+                <Texture name="$parentMiddle" file="Interface\PaperDollInfoFrame\UI-Character-ScrollBar">
+                    <Size x="31" y="1"/>
+                    <Anchors>
+                        <Anchor point="TOP" relativeTo="$parentTop" relativePoint="BOTTOM"/>
+                        <Anchor point="BOTTOM" relativeTo="$parentBottom" relativePoint="TOP"/>
+                    </Anchors>
+                    <TexCoords left="0" right="0.484375" top=".75" bottom="1.0"/>
+                </Texture>
+            </Layer>
+        </Layers>
+        <Scripts>
+            <OnLoad function="ScrollFrame_OnLoad"/>
+        </Scripts>
+    </ScrollFrame>
+    
+    <Frame name="AMFrameTabButtonTemplate" inherits="CharacterFrameTabButtonTemplate" virtual="true">
+        <Scripts>
+            <OnClick>
+                PanelTemplates_Tab_OnClick(self, AMFrame);
+            </OnClick>
+        </Scripts>
+    </Frame>
+    <Button name="AMFrameListItemTemplate" enableMouse="true" virtual="true">
+        <Anchors>
+            <Anchor point="TOPLEFT" />
+            <Anchor point="RIGHT" />
+        </Anchors>
+        <Layers>
+            <Layer level="BACKGROUND">
+                <Texture parentKey="am_background">
+                    <Color a=".08" r="1" g="1" b="1"/>
+                </Texture>
+            </Layer>
+        </Layers>
+    </Button>
+    
+    <Button name="AMMacroTemplate" enableMouse="true" inherits="AMFrameListItemTemplate" virtual="true">
+        <Size y="30" />
+        <Scripts>
+            <OnClick function="amMacro_OnClick" />
+        </Scripts>
+        <Layers>
+            <Layer level="HIGHLIGHT">
+                <Texture file="Interface\QuestFrame\UI-QuestTitleHighlight" alphaMode="ADD" />
+            </Layer>
+            <Layer level="ARTWORK">
+                <Texture parentKey="am_icon">
+                    <Size x="30" y="30" />
+                    <Anchors>
+                        <Anchor point="TOPLEFT" />
+                    </Anchors>
+                </Texture>
+                <FontString parentKey="am_name" inherits="GameFontNormal">
+                    <Anchors>
+                        <Anchor point="LEFT" x="40" />
+                    </Anchors>
+                </FontString>
+                <FontString parentKey="am_nummodifiers" inherits="GameFontHighlightSmall">
+                    <Anchors>
+                        <Anchor point="RIGHT" x="-30" />
+                    </Anchors>
+                </FontString>
+                <FontString parentKey="am_macroid" inherits="GameFontHighlightSmall">
+                    <Anchors>
+                        <Anchor point="RIGHT" x="-70" />
+                    </Anchors>
+                </FontString>
+            </Layer>
+        </Layers>
+    </Button>
+    
+    <Button name="AMMacroModifierTemplate" enableMouse="true" inherits="AMFrameListItemTemplate" virtual="true">
+        <Size y="40" />
+        <Scripts>
+            <OnClick function="amMacroModifier_OnClick" />
+        </Scripts>
+        <Layers>
+            <Layer level="HIGHLIGHT">
+                <Texture file="Interface\QuestFrame\UI-QuestTitleHighlight" alphaMode="ADD" />
+            </Layer>
+            <Layer level="ARTWORK">
+                <FontString parentKey="am_modstring" justifyH="LEFT" wordwrap="true" inherits="GameFontHighlightSmall">
+                    <Anchors>
+                        <Anchor point="TOPLEFT" x="50" />
+                        <Anchor point="BOTTOMRIGHT" x="-10" />
+                    </Anchors>
+                </FontString>
+                <FontString parentKey="am_modid" justifyH="LEFT" text="1" inherits="GameFontNormal">
+                    <Anchors>
+                        <Anchor point="LEFT" x="10" />
+                    </Anchors>
+                </FontString>
+            </Layer>
+        </Layers>
+    </Button>
+    
+    <Button name="AMMacroModifierConditionTemplate" inherits="AMFrameListItemTemplate" enableMouse="true" virtual="true">
+        <Size y="30" />
+        <Anchors>
+            <Anchor point="TOPLEFT" />
+            <Anchor point="RIGHT" />
+        </Anchors>
+        <Layers>
+            <Layer level="ARTWORK">
+                <FontString parentKey="amIntroString" inherits="GameFontDisable" text="and">
+                    <Anchors>
+                        <Anchor point="LEFT" x="10" />
+                    </Anchors>
+                </FontString>
+                <FontString parentKey="amOutroString" inherits="GameFontDisable" text="then">
+                    <Anchors>
+                        <Anchor point="RIGHT" x="-65" />
+                    </Anchors>
+                </FontString>
+            </Layer>
+        </Layers>
+        <Scripts>
+            <OnClick function="amMacroModifierCondition_OnClick" />
+        </Scripts>
+        <Frames>
+            <Button parentKey="am_name" inherits="AMMacroModifierConditionButtonTemplate" frameStrata="HIGH">
+                <Size y="22" x="120" />
+                <Anchors>
+                    <Anchor point="LEFT" x="50" />
+                </Anchors>
+
+                <Scripts>
+                    <OnClick>
+                        ToggleDropDownMenu(1, nil, _G[self:GetParent():GetName() .. "Menu"], self, 0, 0);
+                    </OnClick>
+                </Scripts>
+            </Button>
+            <Button parentKey="am_relation" inherits="AMMacroModifierConditionButtonTemplate" frameStrata="HIGH">
+                <Size y="22" x="75" />
+                <Anchors>
+                    <Anchor point="LEFT" x="180" />
+                </Anchors>
+                <Scripts>
+                    <OnClick>
+                        ToggleDropDownMenu(1, nil, _G[self:GetParent():GetName() .. "Menu"], self, 0, 0);
+                    </OnClick>
+                </Scripts>
+            </Button>
+            <Button parentKey="am_value" inherits="AMMacroModifierConditionButtonTemplate" frameStrata="HIGH">
+                <Size y="22" x="120" />
+                <Anchors>
+                    <Anchor point="LEFT" x="265" />
+                </Anchors>
+                <Scripts>
+                    <OnClick>
+                        ToggleDropDownMenu(1, nil, _G[self:GetParent():GetName() .. "Menu"], self, 0, 0);
+                    </OnClick>
+                </Scripts>
+            </Button>
+            <Button parentKey="amDelete" inherits="AMMacroModifierConditionDeleteTemplate" frameStrata="HIGH">
+                <Anchors>
+                    <Anchor point="RIGHT" />
+                </Anchors>
+            </Button>
+            <Frame name="$parentMenu" inherits="UIDropDownMenuTemplate">
+                <Scripts>
+                    <OnLoad>
+                        print("FRAME MENU NAME " .. self:GetName())
+                        
+                        function MyDropDownMenu_OnLoad()
+                            info            = {};
+                            info.text       = "This is an option in the menu.";
+                            info.value      = "OptionVariable";
+                            info.func       = FunctionCalledWhenOptionIsClicked
+                            -- can also be done as function() FunctionCalledWhenOptionIsClicked() end;
+                            
+                            -- Add the above information to the options menu as a button.
+                            UIDropDownMenu_AddButton(info);
+                        end
+                        
+                        UIDropDownMenu_Initialize(self, MyDropDownMenu_OnLoad, "MENU")
+                    </OnLoad>
+                </Scripts>
+            </Frame>
+        </Frames>
+    </Button>
+    
+    <Button name="AMMacroModifierConditionButtonTemplate" virtual="true">
+		<Size>
+			<AbsDimension x="32" y="32"/>
+		</Size>
+		<Scripts>
+            <OnEnter>
+                self.amText:SetTextColor(GameFontHighlight:GetTextColor())
+            </OnEnter>
+            <OnLeave>
+                self.amText:SetTextColor(GameFontNormal:GetTextColor())
+            </OnLeave>
+			<OnClick>
+				print("DELETE IT OMG")
+			</OnClick>
+		</Scripts>
+        <ButtonText parentKey="amText" inherits="GameFontNormal" />
+		<PushedTexture file="Interface\QuestFrame\UI-QuestTitleHighlight" alphaMode="ADD" />
+	</Button>
+    
+    <Button name="AMMacroModifierConditionDeleteTemplate" virtual="true">
+		<Size>
+			<AbsDimension x="32" y="32"/>
+		</Size>
+		<Scripts>
+			<OnClick>
+				print("DELETE IT OMG")
+			</OnClick>
+		</Scripts>
+		<DisabledTexture file="Interface\Buttons\UI-Panel-MinimizeButton-Disabled"/>
+		<NormalTexture file="Interface\Buttons\UI-Panel-MinimizeButton-Up"/>
+		<PushedTexture file="Interface\Buttons\UI-Panel-MinimizeButton-Down"/>
+		<HighlightTexture file="Interface\Buttons\UI-Panel-MinimizeButton-Highlight" alphaMode="ADD"/>
+	</Button>
+    
+    
+    
+    
+    
+	<Frame name="AMFrame" toplevel="true" movable="true" parent="UIParent" enableMouse="true" hidden="true" inherits="ButtonFrameTemplate">
+		<Size x="538" y="424"/>
+		<Layers>
+			<Layer level="ARTWORK" textureSubLevel="-1">
+				<Texture parentKey="amPortrait" file="Interface\MacroFrame\MacroFrame-Icon">
+					<Size x="64" y="64"/>
+					<Anchors>
+						<Anchor point="TOPLEFT" x="-7" y="9"/>
+					</Anchors>
+				</Texture>
+			</Layer>
+            <Layer level="BORDER">
+				<FontString inherits="GameFontNormal" text="CREATE_MACROS">
+					<Anchors>
+						<Anchor point="TOP" x="0" y="-5"/>
+					</Anchors>
+				</FontString>
+			</Layer>
+		</Layers>
+        <Frames>
+            <Button name="$parentTab1" inherits="AMFrameTabButtonTemplate" id="1" text="MACROS">
+                <Anchors>
+					<Anchor point="TOPLEFT" relativePoint="BOTTOMLEFT">
+						<Offset>
+							<AbsDimension x="11" y="2"/>
+						</Offset>
+					</Anchor>
+                </Anchors>
+                <Scripts>
+                </Scripts>
+            </Button>
+            <Button name="$parentTab2" inherits="AMFrameTabButtonTemplate" id="2" text="TOKENS">
+                <Anchors>
+                    <Anchor point="LEFT" relativeTo="$parentTab1" relativePoint="RIGHT">
+                        <Offset>
+                            <AbsDimension x="-15" y="0"/>
+                        </Offset>
+                    </Anchor>
+                </Anchors>
+                <Scripts>
+                </Scripts>
+            </Button>
+            <Button name="$parentTab3" inherits="AMFrameTabButtonTemplate" id="3" text="Conditions">
+                <Anchors>
+                    <Anchor point="LEFT" relativeTo="$parentTab2" relativePoint="RIGHT">
+                        <Offset>
+                            <AbsDimension x="-15" y="0"/>
+                        </Offset>
+                    </Anchor>
+                </Anchors>
+                <Scripts>
+                </Scripts>
+            </Button>
+            <Button name="$parentTab4" inherits="AMFrameTabButtonTemplate" id="4" text="Current">
+                <Anchors>
+                    <Anchor point="LEFT" relativeTo="$parentTab3" relativePoint="RIGHT">
+                        <Offset>
+                            <AbsDimension x="-15" y="0"/>
+                        </Offset>
+                    </Anchor>
+                </Anchors>
+                <Scripts>
+                </Scripts>
+            </Button>
+            
+            <Frame name="$parentTab1Frame">
+                <Anchors>
+                    <Anchor point="TOPLEFT" />
+                    <Anchor point="BOTTOMRIGHT" />
+                </Anchors>
+                <Frames>
+                    <Frame name="$parentView1" setAllPoints="true">
+                        <Frames>
+                            <Button parentKey="amNew" frameStrata="HIGH" inherits="UIPanelButtonTemplate" text="New Macro">
+                                <Size x="105" y="22"/>
+                                <Anchors>
+                                    <Anchor point="BOTTOMRIGHT" x="-25" y="4"/>
+                                </Anchors>
+                                <Scripts>
+                                    <OnClick function="amMacroFrame_New" />
+                                </Scripts>
+                            </Button>
+                            
+                            <ScrollFrame name="$parentScrollFrame" inherits="AMListTemplate">
+                                <ScrollChild>
+                                    <Frame name="AMMacroList">
+                                        <Size>
+                                            <AbsDimension x="494" y="200" />
+                                        </Size>
+                                    </Frame>
+                                </ScrollChild>
+                            </ScrollFrame>
+                        </Frames>
+                    </Frame>
+                    <Frame name="$parentView2" setAllPoints="true" hidden="true">
+                        <Frames>
+                            <EditBox parentKey="am_name" letters="16" autoFocus="false">
+                                <Size x="256" y="16"/>
+                                <Anchors>
+                                    <Anchor point="TOPLEFT" x="60" y="-35"/>
+                                </Anchors>
+                                <FontString inherits="GameFontNormalLarge" />
+                                <Scripts>
+                                    <OnEditFocusLost>
+                                        if (self:GetText() == "") then
+                                            self:SetText("Untitled Macro 1")
+                                        end
+                                    </OnEditFocusLost>
+                                    <OnLoad>
+                                        self:SetText("Untitled Macro 1")
+                                    </OnLoad>
+                                    <OnTextChanged>
+                                        print("TEXT CHANGED")
+                                    </OnTextChanged>
+                                    <OnEnterPressed>
+                                        self:ClearFocus()
+                                    </OnEnterPressed>
+                                    <OnEscapePressed>
+                                        self:ClearFocus();
+                                    </OnEscapePressed>
+                                </Scripts>
+                            </EditBox>
+                            <Button parentKey="amCancel" frameStrata="HIGH" inherits="UIPanelButtonTemplate" text="Cancel">
+                                <Size x="65" y="22"/>
+                                <Anchors>
+                                    <Anchor point="TOPRIGHT" x="-15" y="-32"/>
+                                </Anchors>
+                                <Scripts>
+                                    <OnClick function="amModifierFrame_Cancel" />
+                                </Scripts>
+                            </Button>
+                            <!-- for some reason, I can't seem to get this button's anchor relative to the other button to work -->
+                            <Button parentKey="amSave" frameStrata="HIGH" inherits="UIPanelButtonTemplate" text="Save">
+                                <Size x="65" y="22"/>
+                                <Anchors>
+                                    <Anchor point="TOPRIGHT" x="-90" y="-32" />
+                                </Anchors>
+                                <Scripts>
+                                    <OnClick function="amModifierFrame_Save" />
+                                </Scripts>
+                            </Button>
+                            
+                            <Button parentKey="amNew" frameStrata="HIGH" inherits="UIPanelButtonTemplate" text="Add Modifier">
+                                <Size x="105" y="22"/>
+                                <Anchors>
+                                    <Anchor point="BOTTOMRIGHT" x="-25" y="4"/>
+                                </Anchors>
+                                <Scripts>
+                                    <OnClick function="amModifierFrame_New" />
+                                </Scripts>
+                            </Button>
+                            <Button parentKey="amRename" frameStrata="HIGH" inherits="UIPanelButtonTemplate" text="Rename">
+                                <Size x="75" y="22"/>
+                                <Anchors>
+                                    <Anchor point="BOTTOMLEFT" x="2" y="4" />
+                                </Anchors>
+                                <Scripts>
+                                    <OnClick>
+                                        self:GetParent().am_name:SetFocus()
+                                    </OnClick>
+                                </Scripts>
+                            </Button>
+                            <Button parentKey="amDelete" frameStrata="HIGH" inherits="UIPanelButtonTemplate" text="Delete">
+                                <Size x="75" y="22"/>
+                                <Anchors>
+                                    <Anchor point="BOTTOMLEFT" x="85" y="4" />
+                                </Anchors>
+                                <Scripts>
+                                    <OnClick function="amModifierFrame_Delete" />
+                                </Scripts>
+                            </Button>
+                            <ScrollFrame name="$parentScrollFrame" inherits="AMListTemplate">
+                                <ScrollChild>
+                                    <Frame name="AMMacroModifierList">
+                                        <Size>
+                                            <AbsDimension x="494" y="200" />
+                                        </Size>
+                                    </Frame>
+                                </ScrollChild>
+                            </ScrollFrame>
+                        </Frames>
+                    </Frame>
+                    <Frame name="$parentView3" setAllPoints="true" hidden="true">
+                        <Layers>
+                            <Layer level="ARTWORK">
+                                <FontString parentKey="amName" inherits="GameFontNormalLarge" justifyH="LEFT" text="Cheap Shot - Modifier 1">
+                                    <Size x="256" y="16"/>
+                                    <Anchors>
+                                        <Anchor point="TOPLEFT" x="60" y="-35"/>
+                                    </Anchors>
+                                </FontString>
+                            </Layer>
+                            <Layer level="BORDER">
+                                <Texture horizTile="true" inherits="_UI-Frame-InnerSplitTile">
+                                    <Anchors>
+                                        <Anchor point="TOPLEFT" y="-200" x="1" />
+                                        <Anchor point="TOPRIGHT" y="-200" x="-3" />
+                                    </Anchors>
+                                </Texture>
+                            </Layer>
+                        </Layers>
+                        <Frames>
+                            <Button parentKey="amCancel" frameStrata="HIGH" inherits="UIPanelButtonTemplate" text="Cancel">
+                                <Size x="65" y="22"/>
+                                <Anchors>
+                                    <Anchor point="TOPRIGHT" x="-15" y="-32"/>
+                                </Anchors>
+                                <Scripts>
+                                    <OnClick function="amConditionFrame_Cancel" />
+                                </Scripts>
+                            </Button>
+                            <!-- for some reason, I can't seem to get this button's anchor relative to the other button to work -->
+                            <Button parentKey="amSave" frameStrata="HIGH" inherits="UIPanelButtonTemplate" text="Save">
+                                <Size x="65" y="22"/>
+                                <Anchors>
+                                    <Anchor point="TOPRIGHT" x="-90" y="-32" />
+                                </Anchors>
+                                <Scripts>
+                                    <OnClick function="amConditionFrame_Save" />
+                                </Scripts>
+                            </Button>
+                            
+                            <Button parentKey="amNew" frameStrata="HIGH" inherits="UIPanelButtonTemplate" text="Add Condition">
+                                <Size x="125" y="22"/>
+                                <Anchors>
+                                    <Anchor point="BOTTOMRIGHT" x="-25" y="4"/>
+                                </Anchors>
+                                <Scripts>
+                                    <OnClick function="amConditionFrame_New" />
+                                </Scripts>
+                            </Button>
+                            <Button parentKey="amDelete" frameStrata="HIGH" inherits="UIPanelButtonTemplate" text="Delete">
+                                <Size x="75" y="22"/>
+                                <Anchors>
+                                    <Anchor point="BOTTOMLEFT" x="2" y="4" />
+                                </Anchors>
+                                <Scripts>
+                                    <OnClick function="amConditionFrame_Delete" />
+                                </Scripts>
+                            </Button>
+                            <ScrollFrame name="$parentScrollFrame" inherits="AMListTemplate">
+                                <Anchors>
+                                    <Anchor point="TOPLEFT" x="10" y="-66" />
+                                    <Anchor point="BOTTOMRIGHT" y="225" x="-32" />
+                                </Anchors>
+                                <ScrollChild>
+                                    <Frame name="AMMacroModifierConditionList">
+                                        <Size>
+                                            <AbsDimension x="494" y="90" />
+                                        </Size>
+                                    </Frame>
+                                </ScrollChild>
+                            </ScrollFrame>
+                            <ScrollFrame parentKey="amInput" name="$parentInput" inherits="UIPanelScrollFrameTemplate">
+                                <Size x="500" y="500" />
+                                <Anchors>
+                                    <Anchor point="TOPLEFT" relativeTo="$parentList" relativePoint="BOTTOMLEFT" y="-13" x="2" />
+                                    <Anchor point="BOTTOMRIGHT" x="-14" y="33"/>
+                                </Anchors>
+                                <Layers>
+                                    <Layer level="OVERLAY">
+                                        <FontString inherits="GameFontDisableLarge" parentKey="CharCount">
+                                            <Anchors>
+                                                <Anchor point="BOTTOMRIGHT" x="-6" y="0"/>
+                                            </Anchors>
+                                        </FontString>
+                                    </Layer>
+                                </Layers>
+                                <Frames>
+                                    <Button parentKey="FocusButton" setAllPoints="true">
+                                        <Scripts>
+                                            <OnClick>
+                                                self:GetParent().EditBox:SetFocus();
+                                            </OnClick>
+                                        </Scripts>
+                                    </Button>
+                                </Frames>
+                                <Scripts>
+                                    <OnLoad>
+                                        self.EditBox.PromptText:SetFontObject("FriendsFont_Small");
+                                        self.EditBox.PromptText:SetText("Enter macro text here...");
+                                        self.EditBox:SetFontObject("FriendsFont_Small");
+                                        
+                                        InputScrollFrame_OnLoad(self);
+                                    </OnLoad>
+                                </Scripts>
+                                <ScrollChild>
+                                    <EditBox parentKey="EditBox" multiLine="true" countInvisibleLetters="true" autoFocus="false">
+                                        <Size x="1" y="1"/>
+                                        <Anchors>
+                                            <Anchor point="TOPLEFT"/>
+                                        </Anchors>
+                                        <Layers>
+                                            <Layer level="BORDER">
+                                                <FontString parentKey="PromptText" inherits="GameFontNormalSmall" justifyH="LEFT" justifyV="MIDDLE">
+                                                    <Anchors>
+                                                        <Anchor point="LEFT" x="3" y="0"/>
+                                                    </Anchors>
+                                                    <Color r="0.35" g="0.35" b="0.35"/>
+                                                </FontString>
+                                            </Layer>
+                                        </Layers>
+                                        <Scripts>
+                                            <OnTextChanged>
+                                                local scrollFrame = self:GetParent();
+                                                
+                                                ScrollingEdit_OnTextChanged(self, scrollFrame);
+                                                
+                                                if ( self:GetText() ~= "" ) then
+                                                    self.PromptText:Hide();
+                                                else
+                                                    self.PromptText:Show();
+                                                end
+                                                scrollFrame.CharCount:SetText(self:GetNumLetters());
+                                                
+                                                if ( scrollFrame.ScrollBar:IsShown() ) then
+                                                    scrollFrame.CharCount:SetPoint("BOTTOMRIGHT", -17, 0);
+                                                else
+                                                    scrollFrame.CharCount:SetPoint("BOTTOMRIGHT", 0, 0);
+                                                end
+                                            </OnTextChanged> 
+                                            <OnCursorChanged function="ScrollingEdit_OnCursorChanged"/>
+                                            <OnUpdate>
+                                                ScrollingEdit_OnUpdate(self, elapsed, self:GetParent());
+                                            </OnUpdate>
+                                            <OnEscapePressed>
+                                                self:ClearFocus();
+                                            </OnEscapePressed>
+                                        </Scripts>
+                                        <FontString inherits="GameFontHighlightSmall"/>
+                                    </EditBox>
+                                </ScrollChild>
+                            </ScrollFrame>
+                        </Frames>
+                    </Frame>
+                </Frames>
+            </Frame><!-- Tab1 Frame -->
+        </Frames>
+        <Scripts>
+            <OnLoad function="amFrame_OnLoad" />
+            <OnEvent function="amFrame_OnEvent" />
+            <OnShow function="amFrame_OnShow" />
+            <OnHide function="amFrame_OnHide" />
+        </Scripts>
+    </Frame>
+</Ui>

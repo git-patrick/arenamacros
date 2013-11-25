@@ -1,0 +1,10 @@
+## Interface: 50400
+## Title: Arena Macros
+## Notes: Automatically modifies your macros when user specified conditions are met.
+## Author: Pat
+## Version: v0.0.1
+## Dependencies: libpat
+test.xml
+am_frame.xml
+am_core.lua
+am.lua
