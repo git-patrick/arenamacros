@@ -4,7 +4,8 @@
 ## Author: Pat
 ## Version: v0.0.1
 ## Dependencies: libpat
-test.xml
+## SavedVariablesPerCharacter: AM_MACRO_DATABASE
 am_frame.xml
+am_conditions.lua
 am_core.lua
 am.lua

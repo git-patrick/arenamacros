@@ -86,11 +86,6 @@
                         <Anchor point="RIGHT" x="-40" />
                     </Anchors>
                 </FontString>
-                <FontString parentKey="am_macroid" inherits="GameFontHighlightSmall">
-                    <Anchors>
-                        <Anchor point="RIGHT" x="-70" />
-                    </Anchors>
-                </FontString>
             </Layer>
         </Layers>
         <Frames>
@@ -163,10 +158,11 @@
                 <Anchors>
                     <Anchor point="LEFT" x="50" />
                 </Anchors>
-
                 <Scripts>
                     <OnClick>
-                        ToggleDropDownMenu(1, nil, _G[self:GetParent():GetName() .. "Menu"], self, 0, 0);
+                        am.selected_condition = self:GetParent()
+                        
+                        ToggleDropDownMenu(1, nil, AMConditionNameMenu, self, 0, 0, nil, nil, 1);
                     </OnClick>
                 </Scripts>
             </Button>
@@ -177,7 +173,9 @@
                 </Anchors>
                 <Scripts>
                     <OnClick>
-                        ToggleDropDownMenu(1, nil, _G[self:GetParent():GetName() .. "Menu"], self, 0, 0);
+                        am.selected_condition = self:GetParent()
+                        
+                        ToggleDropDownMenu(1, nil, _G["AMCondition-" .. self:GetParent().am_name:GetText() .. "-RelationMenu"], self, 0, 0, nil, nil, 1);
                     </OnClick>
                 </Scripts>
             </Button>
@@ -188,7 +186,9 @@
                 </Anchors>
                 <Scripts>
                     <OnClick>
-                        ToggleDropDownMenu(1, nil, _G[self:GetParent():GetName() .. "Menu"], self, 0, 0);
+                        am.selected_condition = self:GetParent()
+                        
+                        ToggleDropDownMenu(1, nil, _G["AMCondition-" .. self:GetParent().am_name:GetText() .. "-ValueMenu"], self, 0, 0, nil, nil, 1);
                     </OnClick>
                 </Scripts>
             </Button>
@@ -197,26 +197,6 @@
                     <Anchor point="RIGHT" />
                 </Anchors>
             </Button>
-            <Frame name="$parentMenu" inherits="UIDropDownMenuTemplate">
-                <Scripts>
-                    <OnLoad>
-                        print("FRAME MENU NAME " .. self:GetName())
-                        
-                        function MyDropDownMenu_OnLoad()
-                            info            = {};
-                            info.text       = "This is an option in the menu.";
-                            info.value      = "OptionVariable";
-                            info.func       = FunctionCalledWhenOptionIsClicked
-                            -- can also be done as function() FunctionCalledWhenOptionIsClicked() end;
-                            
-                            -- Add the above information to the options menu as a button.
-                            UIDropDownMenu_AddButton(info);
-                        end
-                        
-                        UIDropDownMenu_Initialize(self, MyDropDownMenu_OnLoad, "MENU")
-                    </OnLoad>
-                </Scripts>
-            </Frame>
         </Frames>
     </Button>
     
@@ -362,6 +342,11 @@
                                 </ScrollChild>
                             </ScrollFrame>
                         </Frames>
+                        <Scripts>
+                            <OnShow>
+                                AMFrame.amPortrait:SetTexture("Interface\\MacroFrame\\MacroFrame-Icon")
+                            </OnShow>
+                        </Scripts>
                     </Frame>
                     <Frame name="$parentView2" setAllPoints="true" hidden="true">
                         <Frames>
@@ -374,15 +359,9 @@
                                 <Scripts>
                                     <OnEditFocusLost>
                                         if (self:GetText() == "") then
-                                            self:SetText("Untitled Macro 1")
+                                            self:SetText("Untitled Macro")
                                         end
                                     </OnEditFocusLost>
-                                    <OnLoad>
-                                        self:SetText("Untitled Macro 1")
-                                    </OnLoad>
-                                    <OnTextChanged>
-                                        print("TEXT CHANGED")
-                                    </OnTextChanged>
                                     <OnEnterPressed>
                                         self:ClearFocus()
                                     </OnEnterPressed>
@@ -427,17 +406,11 @@
                                 </Anchors>
                                 <Scripts>
                                     <OnClick>
-                                        self:GetParent().am_name:SetFocus()
+                                        local name = self:GetParent().am_name
+                                        
+                                        name:SetFocus()
+                                        name:HighlightText(0)
                                     </OnClick>
-                                </Scripts>
-                            </Button>
-                            <Button parentKey="amDelete" frameStrata="HIGH" inherits="UIPanelButtonTemplate" text="Delete">
-                                <Size x="75" y="22"/>
-                                <Anchors>
-                                    <Anchor point="BOTTOMLEFT" x="85" y="4" />
-                                </Anchors>
-                                <Scripts>
-                                    <OnClick function="amModifierFrame_Delete" />
                                 </Scripts>
                             </Button>
                             <ScrollFrame name="$parentList" inherits="AMListTemplate">
@@ -500,15 +473,6 @@
                                     <OnClick function="amConditionFrame_New" />
                                 </Scripts>
                             </Button>
-                            <Button parentKey="amDelete" frameStrata="HIGH" inherits="UIPanelButtonTemplate" text="Delete">
-                                <Size x="75" y="22"/>
-                                <Anchors>
-                                    <Anchor point="BOTTOMLEFT" x="2" y="4" />
-                                </Anchors>
-                                <Scripts>
-                                    <OnClick function="amConditionFrame_Delete" />
-                                </Scripts>
-                            </Button>
                             <ScrollFrame name="$parentList" inherits="AMListTemplate">
                                 <Anchors>
                                     <Anchor point="TOPLEFT" x="10" y="-66" />
@@ -537,30 +501,21 @@
                                         </FontString>
                                     </Layer>
                                 </Layers>
-                                <Frames>
-                                    <Button parentKey="FocusButton" setAllPoints="true">
-                                        <Scripts>
-                                            <OnClick>
-                                                self:GetParent().EditBox:SetFocus();
-                                            </OnClick>
-                                        </Scripts>
-                                    </Button>
-                                </Frames>
                                 <Scripts>
                                     <OnLoad>
                                         self.EditBox.PromptText:SetFontObject("FriendsFont_Small");
                                         self.EditBox.PromptText:SetText("Enter macro text here...");
                                         self.EditBox:SetFontObject("FriendsFont_Small");
                                         
-                                        InputScrollFrame_OnLoad(self);
+                                        -- this focus button thing is a hack to make inputscrollframe_onload work.
+                                        self.FocusButton = { GetFrameLevel = function() return 1 end }
+                                        
+                                        InputScrollFrame_OnLoad(self)
                                     </OnLoad>
                                 </Scripts>
                                 <ScrollChild>
-                                    <EditBox parentKey="EditBox" multiLine="true" countInvisibleLetters="true" autoFocus="false">
-                                        <Size x="1" y="1"/>
-                                        <Anchors>
-                                            <Anchor point="TOPLEFT"/>
-                                        </Anchors>
+                                    <EditBox parentKey="EditBox" name="$parentEditBox" multiLine="true" countInvisibleLetters="true" autoFocus="false">
+                                        <Size x="480" y="500"/>
                                         <Layers>
                                             <Layer level="BORDER">
                                                 <FontString parentKey="PromptText" inherits="GameFontNormalSmall" justifyH="LEFT" justifyV="MIDDLE">
@@ -582,6 +537,7 @@
                                                 else
                                                     self.PromptText:Show();
                                                 end
+                                                
                                                 scrollFrame.CharCount:SetText(self:GetNumLetters());
                                                 
                                                 if ( scrollFrame.ScrollBar:IsShown() ) then
@@ -602,6 +558,17 @@
                                     </EditBox>
                                 </ScrollChild>
                             </ScrollFrame>
+                            <Button name="$parentInputEditBoxFocusButton">
+                                <Anchors>
+                                    <Anchor point="TOPLEFT" relativeTo="$parentInputEditBox"/>
+                                    <Anchor point="BOTTOMRIGHT" x="-14" y="33"/>
+                                </Anchors>
+                                <Scripts>
+                                    <OnClick>
+                                        self:GetParent().am_inputsf.EditBox:SetFocus();
+                                    </OnClick>
+                                </Scripts>
+                            </Button>
                         </Frames>
                     </Frame>
                 </Frames>

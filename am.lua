@@ -31,67 +31,62 @@ am.blank_modifier = {
     }
 }
 am.blank_macro = { 
-    name = "Untitled Macro",
+    name = "UntitledMacro",
     icon = "Interface\\ICONS\\INV_Misc_QuestionMark",
     modifiers = {
         am.blank_modifier
     }
 }
 
-function am.events.PLAYER_REGEN_ENABLED()
-    am:UnregisterEvent("PLAYER_REGEN_ENABLED")
-
-    am.events.PLAYER_ENTERING_WORLD()
-end
-
 function am.events.PLAYER_ENTERING_WORLD()
-
-end
-
-function am.events.ADDON_LOADED(name)
-    if (name ~= "ArenaMacros") then
+    print("PLAYER_ENTERING_WORLD")
+    
+    if (am.initialized) then
         return
     end
-
-    am.macros      = am_container.create(AMMacroList, am_macro.create)
+    
+    am.initialized = true
+    
+    am_conditions_createmenus()
+    
+    am.macros      = am_container.create(AMMacroList, am_macro.create, "name")  -- name is the unique identifier in macro creation objects
     am.modifiers   = am_container.create(AMMacroModifierList, am_modifier.create)
     am.conditions  = am_container.create(AMMacroModifierConditionList, am_condition.create)
-
-    local db = {
-        am.blank_macro,
-        am.blank_macro
-    }
     
-    am.macros:addall(db)
+    if not AM_MACRO_DATABASE then
+        AM_MACRO_DATABASE = am.first_time_initialize()
+    end
+    
+    am.macros:addall(AM_MACRO_DATABASE)
 end
 
-function am.make_macros(tbl)
-    for n, obj in pairs(tbl) do
-        if (type(obj) == "string") then
-            am.make_macro(n, obj)
+-- the first time the addon is loaded for this character we need to save all current macros as macros with single modifiers that evaluate to true.
+function am.first_time_initialize()
+    -- I NEED TO DEAL WITH MACROS THAT SHARE A NAME.  Must modify them to change duplicate names
+    
+    local db = { }
+    
+    for i = 37,54 do
+        local name, icon, body = GetMacroInfo(i)
+        
+        if name ~= nil then
+            db[name] = {
+                ["name"] = name,
+                ["icon"] = icon,
+                ["modifiers"] = { {
+                    ["text"] = body,
+                    ["conditions"] = { am.blank_condition }
+                } }
+            }
         end
     end
-end
-
-function am.make_macro(name, arenamacro_string)
-    -- replace my tokens, trim the beginning and end of whitespace, and the beginning and end of lines of whitespace
-    local ret = ""
     
-    for line in arenamacro_string:gmatch("[^\r\n]+") do
-        ret = ret .. pat.trim(line) .. "\n"
-    end
-
-    for token, uid in pairs(am.tokens) do
-        ret = ret:gsub(token, uid)
-    end
-
-    pat.make_macro(name, "INV_MISC_QUESTIONMARK", ret, 1)
+    return db
 end
 
 function am.initialize()
     am:SetScript("OnEvent", function(frame, event, ...) frame.events[event](...) end)
 
-    am:RegisterEvent("ADDON_LOADED")
     am:RegisterEvent("PLAYER_ENTERING_WORLD")
 end
 
