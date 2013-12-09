@@ -83,12 +83,46 @@
                 </FontString>
                 <FontString parentKey="am_nummodifiers" inherits="GameFontHighlightSmall">
                     <Anchors>
-                        <Anchor point="RIGHT" x="-40" />
+                        <Anchor point="RIGHT" x="-70" />
                     </Anchors>
                 </FontString>
             </Layer>
         </Layers>
         <Frames>
+            <Button parentKey="amPickup" frameStrata="HIGH">
+                <Size x="30" y="30" />
+                <Anchors>
+                    <Anchor point="TOPLEFT" />
+                </Anchors>
+                <Scripts>
+                    <OnMouseDown>
+                        self:GetParent():am_pickup()
+                    </OnMouseDown>
+                </Scripts>
+            </Button>
+            <CheckButton parentKey="amEnabled" inherits="OptionsBaseCheckButtonTemplate" frameStrata="HIGH">
+                <HitRectInsets>
+                    <AbsInset left="0" right="0" top="0" bottom="0"/>
+                </HitRectInsets>
+                <Anchors>
+                    <Anchor point="RIGHT">
+                        <Offset>
+							<AbsDimension x="-30" y="0"/>
+						</Offset>
+                    </Anchor>
+                </Anchors>
+                <Scripts>
+                    <OnClick>
+                        if (self:GetParent().am_enabled) then
+                            self:GetParent():am_disable()
+                        else
+                            self:GetParent():am_enable()
+                        end
+                        
+                        self:SetChecked(self:GetParent().am_enabled)
+                    </OnClick>
+                </Scripts>
+            </CheckButton>
             <Button parentKey="amDelete" inherits="AMMacroDeleteTemplate" frameStrata="HIGH">
                 <Anchors>
                     <Anchor point="RIGHT" />
@@ -162,7 +196,9 @@
                     <OnClick>
                         am.selected_condition = self:GetParent()
                         
-                        ToggleDropDownMenu(1, nil, AMConditionNameMenu, self, 0, 0, nil, nil, 1);
+                        AMConditionMenuFrame:SetPoint("CENTER", self, "CENTER")
+                        
+                        EasyMenu(AM_CONDITIONS_MENU, AMConditionMenuFrame, AMConditionMenuFrame, 0, 0, "MENU", 1)
                     </OnClick>
                 </Scripts>
             </Button>
@@ -175,7 +211,9 @@
                     <OnClick>
                         am.selected_condition = self:GetParent()
                         
-                        ToggleDropDownMenu(1, nil, _G["AMCondition-" .. self:GetParent().am_name:GetText() .. "-RelationMenu"], self, 0, 0, nil, nil, 1);
+                        AMConditionMenuFrame:SetPoint("CENTER", self, "CENTER")
+                        
+                        EasyMenu(AM_CONDITIONS_GLOBAL[am.selected_condition.am_name:GetText()].relations, AMConditionMenuFrame, AMConditionMenuFrame, 0, 0, "MENU", 1)
                     </OnClick>
                 </Scripts>
             </Button>
@@ -188,7 +226,9 @@
                     <OnClick>
                         am.selected_condition = self:GetParent()
                         
-                        ToggleDropDownMenu(1, nil, _G["AMCondition-" .. self:GetParent().am_name:GetText() .. "-ValueMenu"], self, 0, 0, nil, nil, 1);
+                        AMConditionMenuFrame:SetPoint("CENTER", self, "CENTER")
+                        
+                        EasyMenu(AM_CONDITIONS_GLOBAL[am.selected_condition.am_name:GetText()].values, AMConditionMenuFrame, AMConditionMenuFrame, 0, 0, "MENU", 1)
                     </OnClick>
                 </Scripts>
             </Button>
@@ -321,6 +361,16 @@
                 </Anchors>
                 <Frames>
                     <Frame name="$parentView1" setAllPoints="true">
+                        <Layers>
+                            <Layer level="OVERLAY">
+                                <FontString name="AMMacroActive" inherits="GameFontHighlight" justifyH="LEFT">
+                                    <Size x="160" y="16"/>
+                                    <Anchors>
+                                        <Anchor point="TOPRIGHT" y="-35" x="0" />
+                                    </Anchors>
+                                </FontString>
+                            </Layer>
+                        </Layers>
                         <Frames>
                             <Button parentKey="amNew" frameStrata="HIGH" inherits="UIPanelButtonTemplate" text="New Macro">
                                 <Size x="105" y="22"/>

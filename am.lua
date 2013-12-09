@@ -1,20 +1,17 @@
 --[[
 
-    The purpose of this addon is to detect where I am in one of three situations, and modify all macros I have to deal with
-    those situations.
-    
-    1) 2v2 Arena = all healing and beneficial spells target party1
-    2) 3v3 Arena = all healing and beneficial spells auto target chosen party member, and mod:shift of the same target the other
-    3) in both situations, targeted CC must auto target a chosen enemy player.
-    4) everywhere else = mostly mouseover stuff for beneficial spells and default target self, and standard target stuff for harmful casts
-    
-    
-    
-    
-    TODO;;;;;;;;;;;;;;;
-        1) instead of automatically changing the macros, I need to create a popup if in arena where you can choose the UIDs for the tokens
-        2) need to add support for different arena types (2v2, 3v3, 5v5)
+    The addon design has expanded.  It currently manages all your character specific macros (even if another addon messes with them, 
+    it can still properly manage them all).  It automatically modifies your macros when conditions that you specify are met.
+ 
+    for example if you have a macro with 2 modifiers, and the first modifier is satisified if you are in an arena, while the second
+    is satisified if true is true (which is, obviously, always satisified) then the macro text you specify for the first modifier
+    will automatically be set whenever you enter an arena, and in all other circumstances, the second modifiers text will be used for
+    your macro.
+ 
+    modifiers are checked from first to last, the first one satisified is used.
+ 
 ]]--
+
 
 am = CreateFrame("Frame", nil, UIParent)
 am.events = { }
@@ -38,31 +35,22 @@ am.blank_macro = {
     }
 }
 
-function am.events.PLAYER_ENTERING_WORLD()
-    print("PLAYER_ENTERING_WORLD")
-    
-    if (am.initialized) then
-        return
-    end
-    
-    am.initialized = true
-    
-    am_conditions_createmenus()
-    
-    am.macros      = am_container.create(AMMacroList, am_macro.create, "name")  -- name is the unique identifier in macro creation objects
-    am.modifiers   = am_container.create(AMMacroModifierList, am_modifier.create)
-    am.conditions  = am_container.create(AMMacroModifierConditionList, am_condition.create)
-    
-    if not AM_MACRO_DATABASE then
-        AM_MACRO_DATABASE = am.first_time_initialize()
-    end
-    
-    am.macros:addall(AM_MACRO_DATABASE)
+function am.slashcmd(msg, editbox)
+    ShowUIPanel(AMFrame)
 end
 
--- the first time the addon is loaded for this character we need to save all current macros as macros with single modifiers that evaluate to true.
-function am.first_time_initialize()
-    -- I NEED TO DEAL WITH MACROS THAT SHARE A NAME.  Must modify them to change duplicate names
+-- ADD OUR SLASH COMMANDS HERE!
+SLASH_ARENAMACROS1 = "/am"
+SlashCmdList["ARENAMACROS"] = am.slashcmd
+
+function am.events.UPDATE_MACROS()
+    -- OKAY SO, here is what I want to happen here.
+    --[[
+        On every UPDATE_MACRO I need to recheck all the macros, make sure I have
+        everyone of them in my database and on my list.
+
+        if there are some that are present that are NOT in my list, create them
+    ]]--
     
     local db = { }
     
@@ -70,18 +58,45 @@ function am.first_time_initialize()
         local name, icon, body = GetMacroInfo(i)
         
         if name ~= nil then
-            db[name] = {
-                ["name"] = name,
-                ["icon"] = icon,
-                ["modifiers"] = { {
-                    ["text"] = body,
-                    ["conditions"] = { am.blank_condition }
-                } }
-            }
+            if (not am.macros:contains(name)) then
+                db[name] = {
+                    ["name"] = name,
+                    ["icon"] = icon,
+                    ["modifiers"] = { {
+                        ["text"] = body,
+                        ["conditions"] = { am.blank_condition }
+                    } }
+                }
+            end
         end
     end
     
-    return db
+    am.macros:addall(db)
+    
+    AMMacroActive:SetText("Enabled Macros " .. select(2,GetNumMacros()) .. "/" .. MAX_CHARACTER_MACROS)
+end
+
+function am.events.PLAYER_ENTERING_WORLD()
+    if (am.initialized) then
+        return
+    end
+    
+    am.initialized = true
+    
+    am_conditions_initialize()
+    
+    am.macros      = am_container.create(AMMacroList, am_macro.create, "name")  -- name is the unique identifier in macro creation objects
+    am.modifiers   = am_container.create(AMMacroModifierList, am_modifier.create)
+    am.conditions  = am_container.create(AMMacroModifierConditionList, am_condition.create)
+    
+    if not AM_MACRO_DATABASE then
+        AM_MACRO_DATABASE = { }
+    end
+    
+    am.events.UPDATE_MACROS()
+    
+    -- this can trigger before player_entering_world, so I want it put here to ensure AM_MACRO_DATABASE is atleast { }
+    am:RegisterEvent("UPDATE_MACROS")
 end
 
 function am.initialize()

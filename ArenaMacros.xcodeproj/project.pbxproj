@@ -8,6 +8,7 @@
 
 /* Begin PBXFileReference section */
 		CD12CC6F1843CA1600115E84 /* am_conditions.lua */ = {isa = PBXFileReference; lastKnownFileType = text; path = am_conditions.lua; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.lua; };
+		CD496F8D18501B450009FF58 /* am_container.lua */ = {isa = PBXFileReference; lastKnownFileType = text; path = am_container.lua; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.lua; };
 		CDF29D91184317090025CAC4 /* am_core.lua */ = {isa = PBXFileReference; lastKnownFileType = text; path = am_core.lua; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.lua; };
 		CDF29D92184317090025CAC4 /* am_frame.lua */ = {isa = PBXFileReference; lastKnownFileType = text; path = am_frame.lua; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.lua; };
 		CDF29D93184317090025CAC4 /* am_frame.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = am_frame.xml; sourceTree = "<group>"; };
@@ -24,13 +25,14 @@
 			children = (
 				CDF29D94184317090025CAC4 /* am.lua */,
 				CD12CC6F1843CA1600115E84 /* am_conditions.lua */,
+				CD496F8D18501B450009FF58 /* am_container.lua */,
 				CDF29D91184317090025CAC4 /* am_core.lua */,
 				CDF29D92184317090025CAC4 /* am_frame.lua */,
-				CDF29D98184317090025CAC4 /* test.lua */,
-				CDF29D95184317090025CAC4 /* ArenaMacros.toc */,
 				CDF29D93184317090025CAC4 /* am_frame.xml */,
-				CDF29D99184317090025CAC4 /* test.xml */,
+				CDF29D95184317090025CAC4 /* ArenaMacros.toc */,
 				CDF29D96184317090025CAC4 /* media */,
+				CDF29D98184317090025CAC4 /* test.lua */,
+				CDF29D99184317090025CAC4 /* test.xml */,
 			);
 			sourceTree = "<group>";
 		};

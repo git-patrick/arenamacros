@@ -3,26 +3,31 @@ local NUM_AMFRAME_TABS = 4
 UIPanelWindows["AMFrame"] = { area = "left", pushable = 1, whileDead = 1 };
 
 function amMacroFrame_New(self, button, down)
-    -- need to check if there is still room for another macro!  
+    -- find the lowest number for which UntitledMacro ## is not already in the container.
+    -- this will generally succeed immediately or almost immediately.  Additionally, the maximum macro count
     
-    -- here I need to actually create the macro, get the WoW ID of it, and put that in the object inserts below.
+    am.blank_macro.name = "UntitledMacro"
     
-    am.macros:add(am.blank_macro)
+    local r, f
+    
+    for i=1,99 do
+        r, f = am.macros:add(am.blank_macro)
+        
+        if (not r) then
+            break
+        end
+        
+        am.blank_macro.name = "UntitledMacro " .. i
+    end
+    
+    if (f) then
+        f:Click()
+    end
 end
 
 function amModifierFrame_New(self, button, down)
     am.modifiers:clear()
-    
-    -- find the lowest number for which UntitledMacro ## is not already in the container.
-    -- this will generally succeed immediately or almost immediately.  Additionally, the maximum macro count
-    
-    for i=1,99 do
-        if (not am.modifiers:add(am.blank_modifier)) then
-            break
-        end
-        
-        am.blank_modifier.name = "UntitledMacro " .. i
-    end
+    am.modifiers:add(am.blank_modifier)
 end
 
 function amModifierFrame_Cancel(self, button, down)

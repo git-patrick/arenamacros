@@ -1,70 +1,43 @@
+-- this is both the object used to initialize the conditions menu ! (by avoiding namespace conflict issues)
+-- and it contains the menu creation info for each relation and value menu as well
 AM_CONDITIONS_GLOBAL = { }
+AM_CONDITIONS_MENU = { }
+
+function am_conditions_selectvalue(self, arg1, arg2, checked)
+    am.selected_condition.am_value:SetText(self.value)
+end
+
+function am_conditions_selectrelation(self, arg1, arg2, checked)
+    am.selected_condition.am_relation:SetText(self.value)
+end
+
+function am_conditions_selectname(self, arg1, arg2, checked)
+    am.selected_condition.am_name:SetText(self.value)
+    am.selected_condition.am_relation:SetText(AM_CONDITIONS_GLOBAL[self.value].default_relation)
+    am.selected_condition.am_value:SetText(AM_CONDITIONS_GLOBAL[self.value].default_value)
+end
+
+function am_conditions_initialize(frame_name, populatefunction)
+    CreateFrame("Frame", "AMConditionMenuFrame", UIParent, "UIDropDownMenuTemplate")
+end
 
 -- builtin condition test for fallback modifiers, also allows disabling modifiers with if true is false then ... conditions
 AM_CONDITIONS_GLOBAL["true"] = {
     test = function (relation, value)
         return value == "true"
     end,
+    
+    default_relation = "is",
+    default_value = "true",
+    
     relations = {
-        ["is"] = { },
+        { text = "is", value = "is", func = am_conditions_selectrelation, notCheckable = true }
     },
     values = {
-        ["true"] = { },
-        ["false"] = { }
+        { text = "true", value = "true", func = am_conditions_selectvalue, notCheckable = true  },
+        { text = "false", value = "false", func = am_conditions_selectvalue, notCheckable = true }
     }
 }
 
-function am_makemenu(frame_name, populatefunction)
-    local frame = CreateFrame("Frame", frame_name, UIParent, "UIDropDownMenuTemplate")
-    
-    UIDropDownMenu_Initialize(frame, populatefunction, "MENU")
-    
-    return frame
-end
-
-function am_conditions_populatemenu(self, data, func, width)
-    local menu_item = { }
-    
-    for name, v in pairs(data) do
-        menu_item.text          = name
-        menu_item.value         = name
-        menu_item.func          = nil
-        menu_item.padding       = 10
-        menu_item.minWidth      = width or 95
-        menu_item.notCheckable  = "true"
-        menu_item.func          = func
-        
-        UIDropDownMenu_AddButton(menu_item);
-    end
-end
-
-function am_conditions_createmenus()
-    am_makemenu("AMConditionNameMenu",
-                function()
-                    am_conditions_populatemenu(self, AM_CONDITIONS_GLOBAL,
-                       function(self, arg1, arg2, checked)
-                           am.selected_condition.am_name:SetText(self:GetText())
-                       end
-                    )
-                end)
-
-    for condition_name, cond in pairs(AM_CONDITIONS_GLOBAL) do
-        am_makemenu("AMCondition-" .. condition_name .. "-ValueMenu",
-                    function()
-                        am_conditions_populatemenu(self, AM_CONDITIONS_GLOBAL[condition_name].values,
-                            function(self, arg1, arg2, checked)
-                                am.selected_condition.am_value:SetText(self.value)
-                            end
-                        )
-                    end)
-        am_makemenu("AMCondition-" .. condition_name .. "-RelationMenu",
-                    function()
-                        am_conditions_populatemenu(self, AM_CONDITIONS_GLOBAL[condition_name].relations,
-                           function(self, arg1, arg2, checked)
-                                am.selected_condition.am_relation:SetText(self.value)
-                           end,
-                           50
-                        )
-                    end)
-    end
-end
+table.insert(AM_CONDITIONS_MENU, { text = "Conditions", isTitle = "true", notCheckable = true } )
+table.insert(AM_CONDITIONS_MENU, { text = "true", func = am_conditions_selectname, notCheckable = true })

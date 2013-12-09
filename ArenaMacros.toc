@@ -6,6 +6,7 @@
 ## Dependencies: libpat
 ## SavedVariablesPerCharacter: AM_MACRO_DATABASE
 am_frame.xml
+am_container.lua
 am_conditions.lua
 am_core.lua
 am.lua
