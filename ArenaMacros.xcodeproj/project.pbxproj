@@ -9,20 +9,20 @@
 /* Begin PBXFileReference section */
 		CD12CC6F1843CA1600115E84 /* am_conditions.lua */ = {isa = PBXFileReference; lastKnownFileType = text; path = am_conditions.lua; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.lua; };
 		CD496F8D18501B450009FF58 /* am_container.lua */ = {isa = PBXFileReference; lastKnownFileType = text; path = am_container.lua; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.lua; };
+		CD8D534A18564CC800FE7710 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 		CDF29D91184317090025CAC4 /* am_core.lua */ = {isa = PBXFileReference; lastKnownFileType = text; path = am_core.lua; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.lua; };
 		CDF29D92184317090025CAC4 /* am_frame.lua */ = {isa = PBXFileReference; lastKnownFileType = text; path = am_frame.lua; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.lua; };
 		CDF29D93184317090025CAC4 /* am_frame.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = am_frame.xml; sourceTree = "<group>"; };
 		CDF29D94184317090025CAC4 /* am.lua */ = {isa = PBXFileReference; lastKnownFileType = text; path = am.lua; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.lua; };
 		CDF29D95184317090025CAC4 /* ArenaMacros.toc */ = {isa = PBXFileReference; lastKnownFileType = text; path = ArenaMacros.toc; sourceTree = "<group>"; };
 		CDF29D97184317090025CAC4 /* Qlassic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Qlassic.ttf; sourceTree = "<group>"; };
-		CDF29D98184317090025CAC4 /* test.lua */ = {isa = PBXFileReference; lastKnownFileType = text; path = test.lua; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.lua; };
-		CDF29D99184317090025CAC4 /* test.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = test.xml; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
 		CDF29D8A184315D60025CAC4 = {
 			isa = PBXGroup;
 			children = (
+				CD8D534A18564CC800FE7710 /* .gitignore */,
 				CDF29D94184317090025CAC4 /* am.lua */,
 				CD12CC6F1843CA1600115E84 /* am_conditions.lua */,
 				CD496F8D18501B450009FF58 /* am_container.lua */,
@@ -31,8 +31,6 @@
 				CDF29D93184317090025CAC4 /* am_frame.xml */,
 				CDF29D95184317090025CAC4 /* ArenaMacros.toc */,
 				CDF29D96184317090025CAC4 /* media */,
-				CDF29D98184317090025CAC4 /* test.lua */,
-				CDF29D99184317090025CAC4 /* test.xml */,
 			);
 			sourceTree = "<group>";
 		};
