@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		CD12CC6F1843CA1600115E84 /* am_conditions.lua */ = {isa = PBXFileReference; lastKnownFileType = text; path = am_conditions.lua; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.lua; };
 		CD496F8D18501B450009FF58 /* am_container.lua */ = {isa = PBXFileReference; lastKnownFileType = text; path = am_container.lua; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.lua; };
 		CD8D534A18564CC800FE7710 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 		CDF29D91184317090025CAC4 /* am_core.lua */ = {isa = PBXFileReference; lastKnownFileType = text; path = am_core.lua; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.lua; };
@@ -24,7 +23,6 @@
 			children = (
 				CD8D534A18564CC800FE7710 /* .gitignore */,
 				CDF29D94184317090025CAC4 /* am.lua */,
-				CD12CC6F1843CA1600115E84 /* am_conditions.lua */,
 				CD496F8D18501B450009FF58 /* am_container.lua */,
 				CDF29D91184317090025CAC4 /* am_core.lua */,
 				CDF29D92184317090025CAC4 /* am_frame.lua */,

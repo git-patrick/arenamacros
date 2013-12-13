@@ -15,11 +15,18 @@
 
 am = CreateFrame("Frame", nil, UIParent)
 am.events = { }
+am.frames = { }     -- condition addon frames are added to this.
 
 am.blank_condition = {
-    name = "true",
-    relation = "is",
-    value = "true"
+    value = {
+        text = "true",
+        data = "true"
+    },
+    relation = {
+        text = "is",
+        data = "is"
+    },
+    name = "true"
 }
 am.blank_modifier = {
     text = "",
@@ -83,20 +90,28 @@ function am.events.PLAYER_ENTERING_WORLD()
     
     am.initialized = true
     
-    am_conditions_initialize()
-    
     am.macros      = am_container.create(AMMacroList, am_macro.create, "name")  -- name is the unique identifier in macro creation objects
     am.modifiers   = am_container.create(AMMacroModifierList, am_modifier.create)
     am.conditions  = am_container.create(AMMacroModifierConditionList, am_condition.create)
+    
+    am.addons.initialize()
     
     if not AM_MACRO_DATABASE then
         AM_MACRO_DATABASE = { }
     end
     
+    am.macros:addall(AM_MACRO_DATABASE)
+    
     am.events.UPDATE_MACROS()
     
     -- this can trigger before player_entering_world, so I want it put here to ensure AM_MACRO_DATABASE is atleast { }
     am:RegisterEvent("UPDATE_MACROS")
+end
+
+function am.check(tbl, event)
+    for i, v in ipairs(am.macros.frames) do
+		v:am_checkconditions()
+	end
 end
 
 function am.initialize()
@@ -105,4 +120,85 @@ function am.initialize()
     am:RegisterEvent("PLAYER_ENTERING_WORLD")
 end
 
+
+------------------------------------------------------------------------------------------
+--[[  ADDON CONDITIONS SECTION -- any condition addons will need to use this interface!    ]]--
+------------------------------------------------------------------------------------------
+
+am.addons = {
+    conditions = { },
+    menu = { { text = "Conditions", isTitle = "true", notCheckable = true } }
+}
+
+function am.addons.select(self, arg1, arg2, checked)
+    am.selected_condition.am_name:SetText(self.value)
+    
+    am.addons.conditions[self.value].value_init(am.selected_condition.am_value)
+    am.addons.conditions[self.value].relation_init(am.selected_condition.am_relation)
+end
+
+function am.addons.initialize()
+    CreateFrame("Frame", "AMConditionMenuFrame", UIParent, "UIDropDownMenuTemplate")
+    CreateFrame("Frame", "AMConditionTriggerFrame", UIParent)
+    
+    am.addons.add("true",
+        {
+            test = function (relation, value)
+                return value.data == "true"
+            end,
+            
+            value_init = function (button)
+                button.am_data = "true"
+                button:SetText(button.am_data)
+            end,
+                  
+            relation_init = function (button)
+                button.am_data = "is"
+                button:SetText(button.am_data)
+            end,
+            
+            value_onclick = function (button)
+                if (button.am_data == "true") then
+                  button.am_data = "false"
+                else
+                  button.am_data = "true"
+                end
+                
+                button:SetText(button.am_data)
+            end,
+            
+            relation_onclick = function (button) end,
+            
+            main_menu = { text = "true", notCheckable = "true", value = "true", leftPadding = "10", func = am.addons.select }
+        }
+    )
+    
+    for i,v in pairs(am.addons.conditions) do
+        if (v.init) then
+            v.init()
+        end
+    end
+    
+    AMConditionTriggerFrame:SetScript("OnEvent", am.check)
+end
+
+function am.addons.add(name, condition_table)
+    if (am.addons.conditions[name]) then
+        print("ERROR:  Multiple conditions share the name " .. name)
+        
+        return
+    end
+    
+    am.addons.conditions[name] = condition_table
+    
+    table.insert(am.addons.menu, condition_table.main_menu)
+end
+
+
+
+
+
+
 am.initialize()
+
+

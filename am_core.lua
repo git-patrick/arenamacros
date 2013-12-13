@@ -163,7 +163,7 @@ function am_macro.mt.__index:am_checkconditions()
         local found = true
         
         for j,c in ipairs(m.conditions) do
-            if (not AM_CONDITIONS_GLOBAL[c.name].test(c.relation, c.value)) then
+            if (not am.addons.conditions[c.name].test(c.relation, c.value)) then
                 found = false
                 break
             end
@@ -271,7 +271,7 @@ function am_modifier.mt.__index:am_updatemodstring()
     local s = "if "
     
     for i,v in ipairs(self.am_conditions) do
-        s = s .. v.name .. " " .. v.relation .. " " .. v.value .. " and "
+        s = s .. v.name .. " " .. v.relation.text .. " " .. v.value.text .. " and "
     end
     
     s = s:sub(1, s:len() - 4) .. "then ..."
@@ -303,8 +303,16 @@ function am_condition.mt.__index:am_set(object)
     -- I need to make sure all conditions exist, and all relations and values are valid.
     
     if (object.name) then self.am_name:SetText(object.name) end
-    if (object.relation) then self.am_relation:SetText(object.relation) end
-    if (object.value) then self.am_value:SetText(object.value) end
+    
+    if (object.relation) then
+        self.am_relation.am_data = object.relation.data
+        self.am_relation:SetText(object.relation.text)
+    end
+    
+    if (object.value) then
+        self.am_value.am_data = object.value.data
+        self.am_value:SetText(object.value.text)
+    end
 end
 
 function am_condition.mt.__index:am_setindex(i)

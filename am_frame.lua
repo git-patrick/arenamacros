@@ -99,8 +99,14 @@ function amConditionFrame_Save(self, button, down)
     for i,v in ipairs(am.conditions.frames) do
         local t = {
             name = v.am_name:GetText(),
-            relation = v.am_relation:GetText(),
-            value = v.am_value:GetText()
+            relation = {
+                text = v.am_relation:GetText(),
+                data = v.am_relation.am_data
+            },
+            value = {
+                text = v.am_value:GetText(),
+                data = v.am_value.am_data
+            }
         }
         
         table.insert(conds, t)
@@ -146,7 +152,7 @@ function amMacroModifier_OnClick(self, button, down)
     am.conditions:addall(self.am_conditions)
     
     v3.am_inputsf.EditBox:SetText(self.am_text or "")        -- it must be called editbox for InputScrollFrame_OnLoad
-    v3.am_name:SetText(am.selected_macro.am_name:GetText() .. " - Modifier " .. self:am_getindex())
+    v3.am_name:SetText(v2.am_name:GetText() .. " - Modifier " .. self:am_getindex())
     
     am.selected_modifier = self
 

@@ -198,7 +198,7 @@
                         
                         AMConditionMenuFrame:SetPoint("CENTER", self, "CENTER")
                         
-                        EasyMenu(AM_CONDITIONS_MENU, AMConditionMenuFrame, AMConditionMenuFrame, 0, 0, "MENU", 1)
+                        EasyMenu(am.addons.menu, AMConditionMenuFrame, AMConditionMenuFrame, 0, 0, "MENU", 1)
                     </OnClick>
                 </Scripts>
             </Button>
@@ -211,9 +211,7 @@
                     <OnClick>
                         am.selected_condition = self:GetParent()
                         
-                        AMConditionMenuFrame:SetPoint("CENTER", self, "CENTER")
-                        
-                        EasyMenu(AM_CONDITIONS_GLOBAL[am.selected_condition.am_name:GetText()].relations, AMConditionMenuFrame, AMConditionMenuFrame, 0, 0, "MENU", 1)
+                        am.addons.conditions[am.selected_condition.am_name:GetText()].relation_onclick(self)
                     </OnClick>
                 </Scripts>
             </Button>
@@ -226,9 +224,7 @@
                     <OnClick>
                         am.selected_condition = self:GetParent()
                         
-                        AMConditionMenuFrame:SetPoint("CENTER", self, "CENTER")
-                        
-                        EasyMenu(AM_CONDITIONS_GLOBAL[am.selected_condition.am_name:GetText()].values, AMConditionMenuFrame, AMConditionMenuFrame, 0, 0, "MENU", 1)
+                        am.addons.conditions[am.selected_condition.am_name:GetText()].value_onclick(self)
                     </OnClick>
                 </Scripts>
             </Button>
