@@ -4,6 +4,9 @@ if MAX_CHARACTER_MACROS == nil then
     MAX_CHARACTER_MACROS = 18
 end
 
+-- THIS IS SUPER UGLY, and won't be staying.  I am only doing this global name thing to test these newly discovered securemacrobuttons.
+GLOBAL_ID = 0
+
 -- OBJECTS EXPECTED TO BE INSIDE AN am_container MUST INHERT FROM am_contained OR PROVIDE ITS METHODS AND Frames methods
 am_macro = { mt = { __index = { } } }
 setmetatable(am_macro.mt.__index, am_contained)
@@ -13,6 +16,17 @@ function am_macro.create(parent_frame)
 
     f:SetScript("OnEvent", function(self, event, ...) self:am_event(event, ...) end)
     f:RegisterEvent("UPDATE_MACROS")
+    
+    -- the purpose of this frame is to override the 255 character limit placed on macros.  it stores our chosen macro text, and can be run with a /click FrameName from the actual macro
+    -- now I am wondering if this attribute can be changed in combat...
+    -- if it can, I can do anything I want... so I assume that is probably not possible, but I shall test.
+    -- not possible.  good thing too, otherwise this project is basically useless, and the game just got a lot easier
+    
+    f.am_securemacrobtn = CreateFrame("Button", "AMSecureMacroButtonFrame" .. GLOBAL_ID, UIParent, "SecureActionButtonTemplate")
+    f.am_securemacrobtn:SetAttribute("type", "macro")
+    f.am_securemacrobtn:SetAttribute("macrotext", "")
+    
+    GLOBAL_ID = GLOBAL_ID + 1
     
     return f
 end
@@ -138,18 +152,26 @@ function am_macro.mt.__index:am_set(object)
     return nil
 end
 
-function am_macro.mt.__index:am_setmacro(text)
+function am_macro.mt.__index:am_setactivemod(mod)
+    if (mod == self.am_activemod) then
+        return true
+    end
+    
     if (InCombatLockdown()) then
-        print("AM:  Error!  Unable to setup macro " .. self.am_name:GetText() .. ":  You are in combat!")
+        print("AM: Unable to setup macro " .. self.am_name:GetText() .. ":  You are in combat!  Changes queued for when combat ends...")
         
         self:RegisterEvent("PLAYER_REGEN_ENABLED")
         
         return false
     end
     
-    if (not pcall(function() EditMacro(self.am_name:GetText(), nil, "INV_Misc_QuestionMark", text, 1, 1) end)) then
+    self.am_securemacrobtn:SetAttribute("macrotext", mod.text)
+    
+    if (not pcall(function() EditMacro(self.am_name:GetText(), nil, "INV_Misc_QuestionMark", "#showtooltip\n/click " .. self.am_securemacrobtn:GetName(), 1, 1) end)) then
         return false
     end
+    
+    self.am_activemod = mod
     
     return true
 end
@@ -170,7 +192,7 @@ function am_macro.mt.__index:am_checkconditions()
         end
         
         if (found) then
-            return (not self:am_setmacro(m.text))
+            return (not self:am_setactivemod(m))
         end
     end
     

@@ -1,3 +1,4 @@
+-- this is the base class for frames expected to function inside an am_container
 am_contained = { __index = CreateFrame("Button", nil, UIParent) }
 
 function am_contained.__index:am_getuid()

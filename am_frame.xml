@@ -59,7 +59,7 @@
             </Layer>
         </Layers>
     </Button>
-    
+
     <Button name="AMMacroTemplate" enableMouse="true" inherits="AMFrameListItemTemplate" virtual="true">
         <Size y="30" />
         <Scripts>
