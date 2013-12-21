@@ -4,11 +4,8 @@ if MAX_CHARACTER_MACROS == nil then
     MAX_CHARACTER_MACROS = 18
 end
 
--- THIS IS SUPER UGLY, and won't be staying.  I am only doing this global name thing to test these newly discovered securemacrobuttons.
-GLOBAL_ID = 0
-
--- OBJECTS EXPECTED TO BE INSIDE AN am_container MUST INHERT FROM am_contained OR PROVIDE ITS METHODS AND Frames methods
-am_macro = { mt = { __index = { } } }
+-- OBJECTS EXPECTED TO BE INSIDE AN am_container MUST INHERIT FROM am_contained OR PROVIDE ITS METHODS AND Frames methods
+am_macro = { uid = 0, mt = { __index = { } } }
 setmetatable(am_macro.mt.__index, am_contained)
 
 function am_macro.create(parent_frame)
@@ -17,16 +14,15 @@ function am_macro.create(parent_frame)
     f:SetScript("OnEvent", function(self, event, ...) self:am_event(event, ...) end)
     f:RegisterEvent("UPDATE_MACROS")
     
-    -- the purpose of this frame is to override the 255 character limit placed on macros.  it stores our chosen macro text, and can be run with a /click FrameName from the actual macro
-    -- now I am wondering if this attribute can be changed in combat...
-    -- if it can, I can do anything I want... so I assume that is probably not possible, but I shall test.
-    -- not possible.  good thing too, otherwise this project is basically useless, and the game just got a lot easier
+    -- the purpose of this frame is to override the 255 character limit placed on macros.  
+    -- it stores our chosen macro text, and can be run with a /click FrameName from the actual macro
     
-    f.am_securemacrobtn = CreateFrame("Button", "AMSecureMacroButtonFrame" .. GLOBAL_ID, UIParent, "SecureActionButtonTemplate")
+    f.am_securemacrobtn = CreateFrame("Button", "AMSecureMacroButtonFrame" .. am_macro.uid, UIParent, "SecureActionButtonTemplate")
+    
     f.am_securemacrobtn:SetAttribute("type", "macro")
     f.am_securemacrobtn:SetAttribute("macrotext", "")
-    
-    GLOBAL_ID = GLOBAL_ID + 1
+
+    am_macro.uid = am_macro.uid + 1
     
     return f
 end
@@ -165,9 +161,18 @@ function am_macro.mt.__index:am_setactivemod(mod)
         return false
     end
     
-    self.am_securemacrobtn:SetAttribute("macrotext", mod.text)
+    local text
     
-    if (not pcall(function() EditMacro(self.am_name:GetText(), nil, "INV_Misc_QuestionMark", "#showtooltip\n/click " .. self.am_securemacrobtn:GetName(), 1, 1) end)) then
+    if (mod.text:len() > 255) then
+        self.am_securemacrobtn:SetAttribute("macrotext", mod.text)
+    
+        text = mod.text:match("(#showtooltip[^\r\n]*)") .. "\n" or ""
+        text = text .. "/click " .. self.am_securemacrobtn:GetName()
+    else
+        text = mod.text
+    end
+    
+    if (not pcall(function() EditMacro(self.am_name:GetText(), nil, "INV_Misc_QuestionMark", text, 1, 1) end)) then
         return false
     end
     
