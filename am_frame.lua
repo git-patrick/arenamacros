@@ -1,4 +1,4 @@
-local NUM_AMFRAME_TABS = 4
+local NUM_AMFRAME_TABS = 2
 
 UIPanelWindows["AMFrame"] = { area = "left", pushable = 1, whileDead = 1 };
 
@@ -33,6 +33,8 @@ end
 function amModifierFrame_Cancel(self, button, down)
     local v1 = AMFrameTab1FrameView1
     local v2 = AMFrameTab1FrameView2
+    
+    am.selected_macro = nil
     
     v2:Hide()
     v1:Show()
@@ -69,6 +71,8 @@ function amModifierFrame_Save(self, button, down)
         
         return
     end
+    
+    am.selected_macro = nil
     
     v2:Hide()
     v1:Show()
@@ -116,11 +120,15 @@ function amConditionFrame_Save(self, button, down)
         text = v3.am_inputsf.EditBox:GetText(),
         conditions = conds
     })
+    
+    am.selected_modifier = nil
 end
 
 function amConditionFrame_Cancel(self, button, down)
     local v2 = AMFrameTab1FrameView2
     local v3 = AMFrameTab1FrameView3
+    
+    am.selected_modifier = nil
     
     v3:Hide()
     v2:Show()
@@ -192,4 +200,13 @@ end
 
 function amFrame_OnEvent(self, event, ...)
 
+end
+
+
+function amFrameTab_OnClick(self, button, down)
+    for i = 1, NUM_AMFRAME_TABS do
+        _G["AMFrameTab" .. i .. "Frame"]:Hide()
+    end
+    
+    _G[self:GetName() .. "Frame"]:Show()
 end

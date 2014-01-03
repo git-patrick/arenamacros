@@ -1,11 +1,21 @@
 -- this is the base class for frames expected to function inside an am_container
-am_contained = { __index = CreateFrame("Button", nil, UIParent) }
 
-function am_contained.__index:am_getuid()
+
+am_contained = {
+    mt = { __index = CreateFrame("Button", nil, UIParent) },
+    
+    colors = {
+        bg1 = { r = 1, g = 1, b = 1, a = 0.08 },
+        bg2 = { r = 0, g = 0, b = 0, a = 0 },
+        bghl = { r = 0, g = 1, b = 0, a = 0.08 }
+    }
+}
+
+function am_contained.mt.__index:am_getuid()
     return nil
 end
 
-function am_contained.__index:am_setuid(to)
+function am_contained.mt.__index:am_setuid(to)
     if (self:am_getuid() and self.am_container:change_uid(self:am_getuid(), to)) then
         return 1
     end
@@ -13,34 +23,57 @@ function am_contained.__index:am_setuid(to)
     return nil
 end
 
-function am_contained.__index:am_setindex(i)
+function am_contained.mt.__index:am_setindex(i)
     self.am_index = i
 end
 
-function am_contained.__index:am_getindex()
+function am_contained.mt.__index:am_getindex()
     return self.am_index
 end
 
-function am_contained.__index:am_set(obj)
+
+function am_contained.mt.__index:am_unhighlight()
+    self.am_highlighted = nil
+end
+function am_contained.mt.__index:am_highlight()
+    self.am_highlighted = true
+end
+
+function am_contained.mt.__index:am_update(i)
+    local c
+    
+    if (self.am_highlighted) then
+        c = am_contained.colors.bghl
+    else
+        c = (i % 2) == 1 and am_contained.colors.bg1 or am_contained.colors.bg2
+    end
+    
+    self:am_setindex(i)
+    self.am_background:SetTexture(c.r, c.g, c.b, c.a)
+end
+
+function am_contained.mt.__index:am_set(obj)
     print("am: this should be virtual")
 end
 
-function am_contained.__index:am_add(object)
+function am_contained.mt.__index:am_onadd(object)
     -- this is called by the container once the object is added.  can be overriden as required
     
     self:am_set(object)
     
     return nil  -- for success
 end
-function am_contained.__index:am_remove()
+function am_contained.mt.__index:am_onremove()
     -- this is called by the container when the object is being removed.  can be overridden if action is required (for example in macros, need to delete the actual macro)
+    
+    self:am_unhighlight()
 end
 
-function am_contained.__index:am_detach()
+function am_contained.mt.__index:am_detach()
     self:SetPoint("TOPLEFT")
 end
 
-function am_contained.__index:am_attach(to)
+function am_contained.mt.__index:am_attach(to)
     if (to) then
         self:SetPoint("TOPLEFT", to, "BOTTOMLEFT")
     else
@@ -58,12 +91,7 @@ end
 
 -- container class!
 
-am_container = {
-    colors = {
-        bg1 = { r = 1, g = 1, b = 1, a = 0.08 },
-        bg2 = { r = 0, g = 0, b = 0, a = 0 }
-    }
-}
+am_container = { }
 
 function am_container.create(parent_frame, create_frame_function, unique_identifier)
     local c         = { }
@@ -87,17 +115,13 @@ end
 
 am_container.mt = { __index = { } }
 
-function am_container.mt.__index:set_indexes(start_index)
-    for i = start_index or 1, self:count(self.frames) do
-        self.frames[i]:am_setindex(i)
-    end
-end
 
-function am_container.mt.__index:updatebgs()
+-- this is called whenever a frame is resorted or removed (resort is called by add).
+-- this has the default behavior from am_contained of updating the background color by index or highlight if it is set.
+-- that behavior can be overridden in subclasses.
+function am_container.mt.__index:update()
     for i,v in ipairs(self.frames) do
-        local c = (i % 2) == 1 and am_container.colors.bg1 or am_container.colors.bg2
-        
-        v.am_background:SetTexture(c.r, c.g, c.b, c.a)
+        v:am_update(i)
     end
 end
 
@@ -133,7 +157,7 @@ function am_container.mt.__index:add(object)
     f.am_container = self
     
     -- check if adding our object works!
-    if (f:am_add(object)) then
+    if (f:am_onadd(object)) then
         if (pool_index == 0) then
             table.insert(self.pool, f)
         end
@@ -149,15 +173,27 @@ function am_container.mt.__index:add(object)
     -- put it into our actual frame list
     table.insert(self.frames, f)
     
-    self:refresh(self:count())
+    self:resort(self:count())
     
     f:Show()
     
     return nil, f -- for success
 end
 
+function am_container.mt.__index:highlight(index)
+    if (self.am_highlighted) then
+        self.am_highlighted:am_unhighlight()
+    end
+    
+    self.am_highlighted = self.frames[index]
+    
+    if (self.am_highlighted) then
+        self.am_highlighted:am_highlight()
+    end
+end
+
 -- this takes a frame from our list and moves it to the appropriate place based on custom sorting requirements if they exist
-function am_container.mt.__index:refresh(index)
+function am_container.mt.__index:resort(index)
     local f = self.frames[index]
     local f_next = nil
     
@@ -173,8 +209,7 @@ function am_container.mt.__index:refresh(index)
         end
     end
     
-    -- update all the frame indices
-    self:set_indexes()
+    self:update()
     
     -- shuffle the frames anchors based on new setup.  detach first so we don't get a loop of frame references
     for i,v in ipairs(self.frames) do
@@ -184,8 +219,6 @@ function am_container.mt.__index:refresh(index)
     for i,v in ipairs(self.frames) do
         v:am_attach(self.frames[i - 1])
     end
-    
-    self:updatebgs()
 end
 
 function am_container.mt.__index:remove(index)
@@ -206,13 +239,12 @@ function am_container.mt.__index:remove(index)
         end
     end
     
-    self.frames[index]:am_remove()
+    self.frames[index]:am_onremove()
     
     table.insert(self.pool, self.frames[index])
     table.remove(self.frames, index)
     
-    self:set_indexes()
-    self:updatebgs()
+    self:update()
 end
 
 function am_container.mt.__index:clear()
@@ -220,6 +252,9 @@ function am_container.mt.__index:clear()
         self:remove(i)
     end
 end
+
+-- altering the value of our child frames UID property must call this somehow to notify the container that the value has changed.
+-- to properly alter the UID value, you can use the set_uid() function inherited from am_contained
 
 function am_container.mt.__index:change_uid(from, to)
     if (not self:contains(from)) then

@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXFileReference section */
+		CD15EE31186E282F00797900 /* am_tokens.lua */ = {isa = PBXFileReference; lastKnownFileType = text; path = am_tokens.lua; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.lua; };
+		CD15EE321870904D00797900 /* am_tokens.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = am_tokens.xml; sourceTree = "<group>"; };
 		CD496F8D18501B450009FF58 /* am_container.lua */ = {isa = PBXFileReference; lastKnownFileType = text; path = am_container.lua; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.lua; };
 		CD8D534A18564CC800FE7710 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 		CDF29D91184317090025CAC4 /* am_core.lua */ = {isa = PBXFileReference; lastKnownFileType = text; path = am_core.lua; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.lua; };
@@ -27,6 +29,8 @@
 				CDF29D91184317090025CAC4 /* am_core.lua */,
 				CDF29D92184317090025CAC4 /* am_frame.lua */,
 				CDF29D93184317090025CAC4 /* am_frame.xml */,
+				CD15EE31186E282F00797900 /* am_tokens.lua */,
+				CD15EE321870904D00797900 /* am_tokens.xml */,
 				CDF29D95184317090025CAC4 /* ArenaMacros.toc */,
 				CDF29D96184317090025CAC4 /* media */,
 			);

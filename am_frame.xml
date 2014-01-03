@@ -43,6 +43,8 @@
         <Scripts>
             <OnClick>
                 PanelTemplates_Tab_OnClick(self, AMFrame);
+                
+                amFrameTab_OnClick(self)
             </OnClick>
         </Scripts>
     </Frame>
@@ -131,6 +133,41 @@
         </Frames>
     </Button>
     
+    <Button name="AMTokenTemplate" enableMouse="true" inherits="AMFrameListItemTemplate" virtual="true">
+        <Size y="26" />
+        <Scripts>
+            <OnClick function="amToken_OnClick" />
+        </Scripts>
+        <Layers>
+            <Layer level="HIGHLIGHT">
+                <Texture file="Interface\QuestFrame\UI-QuestTitleHighlight" alphaMode="ADD" />
+            </Layer>
+            <Layer level="ARTWORK">
+                <FontString parentKey="am_name" inherits="GameFontNormal">
+                    <Anchors>
+                        <Anchor point="LEFT" x="40" />
+                    </Anchors>
+                </FontString>
+                <FontString parentKey="am_numuses" inherits="GameFontHighlightSmall">
+                    <Anchors>
+                        <Anchor point="RIGHT" x="-70" />
+                    </Anchors>
+                </FontString>
+            </Layer>
+        </Layers>
+        <Frames>
+            <Button parentKey="amDelete" inherits="AMMacroDeleteTemplate" frameStrata="HIGH">
+                <Anchors>
+                    <Anchor point="RIGHT" />
+                </Anchors>
+            </Button>
+        </Frames>
+    </Button>
+    
+    <Font name="AMMacroModifierActiveFont" inherits="GameFontNormalSmall" virtual="true">
+		<Color r="0.1" g="1.0" b="0.1"/>
+	</Font>
+    
     <Button name="AMMacroModifierTemplate" enableMouse="true" inherits="AMFrameListItemTemplate" virtual="true">
         <Size y="40" />
         <Scripts>
@@ -141,10 +178,15 @@
                 <Texture file="Interface\QuestFrame\UI-QuestTitleHighlight" alphaMode="ADD" />
             </Layer>
             <Layer level="ARTWORK">
-                <FontString parentKey="am_modstring" justifyH="LEFT" wordwrap="true" inherits="GameFontHighlightSmall">
+                <FontString parentKey="am_modstring" justifyH="LEFT" inherits="GameFontHighlightSmall" wordwrap="true">
                     <Anchors>
                         <Anchor point="TOPLEFT" x="50" />
-                        <Anchor point="BOTTOMRIGHT" x="-10" />
+                        <Anchor point="BOTTOMRIGHT" x="-100" />
+                    </Anchors>
+                </FontString>
+                <FontString parentKey="am_isactive" hidden="true" inherits="AMMacroModifierActiveFont" text="active">
+                    <Anchors>
+                        <Anchor point="RIGHT" x="-38" />
                     </Anchors>
                 </FontString>
                 <FontString parentKey="am_modid" justifyH="LEFT" text="1" inherits="GameFontNormal">
@@ -247,9 +289,6 @@
             <OnLeave>
                 self.amText:SetTextColor(GameFontNormal:GetTextColor())
             </OnLeave>
-			<OnClick>
-				print("DELETE IT OMG")
-			</OnClick>
 		</Scripts>
         <ButtonText parentKey="amText" inherits="GameFontNormal" />
 		<PushedTexture file="Interface\QuestFrame\UI-QuestTitleHighlight" alphaMode="ADD" />
@@ -283,8 +322,6 @@
         </Scripts>
     </Button>
 
-    
-    
 	<Frame name="AMFrame" toplevel="true" movable="true" parent="UIParent" enableMouse="true" hidden="true" inherits="ButtonFrameTemplate">
 		<Size x="538" y="424"/>
 		<Layers>
@@ -319,28 +356,6 @@
             <Button name="$parentTab2" inherits="AMFrameTabButtonTemplate" id="2" text="TOKENS">
                 <Anchors>
                     <Anchor point="LEFT" relativeTo="$parentTab1" relativePoint="RIGHT">
-                        <Offset>
-                            <AbsDimension x="-15" y="0"/>
-                        </Offset>
-                    </Anchor>
-                </Anchors>
-                <Scripts>
-                </Scripts>
-            </Button>
-            <Button name="$parentTab3" inherits="AMFrameTabButtonTemplate" id="3" text="Conditions">
-                <Anchors>
-                    <Anchor point="LEFT" relativeTo="$parentTab2" relativePoint="RIGHT">
-                        <Offset>
-                            <AbsDimension x="-15" y="0"/>
-                        </Offset>
-                    </Anchor>
-                </Anchors>
-                <Scripts>
-                </Scripts>
-            </Button>
-            <Button name="$parentTab4" inherits="AMFrameTabButtonTemplate" id="4" text="Current">
-                <Anchors>
-                    <Anchor point="LEFT" relativeTo="$parentTab3" relativePoint="RIGHT">
                         <Offset>
                             <AbsDimension x="-15" y="0"/>
                         </Offset>
@@ -619,6 +634,24 @@
                     </Frame>
                 </Frames>
             </Frame><!-- Tab1 Frame -->
+            <Frame name="$parentTab2Frame">
+                <Anchors>
+                    <Anchor point="TOPLEFT" />
+                    <Anchor point="BOTTOMRIGHT" />
+                </Anchors>
+                <Frames>
+                    <Layers>
+                        <Layer level="OVERLAY">
+                            <FontString inherits="GameFontHighlight" justifyH="LEFT" text="IOWEFJOIWEJF">
+                                <Size x="160" y="16"/>
+                                <Anchors>
+                                    <Anchor point="TOPRIGHT" y="-35" x="0" />
+                                </Anchors>
+                            </FontString>
+                        </Layer>
+                    </Layers>
+                </Frames>
+            </Frame>
         </Frames>
         <Scripts>
             <OnLoad function="amFrame_OnLoad" />

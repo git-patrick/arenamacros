@@ -94,6 +94,8 @@ function am.events.PLAYER_ENTERING_WORLD()
     am.modifiers   = am_container.create(AMMacroModifierList, am_modifier.create)
     am.conditions  = am_container.create(AMMacroModifierConditionList, am_condition.create)
     
+    am.tokens.selector = am_container.create(AMTokenSelectorList, am_token.selector.create)
+    
     am.addons.initialize()
     
     if not AM_MACRO_DATABASE then

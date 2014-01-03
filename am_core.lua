@@ -6,7 +6,7 @@ end
 
 -- OBJECTS EXPECTED TO BE INSIDE AN am_container MUST INHERIT FROM am_contained OR PROVIDE ITS METHODS AND Frames methods
 am_macro = { uid = 0, mt = { __index = { } } }
-setmetatable(am_macro.mt.__index, am_contained)
+setmetatable(am_macro.mt.__index, am_contained.mt)
 
 function am_macro.create(parent_frame)
     local f = setmetatable(CreateFrame("Button", nil, parent_frame, "AMMacroTemplate"), am_macro.mt)
@@ -27,19 +27,17 @@ function am_macro.create(parent_frame)
     return f
 end
 
-function am_macro.mt.__index:am_remove()
+function am_macro.mt.__index:am_onremove()
+    -- delete the wow macro
     self:am_disable()
     
+    -- remove the reference in our database
     AM_MACRO_DATABASE[self.am_name:GetText()] = nil
 end
 
-function am_macro.mt.__index:am_getuid()
-    return self.am_name:GetText()
-end
-
-function am_macro.mt.__index:am_add(object)
+function am_macro.mt.__index:am_onadd(object)
     -- this is called everytime I insert into the container, so for New Macro button, and on load when I am initializing from the DB
-    -- non nil return value cancels the add.
+    -- or whenever UPDATE_MACROS is fired and we find a new macro that was added in some other way.
     
     self:am_updateframe(object)
     
@@ -48,8 +46,10 @@ function am_macro.mt.__index:am_add(object)
     self:am_updatestatus()
     
     self:am_updatedb()
-    
-    return nil      -- for success
+end
+
+function am_macro.mt.__index:am_getuid()
+    return self.am_name:GetText()
 end
 
 function am_macro.mt.__index:am_updateframe(object)
@@ -140,7 +140,7 @@ function am_macro.mt.__index:am_set(object)
         AM_MACRO_DATABASE[name] = nil
         
         -- since my name has changed, I probably need to get resorted.  do that here
-        self.am_container:refresh(self:am_getindex())
+        self.am_container:resort(self:am_getindex())
     end
     
     self:am_checkconditions()
@@ -166,6 +166,10 @@ function am_macro.mt.__index:am_setactivemod(mod)
     if (mod.text:len() > 255) then
         self.am_securemacrobtn:SetAttribute("macrotext", mod.text)
     
+        -- this is here is because the icon will not show properly if we put the entire macro into a button and have only /click reference
+        -- to that button.  the way around it is the standard #showtooltip at the beginning of the macro, and we extract that and put
+        -- it at the beginning of the one we generate as well.
+        
         text = mod.text:match("(#showtooltip[^\r\n]*)") .. "\n" or ""
         text = text .. "/click " .. self.am_securemacrobtn:GetName()
     else
@@ -175,8 +179,14 @@ function am_macro.mt.__index:am_setactivemod(mod)
     if (not pcall(function() EditMacro(self.am_name:GetText(), nil, "INV_Misc_QuestionMark", text, 1, 1) end)) then
         return false
     end
+
+    if (self.am_activemod) then
+        print("WTF")
+        self.am_activemod.active = nil
+    end
     
     self.am_activemod = mod
+    self.am_activemod.active = true
     
     return true
 end
@@ -204,6 +214,7 @@ function am_macro.mt.__index:am_checkconditions()
     -- no modifiers are satisified.  set macro text to empty, and icon to QuestionMark
 end
 
+-- this is used by the container to sort our macros automatically.
 function am_macro.mt.__index:am_compare(other)
     local me = self.am_name:GetText():lower()
     local yu = other.am_name:GetText():lower()
@@ -266,7 +277,7 @@ end
 
 
 am_modifier = { mt = { __index = { } } }
-setmetatable(am_modifier.mt.__index, am_contained)
+setmetatable(am_modifier.mt.__index, am_contained.mt)
 
 function am_modifier.create(parent_frame)
     local f = setmetatable(CreateFrame("Button", nil, parent_frame, "AMMacroModifierTemplate"), am_modifier.mt)
@@ -280,6 +291,8 @@ function am_modifier.mt.__index:am_set(object)
     end
 
     if (object.text) then self.am_text = object.text end
+    
+    if (object.active) then self:am_highlight() end
     
     -- there likely needs to be a condition check here to see if all of our conditions are installed !  if they are not, just disable the modifier and make it clear it is disabled graphically
     if (object.conditions) then
@@ -314,11 +327,8 @@ end
 
 
 
-
-
-
 am_condition = { mt = { __index = { } } }
-setmetatable(am_condition.mt.__index, am_contained)
+setmetatable(am_condition.mt.__index, am_contained.mt)
 
 function am_condition.create(parent_frame)
     local f = setmetatable(CreateFrame("Button", nil, parent_frame, "AMMacroModifierConditionTemplate"), am_condition.mt)
