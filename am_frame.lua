@@ -64,7 +64,6 @@ function amModifierFrame_Save(self, button, down)
     
     if (am.selected_macro:am_set({
         name = v2.am_name:GetText(),
-         -- need to change the icon, still need to create a frame to select it.  also, probably want this on a per modifier basis!??! maybe
         modifiers = mods
     })) then
         print("AM: Error!  Saving macro failed.  The macro name is in use.")

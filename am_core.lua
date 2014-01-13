@@ -27,8 +27,20 @@ function am_macro.create(parent_frame)
     return f
 end
 
+-- setup our am_contained:am_getuid() override, this defines what property makes us unique in the container.  changes to this property must go through am_setuid() from am_contained
+function am_macro.mt.__index:am_getuid()
+    return self.am_name:GetText()
+end
+-- this is used by the container to sort our macros automatically.
+function am_macro.mt.__index:am_compare(other)
+    local me = self.am_name:GetText():lower()
+    local yu = other.am_name:GetText():lower()
+    
+    return (me <= yu) and ((me < yu) and -1 or 0) or 1
+end
+
 function am_macro.mt.__index:am_onremove()
-    -- delete the wow macro
+    -- disable ourselves first (this will delete the wow macro)
     self:am_disable()
     
     -- remove the reference in our database
@@ -39,20 +51,17 @@ function am_macro.mt.__index:am_onadd(object)
     -- this is called everytime I insert into the container, so for New Macro button, and on load when I am initializing from the DB
     -- or whenever UPDATE_MACROS is fired and we find a new macro that was added in some other way.
     
-    self:am_updateframe(object)
-    
-    -- attempt to enable it, doing so does not guaruntee an UPDATE_MACROS gets fired, so update our status manually.
-    self:am_enable()
-    self:am_updatestatus()
-    
+    self:am_setdata(object)
     self:am_updatedb()
+    
+    -- attempt to create the wow macro
+    self:am_createwowmacro()
+
+    -- check our status (is the macro created, set our enabled flag etc)
+    self:am_checkstatus()
 end
 
-function am_macro.mt.__index:am_getuid()
-    return self.am_name:GetText()
-end
-
-function am_macro.mt.__index:am_updateframe(object)
+function am_macro.mt.__index:am_setdata(object)
     if (object.name) then self.am_name:SetText(object.name) end
     if (object.icon) then self.am_icon:SetTexture(object.icon) end
     if (object.modifiers) then
@@ -64,32 +73,24 @@ function am_macro.mt.__index:am_updateframe(object)
     self.am_nummodifiers:SetText(n .. " mod")
 end
 
-function am_macro.mt.__index:am_updatestatus()
-    -- if our managed macro exists, and we are not enabled, we need to set enable ourselves, and checkconditions.
+function am_macro.mt.__index:am_checkstatus()
+    local enable
+    
     if (GetMacroIndexByName(self.am_name:GetText()) > 0) then
-        if (self.am_enabled ~= true) then
-            self.am_enabled = true
-            
-            self.am_name:SetFontObject("GameFontNormal")
-            self.am_icon:SetDesaturated(nil)
-            self.am_nummodifiers:SetFontObject("GameFontHighlightSmall")
-            
-            self.amEnabled:SetChecked(true)
-            
-            self:am_checkconditions()
-        end
+        enable = true
     else
-        if (self.am_enabled ~= false) then
-            self.am_enabled = false
-            
-            local name = self.am_name:GetText()
-            
-            self.am_name:SetFontObject("GameFontDisable")
-            self.am_icon:SetDesaturated(1)
-            self.am_nummodifiers:SetFontObject("GameFontDisableSmall")
-            
-            self.amEnabled:SetChecked(false)
-        end
+        enable = false
+    end
+    
+    self.am_name:SetFontObject(enable and "GameFontNormal" or "GameFontDisable")
+    self.am_icon:SetDesaturated(not enable and 1 or nil)
+    self.am_nummodifiers:SetFontObject(enable and "GameFontHighlightSmall" or "GameFontDisableSmall")
+    self.amEnabled:SetChecked(enable)
+    
+    if (enable and enable ~= self.am_enabled) then
+        self.am_enabled = enable
+        
+        self:am_checkconditions()
     end
 end
 
@@ -127,7 +128,7 @@ function am_macro.mt.__index:am_set(object)
         end
     end
 
-    self:am_updateframe(object)
+    self:am_setdata(object)
     self:am_updatedb()
 
     if (object.name ~= name) then
@@ -149,10 +150,6 @@ function am_macro.mt.__index:am_set(object)
 end
 
 function am_macro.mt.__index:am_setactivemod(mod)
-    if (mod == self.am_activemod) then
-        return true
-    end
-    
     if (InCombatLockdown()) then
         print("AM: Unable to setup macro " .. self.am_name:GetText() .. ":  You are in combat!  Changes queued for when combat ends...")
         
@@ -161,19 +158,22 @@ function am_macro.mt.__index:am_setactivemod(mod)
         return false
     end
     
-    local text
+    local text = mod.text
     
-    if (mod.text:len() > 255) then
-        self.am_securemacrobtn:SetAttribute("macrotext", mod.text)
+    -- okay, need to process the inline scripts here!
+    
+    text = text:gsub("arena[%s]*%([%s]*\"([%w]*)\"[%s]*%)", function (token_name) return am.tokens:arena(token_name, self) end)
+    text = text:gsub("party[%s]*%([%s]*\"([%w]*)\"[%s]*%)", function (token_name) return am.tokens:party(token_name, self) end)
+    
+    if (text:len() > 255) then
+        self.am_securemacrobtn:SetAttribute("macrotext", text)
     
         -- this is here is because the icon will not show properly if we put the entire macro into a button and have only /click reference
         -- to that button.  the way around it is the standard #showtooltip at the beginning of the macro, and we extract that and put
         -- it at the beginning of the one we generate as well.
         
-        text = mod.text:match("(#showtooltip[^\r\n]*)") .. "\n" or ""
+        text = text:match("(#showtooltip[^\r\n]*)") .. "\n" or ""
         text = text .. "/click " .. self.am_securemacrobtn:GetName()
-    else
-        text = mod.text
     end
     
     if (not pcall(function() EditMacro(self.am_name:GetText(), nil, "INV_Misc_QuestionMark", text, 1, 1) end)) then
@@ -181,7 +181,6 @@ function am_macro.mt.__index:am_setactivemod(mod)
     end
 
     if (self.am_activemod) then
-        print("WTF")
         self.am_activemod.active = nil
     end
     
@@ -214,21 +213,13 @@ function am_macro.mt.__index:am_checkconditions()
     -- no modifiers are satisified.  set macro text to empty, and icon to QuestionMark
 end
 
--- this is used by the container to sort our macros automatically.
-function am_macro.mt.__index:am_compare(other)
-    local me = self.am_name:GetText():lower()
-    local yu = other.am_name:GetText():lower()
-    
-    return (me <= yu) and ((me < yu) and -1 or 0) or 1
-end
-
 function am_macro.mt.__index:am_pickup()
     if (self.am_enabled) then
         PickupMacro(self.am_name:GetText())
     end
 end
 
-function am_macro.mt.__index:am_enable()
+function am_macro.mt.__index:am_createwowmacro()
     if (GetMacroIndexByName(self.am_name:GetText()) == 0) then
         local _, num = GetNumMacros()
         
@@ -262,7 +253,7 @@ function am_macro.mt.__index:am_event(event, ...)
     
         self:am_checkconditions()
     elseif (event == "UPDATE_MACROS") then
-        self:am_updatestatus()
+        self:am_checkstatus()
         self:am_updateicon()
     end
 end

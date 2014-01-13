@@ -12,7 +12,6 @@
  
 ]]--
 
-
 am = CreateFrame("Frame", nil, UIParent)
 am.events = { }
 am.frames = { }     -- condition addon frames are added to this.
@@ -90,11 +89,14 @@ function am.events.PLAYER_ENTERING_WORLD()
     
     am.initialized = true
     
+    -- make sure this is loaded, since we don't want the arena frames to be nil as the tokens queue tries to hook OnClick
+    LoadAddOn("Blizzard_ArenaUI")
+    
+    am.tokens:init()
+    
     am.macros      = am_container.create(AMMacroList, am_macro.create, "name")  -- name is the unique identifier in macro creation objects
     am.modifiers   = am_container.create(AMMacroModifierList, am_modifier.create)
     am.conditions  = am_container.create(AMMacroModifierConditionList, am_condition.create)
-    
-    am.tokens.selector = am_container.create(AMTokenSelectorList, am_token.selector.create)
     
     am.addons.initialize()
     
@@ -110,27 +112,83 @@ function am.events.PLAYER_ENTERING_WORLD()
     am:RegisterEvent("UPDATE_MACROS")
 end
 
-function am.check(tbl, event)
-    for i, v in ipairs(am.macros.frames) do
-		v:am_checkconditions()
-	end
-end
-
 function am.initialize()
     am:SetScript("OnEvent", function(frame, event, ...) frame.events[event](...) end)
 
     am:RegisterEvent("PLAYER_ENTERING_WORLD")
 end
 
+--[[ INLINE TOKEN SECTION!~ ]]--
+
+am.tokens = {
+    ["db"]      = {
+        ["arena"] = { },
+        ["party"] = { }
+    }
+}
+
+function am.tokens:init()
+    self.queue = queue.create()
+end
+
+function am.tokens:_gettoken(bank, msg, uid_list, token_name, callback)
+    if (not bank[token_name]) then
+        bank[token_name] = token.create(token_name, callback)
+        
+        self.queue:add(request.create(token, msg, uid_list, function(uid) bank[token_name]:set_value(uid) end))
+        
+        return "none"
+    end
+    
+    if (bank[token_name]:waiting()) then
+        bank[token_name]:push_callback(callback)
+        
+        return "none"
+    end
+    
+    return bank[token_name]:get_value()
+end
+
+function am.tokens:arena(token_name, macro)
+    return self:_gettoken(self.db.arena, "Click an enemy arena frame to select the token \"" .. token_name .. "\"!", { ["arena1"] = true, ["arena2"] = true, ["arena3"] = true, ["arena4"] = true, ["arena5"] = true }, token_name, function () macro:am_checkconditions() end)
+end
+
+function am.tokens:party(token_name, macro)
+    return self:_gettoken(self.db.party, "Click a party member's frame or your player frame to select the token \"" .. token_name .. "\"!", { ["party1"] = true, ["party2"] = true, ["party3"] = true, ["party4"] = true, ["player"] = true }, token_name, function () macro:am_checkconditions() end)
+end
+
+function am.tokens:clear()
+    print("CLEAR")
+    
+    self.db.arena = { }
+    self.db.party = { }
+end
+
+
+
 
 ------------------------------------------------------------------------------------------
 --[[  ADDON CONDITIONS SECTION -- any condition addons will need to use this interface!    ]]--
+
+-- TODO: this whole section should be redone with classes and etc etc.  maybe later.
 ------------------------------------------------------------------------------------------
+
 
 am.addons = {
     conditions = { },
-    menu = { { text = "Conditions", isTitle = "true", notCheckable = true } }
+    menu = { { text = "Conditions", isTitle = "true", notCheckable = true } },
 }
+
+function am.addons.check()
+    -- this is setup to be called by the addons onchange callback.  whenever a condition's value changes, we recheck everything
+    
+    -- forget everything we used to know about the cruel, cruel world
+    am.tokens:clear()
+    
+    for i, v in ipairs(am.macros.frames) do
+		v:am_checkconditions()
+	end
+end
 
 function am.addons.select(self, arg1, arg2, checked)
     am.selected_condition.am_name:SetText(self.value)
@@ -141,65 +199,26 @@ end
 
 function am.addons.initialize()
     CreateFrame("Frame", "AMConditionMenuFrame", UIParent, "UIDropDownMenuTemplate")
-    CreateFrame("Frame", "AMConditionTriggerFrame", UIParent)
-    
-    am.addons.add("true",
-        {
-            test = function (relation, value)
-                return value.data == "true"
-            end,
-            
-            value_init = function (button)
-                button.am_data = "true"
-                button:SetText(button.am_data)
-            end,
-                  
-            relation_init = function (button)
-                button.am_data = "is"
-                button:SetText(button.am_data)
-            end,
-            
-            value_onclick = function (button)
-                if (button.am_data == "true") then
-                  button.am_data = "false"
-                else
-                  button.am_data = "true"
-                end
-                
-                button:SetText(button.am_data)
-            end,
-            
-            relation_onclick = function (button) end,
-            
-            main_menu = { text = "true", notCheckable = "true", value = "true", leftPadding = "10", func = am.addons.select }
-        }
-    )
-    
-    for i,v in pairs(am.addons.conditions) do
-        if (v.init) then
-            v.init()
-        end
-    end
-    
-    AMConditionTriggerFrame:SetScript("OnEvent", am.check)
 end
 
-function am.addons.add(name, condition_table)
+function am.addons.add(addon)
+    local name = addon:get_name()
+    
     if (am.addons.conditions[name]) then
-        print("ERROR:  Multiple conditions share the name " .. name)
+        print("ERROR:  Multiple addons share the name " .. name)
         
         return
     end
     
-    am.addons.conditions[name] = condition_table
+    am.addons.conditions[name] = addon
+    addon.onchange = am.addons.check
     
-    table.insert(am.addons.menu, condition_table.main_menu)
+    table.insert(am.addons.menu, addon.main_menu)
+    
+    if (addon.init) then
+        addon:init()
+    end
 end
-
-
-
-
-
 
 am.initialize()
 

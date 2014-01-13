@@ -2,11 +2,16 @@
 ## Title: Arena Macros
 ## Notes: Automatically modifies your macros when user specified conditions are met.
 ## Author: Pat
-## Version: v0.0.1
+## Version: v0.99
 ## Dependencies: libpat
 ## SavedVariablesPerCharacter: AM_MACRO_DATABASE
+am_queue.xml
+am_queue.lua
+am_token.lua
 am_frame.xml
 am_container.lua
 am_conditions.lua
 am_core.lua
 am.lua
+am_addon.lua
+am_true.lua

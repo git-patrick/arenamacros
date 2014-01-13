@@ -1,6 +1,5 @@
 -- this is the base class for frames expected to function inside an am_container
 
-
 am_contained = {
     mt = { __index = CreateFrame("Button", nil, UIParent) },
     
@@ -65,8 +64,6 @@ function am_contained.mt.__index:am_onadd(object)
 end
 function am_contained.mt.__index:am_onremove()
     -- this is called by the container when the object is being removed.  can be overridden if action is required (for example in macros, need to delete the actual macro)
-    
-    self:am_unhighlight()
 end
 
 function am_contained.mt.__index:am_detach()
@@ -239,6 +236,7 @@ function am_container.mt.__index:remove(index)
         end
     end
     
+    self.frames[index]:am_unhighlight()
     self.frames[index]:am_onremove()
     
     table.insert(self.pool, self.frames[index])
