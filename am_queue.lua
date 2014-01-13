@@ -53,9 +53,6 @@ function request.mt.__index:get_token()
     return self.token
 end
 function request.mt.__index:fulfill(uid)
-    print(pat.table_dump(self.pool))
-    print(uid)
-    
     if (self.pool[uid] ~= nil) then
         self.callback(uid)
         

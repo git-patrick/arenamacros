@@ -7,7 +7,7 @@
         </Anchors>
         <Layers>
             <Layer level="OVERLAY">
-                <FontString parentKey="am_text" text="tmp" inherits="PVPInfoTextFont">
+                <FontString parentKey="am_text" text="" inherits="PVPInfoTextFont">
                     <Anchors>
                         <Anchor point="CENTER" />
                     </Anchors>

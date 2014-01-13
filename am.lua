@@ -158,8 +158,6 @@ function am.tokens:party(token_name, macro)
 end
 
 function am.tokens:clear()
-    print("CLEAR")
-    
     self.db.arena = { }
     self.db.party = { }
 end
