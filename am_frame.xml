@@ -153,11 +153,6 @@
                         <Anchor point="BOTTOMRIGHT" x="-100" />
                     </Anchors>
                 </FontString>
-                <FontString parentKey="am_isactive" hidden="true" inherits="AMMacroModifierActiveFont" text="active">
-                    <Anchors>
-                        <Anchor point="RIGHT" x="-38" />
-                    </Anchors>
-                </FontString>
                 <FontString parentKey="am_modid" justifyH="LEFT" text="1" inherits="GameFontNormal">
                     <Anchors>
                         <Anchor point="LEFT" x="10" />
@@ -166,6 +161,30 @@
             </Layer>
         </Layers>
         <Frames>
+            <Button parentKey="am_moveup">
+				<Size x="14" y="14"/>
+				<Anchors>
+					<Anchor point="TOPLEFT" x="9" />
+				</Anchors>
+				<Scripts>
+					<OnClick function="amMacroModifier_MoveUp"/>
+				</Scripts>
+				<NormalTexture file="Interface\Buttons\Arrow-Up-Up"/>
+				<PushedTexture file="Interface\Buttons\Arrow-Up-Down"/>
+				<DisabledTexture file="Interface\Buttons\Arrow-Up-Disabled"/>
+			</Button>
+			<Button parentKey="am_movedown">
+				<Size x="14" y="14"/>
+				<Anchors>
+					<Anchor point="BOTTOMLEFT" x="9" y="-2" />
+				</Anchors>
+				<Scripts>
+					<OnClick function="amMacroModifier_MoveDown"/>
+				</Scripts>
+				<NormalTexture file="Interface\Buttons\Arrow-Down-Up"/>
+				<PushedTexture file="Interface\Buttons\Arrow-Down-Down"/>
+				<DisabledTexture file="Interface\Buttons\Arrow-Down-Disabled"/>
+			</Button>
             <Button parentKey="amDelete" inherits="AMMacroModifierDeleteTemplate" frameStrata="HIGH">
                 <Anchors>
                     <Anchor point="RIGHT" />
@@ -361,7 +380,15 @@
                                     <OnClick function="amMacroFrame_New" />
                                 </Scripts>
                             </Button>
-                            
+                            <Button parentKey="amRefresh" frameStrata="HIGH" inherits="UIPanelButtonTemplate" text="Refresh">
+                                <Size x="75" y="22"/>
+                                <Anchors>
+                                    <Anchor point="BOTTOMLEFT" x="2" y="4" />
+                                </Anchors>
+                                <Scripts>
+                                    <OnClick function="amMacroFrame_Refresh" />
+                                </Scripts>
+                            </Button>
                             <ScrollFrame name="$parentList" inherits="AMListTemplate">
                                 <ScrollChild>
                                     <Frame name="AMMacroList">
@@ -595,6 +622,7 @@
                                 </Anchors>
                                 <Scripts>
                                     <OnClick>
+                                        CloseDropDownMenus()
                                         self:GetParent().am_inputsf.EditBox:SetFocus();
                                     </OnClick>
                                 </Scripts>

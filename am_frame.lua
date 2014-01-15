@@ -25,6 +25,10 @@ function amMacroFrame_New(self, button, down)
     end
 end
 
+function amMacroFrame_Refresh()
+    am.addons.check()
+end
+
 function amModifierFrame_New(self, button, down)
     am.modifiers:clear()
     am.modifiers:add(am.blank_modifier)
@@ -87,6 +91,8 @@ end
 function amConditionFrame_Save(self, button, down)
     local v2 = AMFrameTab1FrameView2
     local v3 = AMFrameTab1FrameView3
+
+    CloseDropDownMenus()
     
     v3:Hide()
     v2:Show()
@@ -121,6 +127,8 @@ function amConditionFrame_Save(self, button, down)
     })
     
     am.selected_modifier = nil
+    
+    
 end
 
 function amConditionFrame_Cancel(self, button, down)
@@ -128,6 +136,8 @@ function amConditionFrame_Cancel(self, button, down)
     local v3 = AMFrameTab1FrameView3
     
     am.selected_modifier = nil
+    
+    CloseDropDownMenus()
     
     v3:Hide()
     v2:Show()
@@ -165,6 +175,20 @@ function amMacroModifier_OnClick(self, button, down)
 
     v2:Hide()
     v3:Show()
+end
+
+function amMacroModifier_MoveUp(self, button, down)
+    local mod = self:GetParent()
+    
+    mod.am_moveto = math.max(mod:am_getindex() - 1, 1)
+    mod:am_resort()
+end
+
+function amMacroModifier_MoveDown(self, button, down)
+    local mod = self:GetParent()
+    
+    mod.am_moveto = math.min(mod:am_getindex() + 1, mod.am_container:count())
+    mod:am_resort()
 end
 
 function amMacroModifierCondition_Delete(self, button, down)

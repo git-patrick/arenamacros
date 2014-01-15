@@ -138,9 +138,16 @@ function queue.mt.__index:_trigger()
     self:_process()
 end
 
-function queue.mt.__index:_process()
+function queue.mt.__index:_process()    
     self.state = queue.state["processing"]
     self.frame.am_text:SetText(self:last():get_description())
+end
+
+function queue.mt.__index:clear()
+    self.queue = { }
+    
+    self.state = queue.state["inactive"]
+    self.frame.am_text:SetText("")
 end
 
 function queue.mt.__index:count()

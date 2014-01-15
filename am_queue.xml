@@ -3,7 +3,7 @@
     <Frame name="AMQueueNotification" virtual="true">
         <Size y="30" x="400" />
         <Anchors>
-            <Anchor point="CENTER" y="300" />
+            <Anchor point="CENTER" y="100" />
         </Anchors>
         <Layers>
             <Layer level="OVERLAY">

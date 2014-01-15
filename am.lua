@@ -150,14 +150,16 @@ function am.tokens:_gettoken(bank, msg, uid_list, token_name, callback)
 end
 
 function am.tokens:arena(token_name, macro)
-    return self:_gettoken(self.db.arena, "Click an enemy arena frame to select the token \"" .. token_name .. "\"!", { ["arena1"] = true, ["arena2"] = true, ["arena3"] = true, ["arena4"] = true, ["arena5"] = true }, token_name, function () macro:am_checkconditions() end)
+    return self:_gettoken(self.db.arena, "Choose arena(\"" .. token_name .. "\")!", { ["arena1"] = true, ["arena2"] = true, ["arena3"] = true, ["arena4"] = true, ["arena5"] = true }, token_name, function () macro:am_checkconditions() end)
 end
 
 function am.tokens:party(token_name, macro)
-    return self:_gettoken(self.db.party, "Click a party member's frame or your player frame to select the token \"" .. token_name .. "\"!", { ["party1"] = true, ["party2"] = true, ["party3"] = true, ["party4"] = true, ["player"] = true }, token_name, function () macro:am_checkconditions() end)
+    return self:_gettoken(self.db.party, "Choose party(\"" .. token_name .. "\")!", { ["party1"] = true, ["party2"] = true, ["party3"] = true, ["party4"] = true, ["player"] = true }, token_name, function () macro:am_checkconditions() end)
 end
 
 function am.tokens:clear()
+    self.queue:clear()
+    
     self.db.arena = { }
     self.db.party = { }
 end
@@ -179,7 +181,7 @@ am.addons = {
 
 function am.addons.check()
     -- this is setup to be called by the addons onchange callback.  whenever a condition's value changes, we recheck everything
-    
+
     -- forget everything we used to know about the cruel, cruel world
     am.tokens:clear()
     

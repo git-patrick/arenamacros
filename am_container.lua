@@ -78,7 +78,9 @@ function am_contained.mt.__index:am_attach(to)
     end
 end
 
-
+function am_contained.mt.__index:am_resort()
+    self.am_container:resort(self:am_getindex())
+end
 
 
 

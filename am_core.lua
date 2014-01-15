@@ -161,9 +161,10 @@ function am_macro.mt.__index:am_setactivemod(mod)
     local text = mod.text
     
     -- okay, need to process the inline scripts here!
+    -- both gsubs are necessary because something like (arena|party) is not supported in lua D:
     
-    text = text:gsub("arena[%s]*%([%s]*\"([%w]*)\"[%s]*%)", function (token_name) return am.tokens:arena(token_name, self) end)
-    text = text:gsub("party[%s]*%([%s]*\"([%w]*)\"[%s]*%)", function (token_name) return am.tokens:party(token_name, self) end)
+    text = text:gsub("arena[%s]*%([%s]*\"([%w%s]*)\"[%s]*%)", function (token_name) return am.tokens:arena(token_name, self) end)
+    text = text:gsub("party[%s]*%([%s]*\"([%w%s]*)\"[%s]*%)", function (token_name) return am.tokens:party(token_name, self) end)
     
     if (text:len() > 255) then
         self.am_securemacrobtn:SetAttribute("macrotext", text)
@@ -294,10 +295,36 @@ end
 
 function am_modifier.mt.__index:am_setindex(i)
     self.am_index = i
+    self.am_moveto = nil
+    
+    if (i <= 1) then
+        self.am_moveup:Disable()
+    else
+        self.am_moveup:Enable()
+    end
+    
+    if (i >= self.am_container:count()) then
+        self.am_movedown:Disable()
+    else
+        self.am_movedown:Enable()
+    end
     
     self.am_modid:SetText(i)
 end
+
+function am_modifier.mt.__index:am_compare(other)
+    if not other.am_moveto then
+        return 0
+    end
     
+    if (self:am_getindex() == other.am_moveto) then
+        return 1
+    end
+    
+    return 0
+end
+
+
 function am_modifier.mt.__index:am_updatemodstring()
     local s = "if "
     
