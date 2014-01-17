@@ -1,0 +1,79 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
+    ..\..\FrameXML\UI.xsd">
+    
+	<Script file="am_macro.lua"/>
+    
+    <Button name="AMMacroTemplate" enableMouse="true" inherits="AMFrameListItemTemplate" virtual="true">
+        <Size y="30" />
+        <Scripts>
+            <OnClick function="amMacro_OnClick" />
+        </Scripts>
+        <Layers>
+            <Layer level="HIGHLIGHT">
+                <Texture file="Interface\QuestFrame\UI-QuestTitleHighlight" alphaMode="ADD" />
+            </Layer>
+            <Layer level="ARTWORK">
+                <Texture parentKey="am_icon">
+                    <Size x="30" y="30" />
+                    <Anchors>
+                        <Anchor point="TOPLEFT" />
+                    </Anchors>
+                </Texture>
+                <FontString parentKey="am_name" inherits="GameFontNormal">
+                    <Anchors>
+                        <Anchor point="LEFT" x="40" />
+                    </Anchors>
+                </FontString>
+                <FontString parentKey="am_nummodifiers" inherits="GameFontHighlightSmall">
+                    <Anchors>
+                        <Anchor point="RIGHT" x="-70" />
+                    </Anchors>
+                </FontString>
+            </Layer>
+        </Layers>
+        <Frames>
+            <Button parentKey="amPickup" frameStrata="HIGH">
+                <Size x="30" y="30" />
+                <Anchors>
+                    <Anchor point="TOPLEFT" />
+                </Anchors>
+                <Scripts>
+                    <OnMouseDown>
+                        self:GetParent():am_pickup()
+                    </OnMouseDown>
+                </Scripts>
+            </Button>
+            <CheckButton parentKey="amEnabled" inherits="OptionsBaseCheckButtonTemplate" frameStrata="HIGH">
+                <HitRectInsets>
+                    <AbsInset left="0" right="0" top="0" bottom="0"/>
+                </HitRectInsets>
+                <Anchors>
+                    <Anchor point="RIGHT">
+                        <Offset>
+							<AbsDimension x="-30" y="0"/>
+						</Offset>
+                    </Anchor>
+                </Anchors>
+                <Scripts>
+                    <OnClick>
+                        if (self:GetParent().am_enabled) then
+                        self:GetParent():am_disable()
+                        else
+                        self:GetParent():am_enable()
+                        end
+                        
+                        self:SetChecked(self:GetParent().am_enabled)
+                    </OnClick>
+                </Scripts>
+            </CheckButton>
+            <Button parentKey="amDelete" inherits="AMMacroDeleteTemplate" frameStrata="HIGH">
+                <Anchors>
+                    <Anchor point="RIGHT" />
+                </Anchors>
+                <Scripts>
+                    <OnClick function="amMacro_Delete" />
+                </Scripts>
+            </Button>
+        </Frames>
+    </Button>
+</Ui>

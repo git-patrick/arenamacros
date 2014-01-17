@@ -1,0 +1,19 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
+    ..\..\FrameXML\UI.xsd">
+    
+	<Script file="am_contained.lua"/>
+
+    <Button name="AMFrameListItemTemplate" enableMouse="true" virtual="true">
+        <Anchors>
+            <Anchor point="TOPLEFT" />
+            <Anchor point="RIGHT" />
+        </Anchors>
+        <Layers>
+            <Layer level="BACKGROUND">
+                <Texture parentKey="am_background">
+                    <Color a=".08" r="1" g="1" b="1"/>
+                </Texture>
+            </Layer>
+        </Layers>
+    </Button>
+</Ui>

@@ -94,7 +94,7 @@ function am.events.PLAYER_ENTERING_WORLD()
     
     am.tokens:init()
     
-    am.macros      = am_container.create(AMMacroList, am_macro.create, "name")  -- name is the unique identifier in macro creation objects
+    am.macros      = am_container.create(AMMacroList, am_macro.create)
     am.modifiers   = am_container.create(AMMacroModifierList, am_modifier.create)
     am.conditions  = am_container.create(AMMacroModifierConditionList, am_condition.create)
     

@@ -1,0 +1,94 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
+    ..\..\FrameXML\UI.xsd">
+    
+	<Script file="am_condition.lua"/>
+    
+    <Button name="AMMacroModifierConditionTemplate" inherits="AMFrameListItemTemplate" enableMouse="true" virtual="true">
+        <Size y="30" />
+        <Anchors>
+            <Anchor point="TOPLEFT" />
+            <Anchor point="RIGHT" />
+        </Anchors>
+        <Layers>
+            <Layer level="ARTWORK">
+                <FontString parentKey="am_introstring" inherits="GameFontDisable" text="and">
+                    <Anchors>
+                        <Anchor point="LEFT" x="10" />
+                    </Anchors>
+                </FontString>
+                <FontString parentKey="am_outrostring" inherits="GameFontDisable" text="then">
+                    <Anchors>
+                        <Anchor point="RIGHT" x="-65" />
+                    </Anchors>
+                </FontString>
+            </Layer>
+        </Layers>
+        <Frames>
+            <Button parentKey="am_name" inherits="AMMacroModifierConditionButtonTemplate" frameStrata="HIGH">
+                <Size y="22" x="120" />
+                <Anchors>
+                    <Anchor point="LEFT" x="50" />
+                </Anchors>
+                <Scripts>
+                    <OnClick>
+                        am.selected_condition = self:GetParent()
+                        
+                        AMConditionMenuFrame:SetPoint("CENTER", self, "CENTER")
+                        
+                        EasyMenu(am.addons.menu, AMConditionMenuFrame, AMConditionMenuFrame, 0, 0, "MENU", 1)
+                    </OnClick>
+                </Scripts>
+            </Button>
+            <Button parentKey="am_relation" inherits="AMMacroModifierConditionButtonTemplate" frameStrata="HIGH">
+                <Size y="22" x="75" />
+                <Anchors>
+                    <Anchor point="LEFT" x="180" />
+                </Anchors>
+                <Scripts>
+                    <OnClick>
+                        am.selected_condition = self:GetParent()
+                        
+                        am.addons.conditions[am.selected_condition.am_name:GetText()].relation_onclick(self)
+                    </OnClick>
+                </Scripts>
+            </Button>
+            <Button parentKey="am_value" inherits="AMMacroModifierConditionButtonTemplate" frameStrata="HIGH">
+                <Size y="22" x="120" />
+                <Anchors>
+                    <Anchor point="LEFT" x="265" />
+                </Anchors>
+                <Scripts>
+                    <OnClick>
+                        am.selected_condition = self:GetParent()
+                        
+                        am.addons.conditions[am.selected_condition.am_name:GetText()].value_onclick(self)
+                    </OnClick>
+                </Scripts>
+            </Button>
+            <Button parentKey="amDelete" inherits="AMDeleteButtonTemplate" frameStrata="HIGH">
+                <Anchors>
+                    <Anchor point="RIGHT" />
+                </Anchors>
+                <Scripts>
+                    <OnClick function="amCondition_Delete" />
+                </Scripts>
+            </Button>
+        </Frames>
+    </Button>
+
+    <Button name="AMMacroModifierConditionButtonTemplate" virtual="true">
+        <Size>
+            <AbsDimension x="32" y="32"/>
+        </Size>
+        <Scripts>
+            <OnEnter>
+                self.amText:SetTextColor(GameFontHighlight:GetTextColor())
+            </OnEnter>
+            <OnLeave>
+                self.amText:SetTextColor(GameFontNormal:GetTextColor())
+            </OnLeave>
+        </Scripts>
+        <ButtonText parentKey="amText" inherits="GameFontNormal" />
+        <PushedTexture file="Interface\QuestFrame\UI-QuestTitleHighlight" alphaMode="ADD" />
+    </Button>
+</Ui>

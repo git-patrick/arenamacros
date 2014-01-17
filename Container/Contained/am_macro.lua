@@ -1,4 +1,3 @@
--- am_macro, am_modifier, and am_condition are all designed to be used with am_container.
 
 if MAX_CHARACTER_MACROS == nil then
     MAX_CHARACTER_MACROS = 18
@@ -71,6 +70,21 @@ function am_macro.mt.__index:am_setdata(object)
     local n = self.am_modifiers and table.getn(self.am_modifiers) or 0
     
     self.am_nummodifiers:SetText(n .. " mod")
+end
+
+function am_modifier.mt.__index:am_setproperty(name, value)
+    if (name == self.am_container:)
+    if (name == "name") then
+        self.am_name:SetText(value)
+    elseif (name == "icon") then
+        self.am_icon:SetTexture(value)
+    elseif (name == "modifiers") then
+        self.am_modifiers = value
+        
+        local n = self.am_modifiers and table.getn(self.am_modifiers) or 0
+
+        self.am_nummodifiers:SetText(n .. " mod")
+    end
 end
 
 function am_macro.mt.__index:am_checkstatus()
@@ -265,125 +279,25 @@ end
 
 
 
+-- XML EVENTS ...
 
-
-
-am_modifier = { mt = { __index = { } } }
-setmetatable(am_modifier.mt.__index, am_contained.mt)
-
-function am_modifier.create(parent_frame)
-    local f = setmetatable(CreateFrame("Button", nil, parent_frame, "AMMacroModifierTemplate"), am_modifier.mt)
+function amMacro_OnClick(self, button, down)
+    SetPortraitToTexture(AMFrame.amPortrait, self.am_icon:GetTexture())
     
-    return f
+    local v1 = AMFrameTab1FrameView1
+    local v2 = AMFrameTab1FrameView2
+    
+    v2.am_name:SetText(self.am_name:GetText())
+    
+    am.modifiers:clear()
+    am.modifiers:addall(self.am_modifiers)
+    
+    am.selected_macro = self
+    
+    v1:Hide()
+    v2:Show()
 end
 
-function am_modifier.mt.__index:am_set(object)
-    if (object.modstring) then
-        self.am_modstring:SetText(object.modstring)
-    end
-
-    if (object.text) then self.am_text = object.text end
-    
-    if (object.active) then self:am_highlight() end
-    
-    -- there likely needs to be a condition check here to see if all of our conditions are installed !  if they are not, just disable the modifier and make it clear it is disabled graphically
-    if (object.conditions) then
-        self.am_conditions = object.conditions      -- treat this as read only ... I don't want to change anything in the object until we click "save"
-        self:am_updatemodstring()
-    end
-end
-
-function am_modifier.mt.__index:am_setindex(i)
-    self.am_index = i
-    self.am_moveto = nil
-    
-    if (i <= 1) then
-        self.am_moveup:Disable()
-    else
-        self.am_moveup:Enable()
-    end
-    
-    if (i >= self.am_container:count()) then
-        self.am_movedown:Disable()
-    else
-        self.am_movedown:Enable()
-    end
-    
-    self.am_modid:SetText(i)
-end
-
-function am_modifier.mt.__index:am_compare(other)
-    if not other.am_moveto then
-        return 0
-    end
-    
-    if (self:am_getindex() == other.am_moveto) then
-        return 1
-    end
-    
-    return 0
-end
-
-
-function am_modifier.mt.__index:am_updatemodstring()
-    local s = "if "
-    
-    for i,v in ipairs(self.am_conditions) do
-        s = s .. v.name .. " " .. v.relation.text .. " " .. v.value.text .. " and "
-    end
-    
-    s = s:sub(1, s:len() - 4) .. "then ..."
-
-    self.am_modstring:SetText(s)
-end
-
-
-
-
-
-
-
-
-
-am_condition = { mt = { __index = { } } }
-setmetatable(am_condition.mt.__index, am_contained.mt)
-
-function am_condition.create(parent_frame)
-    local f = setmetatable(CreateFrame("Button", nil, parent_frame, "AMMacroModifierConditionTemplate"), am_condition.mt)
-    
-    return f
-end
-
-function am_condition.mt.__index:am_set(object)
-    -- I need to make sure all conditions exist, and all relations and values are valid.
-    
-    if (object.name) then self.am_name:SetText(object.name) end
-    
-    if (object.relation) then
-        self.am_relation.am_data = object.relation.data
-        self.am_relation:SetText(object.relation.text)
-    end
-    
-    if (object.value) then
-        self.am_value.am_data = object.value.data
-        self.am_value:SetText(object.value.text)
-    end
-end
-
-function am_condition.mt.__index:am_setindex(i)
-    self.am_index = i
-    
-    local intro = "and"
-    local outro = ""
-    
-    if (i == 1) then
-        intro = "if"
-    end
-    
-    if (i == am.conditions:count()) then
-        outro = "then"
-    end
-    
-    self.am_introstring:SetText(intro)
-    self.am_outrostring:SetText(outro)
+function amMacro_Delete(self, button, down)
+    am.macros:remove(self:GetParent():am_getindex())
 end

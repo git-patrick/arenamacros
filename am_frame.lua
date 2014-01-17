@@ -144,64 +144,9 @@ function amConditionFrame_Cancel(self, button, down)
 end
 
 
-function amMacro_OnClick(self, button, down)
-    SetPortraitToTexture(AMFrame.amPortrait, self.am_icon:GetTexture())
-    
-    local v1 = AMFrameTab1FrameView1
-    local v2 = AMFrameTab1FrameView2
 
-    v2.am_name:SetText(self.am_name:GetText())
 
-    am.modifiers:clear()
-    am.modifiers:addall(self.am_modifiers)
-    
-    am.selected_macro = self
 
-    v1:Hide()
-    v2:Show()
-end
-
-function amMacroModifier_OnClick(self, button, down)
-    local v2 = AMFrameTab1FrameView2
-    local v3 = AMFrameTab1FrameView3
-
-    am.conditions:clear()
-    am.conditions:addall(self.am_conditions)
-    
-    v3.am_inputsf.EditBox:SetText(self.am_text or "")        -- it must be called editbox for InputScrollFrame_OnLoad
-    v3.am_name:SetText(v2.am_name:GetText() .. " - Modifier " .. self:am_getindex())
-    
-    am.selected_modifier = self
-
-    v2:Hide()
-    v3:Show()
-end
-
-function amMacroModifier_MoveUp(self, button, down)
-    local mod = self:GetParent()
-    
-    mod.am_moveto = math.max(mod:am_getindex() - 1, 1)
-    mod:am_resort()
-end
-
-function amMacroModifier_MoveDown(self, button, down)
-    local mod = self:GetParent()
-    
-    mod.am_moveto = math.min(mod:am_getindex() + 1, mod.am_container:count())
-    mod:am_resort()
-end
-
-function amMacroModifierCondition_Delete(self, button, down)
-    am.conditions:remove(self:GetParent():am_getindex())
-end
-
-function amMacroModifier_Delete(self, button, down)
-    am.modifiers:remove(self:GetParent():am_getindex())
-end
-
-function amMacro_Delete(self, button, down)
-    am.macros:remove(self:GetParent():am_getindex())
-end
 
 
 function amFrame_Show()
