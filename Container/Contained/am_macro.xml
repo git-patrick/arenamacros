@@ -2,8 +2,8 @@
     ..\..\FrameXML\UI.xsd">
     
 	<Script file="am_macro.lua"/>
-    
-    <Button name="AMMacroTemplate" enableMouse="true" inherits="AMFrameListItemTemplate" virtual="true">
+
+    <Button name="amMacroTemplate" enableMouse="true" inherits="amListItemTemplate" virtual="true">
         <Size y="30" />
         <Scripts>
             <OnClick function="amMacro_OnClick" />
@@ -13,18 +13,18 @@
                 <Texture file="Interface\QuestFrame\UI-QuestTitleHighlight" alphaMode="ADD" />
             </Layer>
             <Layer level="ARTWORK">
-                <Texture parentKey="am_icon">
+                <Texture parentKey="amIcon">
                     <Size x="30" y="30" />
                     <Anchors>
                         <Anchor point="TOPLEFT" />
                     </Anchors>
                 </Texture>
-                <FontString parentKey="am_name" inherits="GameFontNormal">
+                <FontString parentKey="amName" inherits="GameFontNormal">
                     <Anchors>
                         <Anchor point="LEFT" x="40" />
                     </Anchors>
                 </FontString>
-                <FontString parentKey="am_nummodifiers" inherits="GameFontHighlightSmall">
+                <FontString parentKey="amNumModifiers" inherits="GameFontHighlightSmall">
                     <Anchors>
                         <Anchor point="RIGHT" x="-70" />
                     </Anchors>
@@ -38,9 +38,7 @@
                     <Anchor point="TOPLEFT" />
                 </Anchors>
                 <Scripts>
-                    <OnMouseDown>
-                        self:GetParent():am_pickup()
-                    </OnMouseDown>
+                    <OnMouseDown function="amMacro_Pickup" />
                 </Scripts>
             </Button>
             <CheckButton parentKey="amEnabled" inherits="OptionsBaseCheckButtonTemplate" frameStrata="HIGH">
@@ -55,18 +53,10 @@
                     </Anchor>
                 </Anchors>
                 <Scripts>
-                    <OnClick>
-                        if (self:GetParent().am_enabled) then
-                        self:GetParent():am_disable()
-                        else
-                        self:GetParent():am_enable()
-                        end
-                        
-                        self:SetChecked(self:GetParent().am_enabled)
-                    </OnClick>
+                    <OnClick function="amMacro_Enabled" />
                 </Scripts>
             </CheckButton>
-            <Button parentKey="amDelete" inherits="AMMacroDeleteTemplate" frameStrata="HIGH">
+            <Button parentKey="amDelete" inherits="amDeleteButtonTemplate" frameStrata="HIGH">
                 <Anchors>
                     <Anchor point="RIGHT" />
                 </Anchors>

@@ -85,6 +85,27 @@ function amModifierFrame_New(self, button, down)
     am.modifiers:add(am.blank_modifier)
 end
 
+
+-- called by modifier's onclick
+function amConditionFrame_Setup(modifier)
+    local v2 = AMFrameTab1FrameView2
+    local v3 = AMFrameTab1FrameView3
+    local eb = AMFrameTab1FrameView3InputEditBox
+    
+    am.conditions:clear()
+    am.conditions:addall(self:am_getproperty("conditions"))
+    
+    eb:SetText(self:am_getproperty("text") or "")
+    v3.amName:SetText(am.selected_macro:am_getproperty("name") .. " - Modifier " .. modifier:am_getindex())
+    
+    am.selected_modifier = self
+    
+    v2:Hide()
+    v3:Show()
+end
+
+
+
 function amConditionFrame_New(self, button, down)
     am.conditions:add(am.blank_condition)
 end

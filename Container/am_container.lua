@@ -40,7 +40,7 @@ end
 am_uidmap = { mt = { __index = { } } }
 
 function am_uidmap.create(unique_identifier)
-    local t         = setmetatable(t, am_uidmap.mt)
+    local t         = setmetatable({ }, am_uidmap.mt)
     
     -- unique identifier is the property name of creation objects passed to container:add
     -- that property value will be used as a UNIQUE identifier in a map to indicate whether or not
@@ -52,26 +52,31 @@ function am_uidmap.create(unique_identifier)
     return          t
 end
 
+-- object is expected to be an am_dataobject with a property the same as self.uid
 function am_uidmap.mt.__index:contains(object)
-    return (self.map[object[self.uid]] ~= nil)
+    return (self.map[object:am_getproperty(self.uid)] ~= nil)
 end
 
 function am_uidmap.mt.__index:add(object)
-    if (not object[self.uid] or self:contains(object)) then
+    local p = object:am_getproperty(self.uid)
+    
+    if (not p or self:contains(object)) then
         return false
     end
     
-    self.map[object[self.uid]] = true
+    self.map[p] = true
     
     return true
 end
 
 function am_uidmap.mt.__index:rm(object)
-    if (not object[self.uid] or not self:contains(object)) then
+    local p = object:am_getproperty(self.uid)
+    
+    if (not object[p] or not self:contains(object)) then
         return false
     end
     
-    self.map[object[self.uid]] = nil
+    self.map[p] = nil
     
     return true
 end

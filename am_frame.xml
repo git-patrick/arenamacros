@@ -52,16 +52,6 @@
     <Font name="AMMacroModifierActiveFont" inherits="GameFontNormalSmall" virtual="true">
 		<Color r="0.1" g="1.0" b="0.1"/>
 	</Font>
-    
-    <Button name="AMDeleteButtonTemplate" virtual="true">
-		<Size>
-			<AbsDimension x="32" y="32"/>
-		</Size>
-		<DisabledTexture file="Interface\Buttons\UI-Panel-MinimizeButton-Disabled"/>
-		<NormalTexture file="Interface\Buttons\UI-Panel-MinimizeButton-Up"/>
-		<PushedTexture file="Interface\Buttons\UI-Panel-MinimizeButton-Down"/>
-		<HighlightTexture file="Interface\Buttons\UI-Panel-MinimizeButton-Highlight" alphaMode="ADD"/>
-	</Button>
 
 	<Frame name="AMFrame" toplevel="true" movable="true" parent="UIParent" enableMouse="true" hidden="true" inherits="ButtonFrameTemplate">
 		<Size x="538" y="424"/>
@@ -237,7 +227,7 @@
                     <Frame name="$parentView3" setAllPoints="true" hidden="true">
                         <Layers>
                             <Layer level="ARTWORK">
-                                <FontString parentKey="am_name" inherits="GameFontNormalLarge" justifyH="LEFT">
+                                <FontString parentKey="amName" inherits="GameFontNormalLarge" justifyH="LEFT">
                                     <Size x="256" y="16"/>
                                     <Anchors>
                                         <Anchor point="TOPLEFT" x="60" y="-35"/>
@@ -296,7 +286,7 @@
                                     </Frame>
                                 </ScrollChild>
                             </ScrollFrame>
-                            <ScrollFrame parentKey="am_inputsf" name="$parentInput" inherits="UIPanelScrollFrameTemplate">
+                            <ScrollFrame name="$parentInput" inherits="UIPanelScrollFrameTemplate">
                                 <Size x="500" y="500" />
                                 <Anchors>
                                     <Anchor point="TOPLEFT" relativeTo="$parentList" relativePoint="BOTTOMLEFT" y="-13" x="2" />

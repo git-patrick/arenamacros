@@ -5,14 +5,16 @@
 ## Version: v0.99.1
 ## Dependencies: libpat
 ## SavedVariablesPerCharacter: AM_MACRO_DATABASE
+
 am_queue.xml
 am_token.lua
 am_frame.xml
 
+am_dataobject.lua
+
+am_dbobject.lua
 container\am_container.xml
 
-am_dataobject.lua
-am_dbobject.lua
 am.lua
 
 addons\am_addons.xml

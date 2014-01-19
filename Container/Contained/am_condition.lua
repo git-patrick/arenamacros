@@ -1,26 +1,20 @@
-am_condition = {
-    mt = { __index = setmetatable({ }, am_contained.mt) }
-}
+am_condition = { mt = { __index = setmetatable({ }, { __index = pat.multiply_inherit_index(dataclass_condition, am_contained.mt.__index) }) } }
 
 function am_condition.create(parent_frame)
-    local f = setmetatable(CreateFrame("Button", nil, parent_frame, "AMMacroModifierConditionTemplate"), am_condition.mt)
+    local f = setmetatable(CreateFrame("Button", nil, parent_frame, "amConditionTemplate"), am_condition.mt)
     
     return f
 end
 
-function am_condition.mt.__index:am_set(object)
-    -- I need to make sure all conditions exist, and all relations and values are valid.
-    
-    if (object.name) then self.am_name:SetText(object.name) end
-    
-    if (object.relation) then
-        self.am_relation.am_data = object.relation.data
-        self.am_relation:SetText(object.relation.text)
-    end
-    
-    if (object.value) then
-        self.am_value.am_data = object.value.data
-        self.am_value:SetText(object.value.text)
+function am_condition.mt.__index:am_setproperty(name, value)
+    if (name == "name") then
+        self.amName:SetText(value)
+    elseif (name == "relation") then
+        self.am_relation = value
+        self.amRelation:SetText(value.text)
+    elseif (name == "value") then
+        self.am_value = value
+        self.amValue:SetText(value.text)
     end
 end
 
@@ -38,8 +32,8 @@ function am_condition.mt.__index:am_setindex(i)
         outro = "then"
     end
     
-    self.am_introstring:SetText(intro)
-    self.am_outrostring:SetText(outro)
+    self.amIntroString:SetText(intro)
+    self.amOutroString:SetText(outro)
 end
 
 

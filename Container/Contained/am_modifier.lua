@@ -1,5 +1,4 @@
-am_modifier = { mt = { __index = { } } }
-setmetatable(am_modifier.mt.__index, am_contained.mt)
+am_modifier = { mt = { __index = setmetatable({ }, { __index = pat.multiply_inherit_index(dataclass_modifier, am_contained.mt.__index) }) } }
 
 function am_modifier.create(parent_frame)
     local f = setmetatable(CreateFrame("Button", nil, parent_frame, "AMMacroModifierTemplate"), am_modifier.mt)
@@ -9,7 +8,7 @@ end
 
 function am_modifier.mt.__index:am_setproperty(name, value)
     if (name == "modstring") then
-        self.am_modstring:SetText(value)
+        self.amModString:SetText(value)
     elseif (name == "text") then
         self.am_text = value
     elseif (name == "conditions") then
@@ -18,23 +17,33 @@ function am_modifier.mt.__index:am_setproperty(name, value)
     end
 end
 
+function am_modifier.mt.__index:am_getproperty(name)
+    if (name == "modstring") then
+        return self.amModstring:GetText()
+    elseif (name == "text") then
+        return self.am_text
+    elseif (name == "conditions") then
+        return self.am_conditions
+    end
+end
+
 function am_modifier.mt.__index:am_setindex(i)
     self.am_index = i
     self.am_moveto = nil
     
     if (i <= 1) then
-        self.am_moveup:Disable()
+        self.amMoveUp:Disable()
     else
-        self.am_moveup:Enable()
+        self.amMoveUp:Enable()
     end
     
     if (i >= self.am_container:count()) then
-        self.am_movedown:Disable()
+        self.amMoveDown:Disable()
     else
-        self.am_movedown:Enable()
+        self.amMoveDown:Enable()
     end
     
-    self.am_modid:SetText(i)
+    self.amModID:SetText(i)
 end
 
 function am_modifier.mt.__index:am_compare(other)
@@ -58,8 +67,8 @@ function am_modifier.mt.__index:am_updatemodstring()
     end
     
     s = s:sub(1, s:len() - 4) .. "then ..."
-
-    self.am_modstring:SetText(s)
+    
+    self:am_setproperty("modstring", s)
 end
 
 
@@ -72,19 +81,7 @@ end
 
 
 function amModifier_OnClick(self, button, down)
-    local v2 = AMFrameTab1FrameView2
-    local v3 = AMFrameTab1FrameView3
-    
-    am.conditions:clear()
-    am.conditions:addall(self.am_conditions)
-    
-    v3.am_inputsf.EditBox:SetText(self.am_text or "")        -- it must be called editbox for InputScrollFrame_OnLoad
-    v3.am_name:SetText(v2.am_name:GetText() .. " - Modifier " .. self:am_getindex())
-    
-    am.selected_modifier = self
-    
-    v2:Hide()
-    v3:Show()
+    amConditionFrame_Setup(self)
 end
 
 function amModifier_MoveUp(self, button, down)

@@ -41,6 +41,8 @@ am.blank_macro = {
     }
 }
 
+
+
 function am.slashcmd(msg, editbox)
     ShowUIPanel(AMFrame)
 end
@@ -94,9 +96,9 @@ function am.events.PLAYER_ENTERING_WORLD()
     
     am.tokens:init()
     
-    am.macros      = am_container.create(AMMacroList, am_macro.create)
-    am.modifiers   = am_container.create(AMMacroModifierList, am_modifier.create)
-    am.conditions  = am_container.create(AMMacroModifierConditionList, am_condition.create)
+    am.macros      = am_container.create(AMMacroList, am_pool.create(am_macro.create), am_uidmap.create("name"))
+    am.modifiers   = am_container.create(AMMacroModifierList, am_pool.create(am_modifier.create))
+    am.conditions  = am_container.create(AMMacroModifierConditionList, am_pool.create(am_condition.create))
     
     am.addons.initialize()
     

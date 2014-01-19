@@ -4,8 +4,7 @@ if MAX_CHARACTER_MACROS == nil then
 end
 
 -- OBJECTS EXPECTED TO BE INSIDE AN am_container MUST INHERIT FROM am_contained OR PROVIDE ITS METHODS AND Frames methods
-am_macro = { uid = 0, mt = { __index = { } } }
-setmetatable(am_macro.mt.__index, am_contained.mt)
+am_macro = { uid = 0, mt = { __index = setmetatable({ }, { __index = pat.multiply_inherit_index(dataclass_macro, am_contained.mt.__index) }) } }
 
 function am_macro.create(parent_frame)
     local f = setmetatable(CreateFrame("Button", nil, parent_frame, "AMMacroTemplate"), am_macro.mt)
@@ -25,6 +24,34 @@ function am_macro.create(parent_frame)
     
     return f
 end
+
+
+
+
+-- overrides for the am_dataclass property overrides!
+function am_macro.mt.__index:am_setproperty(name, value)
+    if (name == "name") then
+        self.amName:SetText(value)
+    elseif (name == "icon") then
+        self.amIcon:SetTexture(value)
+    elseif (name == "modifiers") then
+        self.am_modifiers = value
+        self.amNumModifiers:SetText(table.getn(self.am_modifiers))
+    end
+end
+function am_macro.mt.__index:am_getproperty(name)
+    if (name == "name") then
+        return self.amName:GetText()
+    elseif (name == "icon") then
+        return self.amIcon:GetTexture()
+    elseif (name == "modifiers") then
+        return self.am_modifiers
+    end
+end
+
+
+
+
 
 -- setup our am_contained:am_getuid() override, this defines what property makes us unique in the container.  changes to this property must go through am_setuid() from am_contained
 function am_macro.mt.__index:am_getuid()
@@ -70,21 +97,6 @@ function am_macro.mt.__index:am_setdata(object)
     local n = self.am_modifiers and table.getn(self.am_modifiers) or 0
     
     self.am_nummodifiers:SetText(n .. " mod")
-end
-
-function am_modifier.mt.__index:am_setproperty(name, value)
-    if (name == self.am_container:)
-    if (name == "name") then
-        self.am_name:SetText(value)
-    elseif (name == "icon") then
-        self.am_icon:SetTexture(value)
-    elseif (name == "modifiers") then
-        self.am_modifiers = value
-        
-        local n = self.am_modifiers and table.getn(self.am_modifiers) or 0
-
-        self.am_nummodifiers:SetText(n .. " mod")
-    end
 end
 
 function am_macro.mt.__index:am_checkstatus()
@@ -300,4 +312,18 @@ end
 
 function amMacro_Delete(self, button, down)
     am.macros:remove(self:GetParent():am_getindex())
+end
+
+function amMacro_Enabled(self, button, down)
+    if (self:GetParent().am_enabled) then
+        self:GetParent():am_disable()
+    else
+        self:GetParent():am_enable()
+    end
+
+    self:SetChecked(self:GetParent().am_enabled)
+end
+
+function amMacro_Pickup(self, button, down)
+    self:GetParent():am_pickup()
 end

@@ -1,7 +1,7 @@
 -- this is the base class for frames expected to function inside an am_container
 
 am_contained = {
-    mt = { __index = setmetatable({ }, { __index = pat.multiply_inherit_index(am_dataobject.mt.__index, CreateFrame("Button", nil, UIParent)) }) },
+    mt = { __index = CreateFrame("Button", nil, UIParent) },
     
     colors = {
         bg1 = { r = 1, g = 1, b = 1, a = 0.08 },
@@ -100,7 +100,7 @@ function am_contained.mt.__index:am_update(i)
     end
     
     self:am_setindex(i)
-    self.am_background:SetTexture(c.r, c.g, c.b, c.a)
+    self.amBackground:SetTexture(c.r, c.g, c.b, c.a)
 end
 
 -- used by am_update to record our index in the container.
@@ -137,7 +137,7 @@ end
 ]]--
 
 -- this is just a little utility function since a wow Frame's GetPoint function takes an index for some dumb reason.
-function am_contained.mt__index:am_getpoint(what)
+function am_contained.mt.__index:am_getpoint(what)
     for i = 1, self:GetNumPoints() do
         local pt = { self:GetPoint(i) }
         

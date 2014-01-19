@@ -13,26 +13,30 @@ would need multiple inheritance on the frame objects since they are already inhe
 
 ]]--
 
-am_dataobject = { mt = { __index = { } } }
+am_dataclass = { mt = { __index = { } } }
 
-function am_dataobject.create(property_list)
-    local t = setmetatable({}, am_dataobject.mt)
+function am_dataclass.create(obj, property_list)
+    local t = setmetatable(obj or {}, am_dataobject.mt)
     
     t.am_properties = property_list
     
     return t
 end
-function am_dataobject.mt.__index:am_getproperties()
+function am_dataclass.mt.__index:am_getproperties()
     return self.am_properties
 end
-function am_dataobject.mt.__index:am_getproperty(name)
+function am_dataclass.mt.__index:am_getproperty(name)
     print("am_dataobject: error!  am_getproperty should be virtual")
 end
-function am_dataobject.mt.__index:am_setproperty(name, value)
+function am_dataclass.mt.__index:am_setproperty(name, value)
     print("am_dataobject: error!  am_setproperty should be virtual")
 end
-function am_dataobject.mt.__index:am_set(to)
+function am_dataclass.mt.__index:am_set(to)
     for i, v in pairs(self:am_getproperties()) do
         self:am_setproperty(v, to:am_getproperty(i))
     end
 end
+
+dataclass_macro       = am_dataclass.create({ "name", "icon", "modifiers" })
+dataclass_modifier    = am_dataclass.create({ "modstring", "text", "conditions" })
+dataclass_condition   = am_dataclass.create({ "name", "relation", "value" })

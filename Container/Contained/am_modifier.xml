@@ -1,9 +1,9 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
     ..\..\FrameXML\UI.xsd">
     
-	<Script file="am_macro.lua"/>
+	<Script file="am_modifier.lua"/>
     
-    <Button name="AMMacroModifierTemplate" enableMouse="true" inherits="AMFrameListItemTemplate" virtual="true">
+    <Button name="amModifierTemplate" enableMouse="true" inherits="amListItemTemplate" virtual="true">
         <Size y="40" />
         <Scripts>
             <OnClick function="amModifier_OnClick" />
@@ -13,13 +13,13 @@
                 <Texture file="Interface\QuestFrame\UI-QuestTitleHighlight" alphaMode="ADD" />
             </Layer>
             <Layer level="ARTWORK">
-                <FontString parentKey="am_modstring" justifyH="LEFT" inherits="GameFontHighlightSmall" wordwrap="true">
+                <FontString parentKey="amModString" justifyH="LEFT" inherits="GameFontHighlightSmall" wordwrap="true">
                     <Anchors>
                         <Anchor point="TOPLEFT" x="50" />
                         <Anchor point="BOTTOMRIGHT" x="-100" />
                     </Anchors>
                 </FontString>
-                <FontString parentKey="am_modid" justifyH="LEFT" text="1" inherits="GameFontNormal">
+                <FontString parentKey="amModID" justifyH="LEFT" text="1" inherits="GameFontNormal">
                     <Anchors>
                         <Anchor point="LEFT" x="10" />
                     </Anchors>
@@ -27,7 +27,7 @@
             </Layer>
         </Layers>
         <Frames>
-            <Button parentKey="am_moveup">
+            <Button parentKey="amMoveUp">
                 <Size x="14" y="14"/>
                 <Anchors>
                     <Anchor point="TOPLEFT" x="9" />
@@ -39,7 +39,7 @@
                 <PushedTexture file="Interface\Buttons\Arrow-Up-Down"/>
                 <DisabledTexture file="Interface\Buttons\Arrow-Up-Disabled"/>
             </Button>
-            <Button parentKey="am_movedown">
+            <Button parentKey="amMoveDown">
                 <Size x="14" y="14"/>
                 <Anchors>
                     <Anchor point="BOTTOMLEFT" x="9" y="-2" />
@@ -51,7 +51,7 @@
                 <PushedTexture file="Interface\Buttons\Arrow-Down-Down"/>
                 <DisabledTexture file="Interface\Buttons\Arrow-Down-Disabled"/>
             </Button>
-            <Button parentKey="amDelete" inherits="AMDeleteButtonTemplate" frameStrata="HIGH">
+            <Button parentKey="amDelete" inherits="amDeleteButtonTemplate" frameStrata="HIGH">
                 <Anchors>
                     <Anchor point="RIGHT" />
                 </Anchors>

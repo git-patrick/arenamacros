@@ -3,17 +3,27 @@
     
 	<Script file="am_contained.lua"/>
 
-    <Button name="AMFrameListItemTemplate" enableMouse="true" virtual="true">
+    <Button name="amListItemTemplate" enableMouse="true" virtual="true">
         <Anchors>
             <Anchor point="TOPLEFT" />
             <Anchor point="RIGHT" />
         </Anchors>
         <Layers>
             <Layer level="BACKGROUND">
-                <Texture parentKey="am_background">
+                <Texture parentKey="amBackground">
                     <Color a=".08" r="1" g="1" b="1"/>
                 </Texture>
             </Layer>
         </Layers>
     </Button>
+    
+    <Button name="amDeleteButtonTemplate" virtual="true">
+		<Size>
+			<AbsDimension x="32" y="32"/>
+		</Size>
+		<DisabledTexture file="Interface\Buttons\UI-Panel-MinimizeButton-Disabled"/>
+		<NormalTexture file="Interface\Buttons\UI-Panel-MinimizeButton-Up"/>
+		<PushedTexture file="Interface\Buttons\UI-Panel-MinimizeButton-Down"/>
+		<HighlightTexture file="Interface\Buttons\UI-Panel-MinimizeButton-Highlight" alphaMode="ADD"/>
+	</Button>
 </Ui>

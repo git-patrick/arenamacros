@@ -1,7 +1,9 @@
+db_macro
+
 am_dbobject = { mt = { __index = setmetatable({ }, am_dataobject.mt) } }
 
-function am_dbobject.create(property_list)
-    return setmetatable(am_dataobject.create(property_list), am_dbobject.mt)
+function am_dbobject.create(obj, dataclass)
+    return setmetatable({ }, pat.multiple_metatable(am_dbobject.mt, dataclass)
 end
 function am_dbobject.mt.__index:am_getproperty(name)
     return self[name]

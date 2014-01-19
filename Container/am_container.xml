@@ -3,8 +3,8 @@
     
 	<Script file="am_container.lua"/>
     
-    <Include file="am_contained.xml" />
-    <Include file="am_macro.xml" />
-    <Include file="am_modifier.xml" />
-    <Include file="am_condition.xml" />
+    <Include file="contained\am_contained.xml" />
+    <Include file="contained\am_macro.xml" />
+    <Include file="contained\am_modifier.xml" />
+    <Include file="contained\am_condition.xml" />
 </Ui>
