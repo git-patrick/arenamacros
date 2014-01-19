@@ -73,11 +73,13 @@ queue.state = {
 }
 queue.uidfromframe = { }
 
-function queue._addframes(prefix, uid, count)
+function queue._addframes(prefix, uid, count, start, diff)
+    start = start or 1
+    diff = diff or 0
     
-    for i = 1, count do
+    for i = start, count do
         if (not queue.uidfromframe[prefix .. i]) then
-            queue.uidfromframe[prefix .. i] = uid .. i
+            queue.uidfromframe[prefix .. i] = uid .. (i + diff)
         end
     end
 end
@@ -88,6 +90,10 @@ function queue._init()
     queue._addframes("PartyMemberFrame", "party", 4)
     -- queue._addframes("CompactRaidFrame", "raid", 40)
     queue.uidfromframe["PlayerFrame"] = "player"
+    queue.uidfromframe["ElvUF_Player"] = "player"
+    
+    queue._addframes("ElvUF_PartyGroup1UnitButton", "party", 5, 2, -1)
+    queue._addframes("ElvUF_Arena", "arena", 5)
 end
 
 function queue.create()
@@ -99,7 +105,9 @@ function queue.create()
     t.queue = { }
    
     for name, uid in pairs(queue.uidfromframe) do
-        _G[name]:HookScript("OnClick", function (frame) t:_hook(frame) end)
+        if (_G[name]) then
+            _G[name]:HookScript("OnClick", function (frame) t:_hook(frame) end)
+        end
     end
     
     t.frame:SetScript("OnUpdate", pat.create_onupdate(t, .1, t._trigger))

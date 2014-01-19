@@ -200,7 +200,7 @@ function am_macro.mt.__index:am_checkconditions()
         local found = true
         
         for j,c in ipairs(m.conditions) do
-            if (not am.addons.conditions[c.name].test(c.relation, c.value)) then
+            if (not am.addons.conditions[c.name] or not am.addons.conditions[c.name].test(c.relation, c.value)) then
                 found = false
                 break
             end
