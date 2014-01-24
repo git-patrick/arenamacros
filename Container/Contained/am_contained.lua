@@ -21,8 +21,8 @@ end
 -- when changing your objects property chosen to be the unique identifier of your UID_MAP in the objects container, then you must notify the container.
 -- this is the appropriate way to change it.
 function am_contained.mt.__index:am_setuid(to)
-    if (self:am_getuid() and self.am_container:change_uid(self:am_getuid(), to)) then
-        return 1
+    if (self:am_getuid()) then
+        return self.am_container:get_uidmap():change_uid(self:am_getuid(), to)
     end
     
     return nil
@@ -39,13 +39,13 @@ function am_contained.mt.__index:am_highlight()
     self.am_highlighted = true
 end
 function am_contained.mt.__index:am_detach()
-    self:SetPoint("TOP")
+    self:SetPoint("TOPLEFT")
 end
 function am_contained.mt.__index:am_attach(to)
     if (to) then
-        self:SetPoint("TOP", to, "BOTTOM")
+        self:SetPoint("TOPLEFT", to, "BOTTOMLEFT")
     else
-        self:SetPoint("TOP")
+        self:SetPoint("TOPLEFT")
     end
 end
 
@@ -54,7 +54,7 @@ end
 ------------------------------------------------------------------------------------------
 
 -- called first thing once the frame is retrieved from the pool
-function am_container.mt.__index:am_init(container)
+function am_contained.mt.__index:am_init(container)
     self.am_container = container
 end
 
@@ -122,7 +122,7 @@ end
 
 -- this depends on several properties defined by functions above.  if you override some above, you may need to change this.
 function am_contained.mt.__index:am_resort()
-    return self.am_container:am_resort(self:am_getindex())
+    return self.am_container:resort(self:am_getindex())
 end
 
 --[[

@@ -53,14 +53,20 @@ function am_uidmap.create(unique_identifier)
 end
 
 -- object is expected to be an am_dataobject with a property the same as self.uid
-function am_uidmap.mt.__index:contains(object)
-    return (self.map[object:am_getproperty(self.uid)] ~= nil)
+function am_uidmap.mt.__index:contains(o)
+    if (type(o) == "string") then
+        return (self.map[o] ~= nil)
+    elseif (type(o) == "table") then
+        return (self.map[o:am_getproperty(self.uid)] ~= nil)
+    end
+    
+    return false
 end
 
 function am_uidmap.mt.__index:add(object)
     local p = object:am_getproperty(self.uid)
     
-    if (not p or self:contains(object)) then
+    if (not p or self:contains(p)) then
         return false
     end
     
@@ -81,6 +87,19 @@ function am_uidmap.mt.__index:rm(object)
     return true
 end
 
+-- altering the value of our child frames UID property must call this somehow to notify the map of changes.
+-- to properly alter the UID value, you can use the set_uid() function inherited from am_contained
+
+function am_uidmap.mt.__index:change_uid(from, to)
+    if (not self.uid_map:contains(from) or self.uid_map:contains(to)) then
+        return 1    -- failure
+    end
+    
+    self.uid_map[from] = nil
+    self.uid_map[to] = true
+    
+    return nil
+end
 
 
 
@@ -112,6 +131,12 @@ am_container.mt = { __index = { } }
 function am_container.mt.__index:update()
     for i,v in ipairs(self.frames) do
         v:am_update(i)
+        v:am_detach()
+    end
+    
+    -- shuffle the frames anchors based on new setup.  detach first so we don't get a loop of frame references
+    for i,v in ipairs(self.frames) do
+        v:am_attach(self.frames[i - 1])
     end
 end
 
@@ -122,31 +147,30 @@ function am_container.mt.__index:addall(objects)
 end
 
 function am_container.mt.__index:add(object)
-    if (self.uid_map:contains(object)) then
+    if (self.uid_map and self.uid_map:contains(object)) then
         return 1
     end
     
     local f = self.frame_pool:get()
-    
-    f:am_init(self)
-    
-    -- check if adding our object works!
-    if (f:am_onadd(object)) then
-        self.frame_pool:give(f)
-        
-        return 2
-    end
-    
-    -- succeeded
-    -- put it into our actual frame list
+
     table.insert(self.frames, f)
     
     f:SetParent(self.parent_frame)
     
-    -- reposition the new frame based on any of its custom sorting requirements.
-    -- can't use f:am_resort() because no self:update has been called yet, so the frame does not know its index etc etc.
-    -- this call does the self:update() for us.
-    self:resort(self:count())
+    -- I'm not sure why these are necessary.  You would think SetParent and the XML defined anchors from amListItemTemplate would be enough, but they arent.
+    f:SetPoint("RIGHT")
+    f:SetPoint("TOPLEFT")
+    
+    f:am_init(self)
+    f:am_update(self:count())
+    
+    -- check if adding our object works!
+    if (f:am_onadd(object)) then
+        table.remove(self.frames, self:count())
+        self.frame_pool:give(f)
+        
+        return 2
+    end
     
     f:am_show()
     
@@ -182,15 +206,6 @@ function am_container.mt.__index:resort(index)
     end
     
     self:update()
-    
-    -- shuffle the frames anchors based on new setup.  detach first so we don't get a loop of frame references
-    for i,v in ipairs(self.frames) do
-        v:am_detach()
-    end
-    
-    for i,v in ipairs(self.frames) do
-        v:am_attach(self.frames[i - 1])
-    end
 end
 
 function am_container.mt.__index:remove(index)
@@ -200,10 +215,6 @@ function am_container.mt.__index:remove(index)
         self.uid_map:rm(self.frames[index])
     end
     
-    if (self.frames[index + 1]) then
-        self.frames[index + 1]:SetPoint(f:am_getpoint("TOP"))
-    end
-
     f:am_onremove()
 
     self.frame_pool:give(f)
@@ -213,27 +224,18 @@ function am_container.mt.__index:remove(index)
 end
 
 function am_container.mt.__index:clear()
+    -- go backwards so the auto indexes dont have to shuffle.  aka, faster
     for i = self:count(), 1, -1 do
         self:remove(i)
     end
 end
 
--- altering the value of our child frames UID property must call this somehow to notify the container that the value has changed.
--- to properly alter the UID value, you can use the set_uid() function inherited from am_contained
+function am_container.mt.__index:get_uidmap()
+    return self.uid_map
+end
 
-function am_container.mt.__index:change_uid(from, to)
-    if (not self:contains(from)) then
-        return nil
-    end
-    
-    if (self:contains(to)) then
-        return 1
-    end
-    
-    self.uid_map[from] = nil
-    self.uid_map[to] = true
-    
-    return nil
+function am_container.mt.__index:get_frames()
+    return self.frames
 end
 
 function am_container.mt.__index:count()

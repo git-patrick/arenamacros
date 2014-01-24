@@ -1,7 +1,7 @@
-am_condition = { mt = { __index = setmetatable({ }, { __index = pat.multiply_inherit_index(dataclass_condition, am_contained.mt.__index) }) } }
+am_condition = { mt = { __index = setmetatable({ }, pat.create_index_metatable(dataclass_condition, am_contained.mt.__index)) } }
 
 function am_condition.create(parent_frame)
-    local f = setmetatable(CreateFrame("Button", nil, parent_frame, "amConditionTemplate"), am_condition.mt)
+    local f = setmetatable(CreateFrame("Button", nil, parent_frame or UIParent, "amConditionTemplate"), am_condition.mt)
     
     return f
 end
@@ -16,6 +16,20 @@ function am_condition.mt.__index:am_setproperty(name, value)
         self.am_value = value
         self.amValue:SetText(value.text)
     end
+    
+    return true
+end
+
+function am_condition.mt.__index:am_getproperty(name)
+    if (name == "name") then
+        return self.amName:GetText()
+    elseif (name == "relation") then
+        return self.am_relation
+    elseif (name == "value") then
+        return self.am_value
+    end
+
+    return nil
 end
 
 function am_condition.mt.__index:am_setindex(i)

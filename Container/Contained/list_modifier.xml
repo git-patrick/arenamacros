@@ -3,7 +3,7 @@
     
 	<Script file="am_modifier.lua"/>
     
-    <Button name="amModifierTemplate" enableMouse="true" inherits="amListItemTemplate" virtual="true">
+    <Button name="amModifierTemplate" inherits="amListItemTemplate" virtual="true">
         <Size y="40" />
         <Scripts>
             <OnClick function="amModifier_OnClick" />

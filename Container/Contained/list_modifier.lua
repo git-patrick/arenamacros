@@ -1,20 +1,22 @@
-am_modifier = { mt = { __index = setmetatable({ }, { __index = pat.multiply_inherit_index(dataclass_modifier, am_contained.mt.__index) }) } }
+am_modifier = { mt = { __index = setmetatable({ }, pat.create_index_metatable(dataclass_modifier, am_contained.mt.__index)) } }
 
 function am_modifier.create(parent_frame)
-    local f = setmetatable(CreateFrame("Button", nil, parent_frame, "AMMacroModifierTemplate"), am_modifier.mt)
+    local f = setmetatable(CreateFrame("Button", nil, parent_frame or UIParent, "amModifierTemplate"), am_modifier.mt)
     
     return f
 end
 
 function am_modifier.mt.__index:am_setproperty(name, value)
     if (name == "modstring") then
-        self.amModString:SetText(value)
+        self.amModString:SetText(value or "")
     elseif (name == "text") then
         self.am_text = value
     elseif (name == "conditions") then
         self.am_conditions = value
         self:am_updatemodstring()
     end
+    
+    return true
 end
 
 function am_modifier.mt.__index:am_getproperty(name)
@@ -62,8 +64,8 @@ end
 function am_modifier.mt.__index:am_updatemodstring()
     local s = "if "
     
-    for i,v in ipairs(self.am_conditions) do
-        s = s .. v.name .. " " .. v.relation.text .. " " .. v.value.text .. " and "
+    for i,v in pairs(self:am_getproperty("conditions")) do
+        s = s .. v:am_getproperty("name") .. " " .. v:am_getproperty("relation").text .. " " .. v:am_getproperty("value").text .. " and "
     end
     
     s = s:sub(1, s:len() - 4) .. "then ..."

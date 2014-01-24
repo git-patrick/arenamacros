@@ -3,7 +3,7 @@
     
 	<Script file="am_macro.lua"/>
 
-    <Button name="amMacroTemplate" enableMouse="true" inherits="amListItemTemplate" virtual="true">
+    <Button name="amMacroTemplate" inherits="amListItemTemplate" virtual="true">
         <Size y="30" />
         <Scripts>
             <OnClick function="amMacro_OnClick" />

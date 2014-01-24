@@ -33,13 +33,13 @@ am.blank_modifier = {
         am.blank_condition
     }
 }
-am.blank_macro = { 
+am.blank_macro = am_database_macro.create({
     name = "UntitledMacro",
     icon = "Interface\\ICONS\\INV_Misc_QuestionMark",
     modifiers = {
         am.blank_modifier
     }
-}
+}, nil)
 
 
 
@@ -60,28 +60,29 @@ function am.events.UPDATE_MACROS()
         if there are some that are present that are NOT in my list, create them
     ]]--
     
-    local db = { }
-    
+    return false
+    --[[
     for i = 37,54 do
         local name, icon, body = GetMacroInfo(i)
         
         if name ~= nil then
-            if (not am.macros:contains(name)) then
-                db[name] = {
+            if (not am.macro_map:contains(name)) then
+                local m = am_database_macro.create({
                     ["name"] = name,
                     ["icon"] = icon,
                     ["modifiers"] = { {
                         ["text"] = body,
                         ["conditions"] = { am.blank_condition }
                     } }
-                }
+                }, am.db)
+                
+                am.macros:add(m)
             end
         end
     end
     
-    am.macros:addall(db)
-    
     AMMacroActive:SetText("Enabled Macros " .. select(2,GetNumMacros()) .. "/" .. MAX_CHARACTER_MACROS)
+    ]]--
 end
 
 function am.events.PLAYER_ENTERING_WORLD()
@@ -96,9 +97,11 @@ function am.events.PLAYER_ENTERING_WORLD()
     
     am.tokens:init()
     
-    am.macros      = am_container.create(AMMacroList, am_pool.create(am_macro.create), am_uidmap.create("name"))
-    am.modifiers   = am_container.create(AMMacroModifierList, am_pool.create(am_modifier.create))
-    am.conditions  = am_container.create(AMMacroModifierConditionList, am_pool.create(am_condition.create))
+    am.macro_map   = am_uidmap.create("name")
+    
+    am.macros      = am_container.create(amMacroList, am_pool.create(am_macro.create), am.macro_map)
+    am.modifiers   = am_container.create(amModifierList, am_pool.create(am_modifier.create))
+    am.conditions  = am_container.create(amConditionList, am_pool.create(am_condition.create))
     
     am.addons.initialize()
     
@@ -106,11 +109,19 @@ function am.events.PLAYER_ENTERING_WORLD()
         AM_MACRO_DATABASE = { }
     end
     
-    am.macros:addall(AM_MACRO_DATABASE)
+    am.db = am_database.create(AM_MACRO_DATABASE, "name")
+    
+    -- setup the database table entries as the database_objects we expect them to be...
+    -- this basically just sets up the metatables for these and the modifiers / conditions inside them.
+    for i, v in pairs(am.db) do
+        am_database_macro.create(v, am.db)
+    end
+    
+    am.macros:addall(am.db)
     
     am.events.UPDATE_MACROS()
     
-    -- this can trigger before player_entering_world, so I want it put here to ensure AM_MACRO_DATABASE is atleast { }
+    -- this can trigger before player_entering_world, so I want it put here to ensure AM_MACRO_DATABASE is atleast { } before register it.
     am:RegisterEvent("UPDATE_MACROS")
 end
 

@@ -3,7 +3,7 @@
     
 	<Script file="am_frame.lua"/>
     
-    <ScrollFrame name="AMListTemplate" parentKey="amList" inherits="UIPanelScrollFrameTemplate" virtual="true">
+    <ScrollFrame name="amListTemplate" parentKey="amList" inherits="UIPanelScrollFrameTemplate" virtual="true">
         <Anchors>
             <Anchor point="TOPLEFT" x="10" y="-66" />
             <Anchor point="BOTTOMRIGHT" y="30" x="-32" />
@@ -52,7 +52,7 @@
     <Font name="AMMacroModifierActiveFont" inherits="GameFontNormalSmall" virtual="true">
 		<Color r="0.1" g="1.0" b="0.1"/>
 	</Font>
-
+    
 	<Frame name="AMFrame" toplevel="true" movable="true" parent="UIParent" enableMouse="true" hidden="true" inherits="ButtonFrameTemplate">
 		<Size x="538" y="424"/>
 		<Layers>
@@ -132,9 +132,9 @@
                                     <OnClick function="amMacroFrame_Refresh" />
                                 </Scripts>
                             </Button>
-                            <ScrollFrame name="$parentList" inherits="AMListTemplate">
+                            <ScrollFrame name="$parentList" inherits="amListTemplate">
                                 <ScrollChild>
-                                    <Frame name="AMMacroList">
+                                    <Frame name="amMacroList">
                                         <Size>
                                             <AbsDimension x="494" y="200" />
                                         </Size>
@@ -150,7 +150,7 @@
                     </Frame>
                     <Frame name="$parentView2" setAllPoints="true" hidden="true">
                         <Frames>
-                            <EditBox parentKey="am_name" letters="16" autoFocus="false">
+                            <EditBox parentKey="amName" letters="16" autoFocus="false">
                                 <Size x="256" y="16"/>
                                 <Anchors>
                                     <Anchor point="TOPLEFT" x="60" y="-35"/>
@@ -166,7 +166,7 @@
                                         self:ClearFocus()
                                     </OnEnterPressed>
                                     <OnEscapePressed>
-                                        self:ClearFocus();
+                                        self:ClearFocus()
                                     </OnEscapePressed>
                                 </Scripts>
                             </EditBox>
@@ -206,16 +206,16 @@
                                 </Anchors>
                                 <Scripts>
                                     <OnClick>
-                                        local name = self:GetParent().am_name
+                                        local name = self:GetParent().amName
                                         
                                         name:SetFocus()
                                         name:HighlightText(0)
                                     </OnClick>
                                 </Scripts>
                             </Button>
-                            <ScrollFrame name="$parentList" inherits="AMListTemplate">
+                            <ScrollFrame name="$parentList" inherits="amListTemplate">
                                 <ScrollChild>
-                                    <Frame name="AMMacroModifierList">
+                                    <Frame name="amModifierList">
                                         <Size>
                                             <AbsDimension x="494" y="200" />
                                         </Size>
@@ -273,20 +273,20 @@
                                     <OnClick function="amConditionFrame_New" />
                                 </Scripts>
                             </Button>
-                            <ScrollFrame name="$parentList" inherits="AMListTemplate">
+                            <ScrollFrame name="$parentList" inherits="amListTemplate">
                                 <Anchors>
                                     <Anchor point="TOPLEFT" x="10" y="-66" />
                                     <Anchor point="BOTTOMRIGHT" y="225" x="-32" />
                                 </Anchors>
                                 <ScrollChild>
-                                    <Frame name="AMMacroModifierConditionList">
+                                    <Frame name="amConditionList">
                                         <Size>
                                             <AbsDimension x="494" y="90" />
                                         </Size>
                                     </Frame>
                                 </ScrollChild>
                             </ScrollFrame>
-                            <ScrollFrame name="$parentInput" inherits="UIPanelScrollFrameTemplate">
+                            <ScrollFrame name="$parentInput" parentKey="amInput" inherits="UIPanelScrollFrameTemplate">
                                 <Size x="500" y="500" />
                                 <Anchors>
                                     <Anchor point="TOPLEFT" relativeTo="$parentList" relativePoint="BOTTOMLEFT" y="-13" x="2" />
@@ -379,18 +379,6 @@
                     <Anchor point="TOPLEFT" />
                     <Anchor point="BOTTOMRIGHT" />
                 </Anchors>
-                <Frames>
-                    <Layers>
-                        <Layer level="OVERLAY">
-                            <FontString inherits="GameFontHighlight" justifyH="LEFT" text="IOWEFJOIWEJF">
-                                <Size x="160" y="16"/>
-                                <Anchors>
-                                    <Anchor point="TOPRIGHT" y="-35" x="0" />
-                                </Anchors>
-                            </FontString>
-                        </Layer>
-                    </Layers>
-                </Frames>
             </Frame>
         </Frames>
         <Scripts>

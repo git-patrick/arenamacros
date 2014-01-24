@@ -19,7 +19,7 @@
         <PushedTexture file="Interface\QuestFrame\UI-QuestTitleHighlight" alphaMode="ADD" />
     </Button>
     
-    <Button name="amConditionTemplate" inherits="amListItemTemplate" enableMouse="true" virtual="true">
+    <Button name="amConditionTemplate" inherits="amListItemTemplate" virtual="true">
         <Size y="30" />
         <Anchors>
             <Anchor point="TOPLEFT" />

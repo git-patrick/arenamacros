@@ -2,11 +2,13 @@ local NUM_AMFRAME_TABS = 2
 
 UIPanelWindows["AMFrame"] = { area = "left", pushable = 1, whileDead = 1 };
 
+amMacroFrame = AMFrameTab1FrameView1
+
 function amMacroFrame_New(self, button, down)
     -- find the lowest number for which UntitledMacro ## is not already in the container.
     -- this will generally succeed immediately or almost immediately.  Additionally, the maximum macro count
     
-    am.blank_macro.name = "UntitledMacro"
+    am.blank_macro:am_setproperty("name", "UntitledMacro")
     
     local r, f
     
@@ -17,7 +19,7 @@ function amMacroFrame_New(self, button, down)
             break
         end
         
-        am.blank_macro.name = "UntitledMacro " .. i
+        am.blank_macro:am_setproperty("name", "UntitledMacro " .. i)
     end
     
     if (f) then
@@ -28,144 +30,6 @@ end
 function amMacroFrame_Refresh()
     am.addons.check()
 end
-
-function amModifierFrame_New(self, button, down)
-    am.modifiers:clear()
-    am.modifiers:add(am.blank_modifier)
-end
-
-function amModifierFrame_Cancel(self, button, down)
-    local v1 = AMFrameTab1FrameView1
-    local v2 = AMFrameTab1FrameView2
-    
-    am.selected_macro = nil
-    
-    v2:Hide()
-    v1:Show()
-end
-
-function amModifierFrame_Save(self, button, down)
-    local v1 = AMFrameTab1FrameView1
-    local v2 = AMFrameTab1FrameView2
-    
-    if (not am.selected_macro) then
-        print("am: error should never happen")
-        
-        return
-    end
-    
-    local mods = { }
-
-    for i,v in ipairs(am.modifiers.frames) do
-        local t = { }
-        
-        t.modstring = v.am_modstring:GetText()
-        t.conditions = v.am_conditions
-        t.text = v.am_text
-
-        table.insert(mods, t)
-    end
-    
-    if (am.selected_macro:am_set({
-        name = v2.am_name:GetText(),
-        modifiers = mods
-    })) then
-        print("AM: Error!  Saving macro failed.  The macro name is in use.")
-        
-        return
-    end
-    
-    am.selected_macro = nil
-    
-    v2:Hide()
-    v1:Show()
-end
-
-function amModifierFrame_New(self, button, down)
-    am.modifiers:add(am.blank_modifier)
-end
-
-
--- called by modifier's onclick
-function amConditionFrame_Setup(modifier)
-    local v2 = AMFrameTab1FrameView2
-    local v3 = AMFrameTab1FrameView3
-    local eb = AMFrameTab1FrameView3InputEditBox
-    
-    am.conditions:clear()
-    am.conditions:addall(self:am_getproperty("conditions"))
-    
-    eb:SetText(self:am_getproperty("text") or "")
-    v3.amName:SetText(am.selected_macro:am_getproperty("name") .. " - Modifier " .. modifier:am_getindex())
-    
-    am.selected_modifier = self
-    
-    v2:Hide()
-    v3:Show()
-end
-
-
-
-function amConditionFrame_New(self, button, down)
-    am.conditions:add(am.blank_condition)
-end
-function amConditionFrame_Save(self, button, down)
-    local v2 = AMFrameTab1FrameView2
-    local v3 = AMFrameTab1FrameView3
-
-    CloseDropDownMenus()
-    
-    v3:Hide()
-    v2:Show()
-    
-    if (not am.selected_modifier) then
-        print("am: error should never happen")
-        
-        return
-    end
-    
-    local conds = { }
-    
-    for i,v in ipairs(am.conditions.frames) do
-        local t = {
-            name = v.am_name:GetText(),
-            relation = {
-                text = v.am_relation:GetText(),
-                data = v.am_relation.am_data
-            },
-            value = {
-                text = v.am_value:GetText(),
-                data = v.am_value.am_data
-            }
-        }
-        
-        table.insert(conds, t)
-    end
-    
-    am.selected_modifier:am_set({
-        text = v3.am_inputsf.EditBox:GetText(),
-        conditions = conds
-    })
-    
-    am.selected_modifier = nil
-    
-    
-end
-
-function amConditionFrame_Cancel(self, button, down)
-    local v2 = AMFrameTab1FrameView2
-    local v3 = AMFrameTab1FrameView3
-    
-    am.selected_modifier = nil
-    
-    CloseDropDownMenus()
-    
-    v3:Hide()
-    v2:Show()
-end
-
-
-
 
 
 

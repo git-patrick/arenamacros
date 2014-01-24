@@ -4,10 +4,10 @@ if MAX_CHARACTER_MACROS == nil then
 end
 
 -- OBJECTS EXPECTED TO BE INSIDE AN am_container MUST INHERIT FROM am_contained OR PROVIDE ITS METHODS AND Frames methods
-am_macro = { uid = 0, mt = { __index = setmetatable({ }, { __index = pat.multiply_inherit_index(dataclass_macro, am_contained.mt.__index) }) } }
+am_macro = { uid = 0, mt = { __index = setmetatable({ }, pat.create_index_metatable(dataobject_macro, am_contained.mt.__index)) } }
 
 function am_macro.create(parent_frame)
-    local f = setmetatable(CreateFrame("Button", nil, parent_frame, "AMMacroTemplate"), am_macro.mt)
+    local f = setmetatable(CreateFrame("Button", nil, parent_frame or UIParent, "AMMacroTemplate"), am_macro.mt)
 
     f:SetScript("OnEvent", function(self, event, ...) self:am_event(event, ...) end)
     f:RegisterEvent("UPDATE_MACROS")
@@ -28,16 +28,54 @@ end
 
 
 
--- overrides for the am_dataclass property overrides!
+-- overrides for the am_dataclass property functions!
 function am_macro.mt.__index:am_setproperty(name, value)
     if (name == "name") then
+        local current = self:am_getproperty(name)
+        
+        if (value == current) then
+            return true  -- for success
+        end
+        
+        -- tell the container of our intention to change the UID.  if it fails, we fail
+        if (self:am_setuid(value)) then
+            return false
+        end
+        
+        -- succeeded (name isn't in use by another macro), so make the necessary changes...
+        
+        -- change our DB reference object to match us.  this is redundant on our inital am_set call, but afterwords it is required.
+        -- this handles moving the object around in our database etc.
+        self.am_dbref:am_setproperty(name, value)
+        
+        -- set our actual value
         self.amName:SetText(value)
+        
+        -- rename or create the macro.
+        -- current ~= nil implies we are not a newly created macro object, and an existing macro could exist / a database entry already exists
+        if (current ~= nil) then
+            if (self.am_enabled) then
+                EditMacro(current, value, nil, nil, 1, 1)
+            end
+        else
+            self:am_createwowmacro()
+        end
+        
+        -- resort myself in the parent container
+        self:am_resort()
     elseif (name == "icon") then
         self.amIcon:SetTexture(value)
+        
+        self.am_dbref:am_setproperty(name,value)
     elseif (name == "modifiers") then
-        self.am_modifiers = value
-        self.amNumModifiers:SetText(table.getn(self.am_modifiers))
+        self.amNumModifiers:SetText(self.am_modifiers and table.getn(self.am_modifiers) or "0")
+        
+        self.am_dbref:am_setproperty(name,value)
+        
+        self:am_checkconditions()
     end
+    
+    return true   -- for success
 end
 function am_macro.mt.__index:am_getproperty(name)
     if (name == "name") then
@@ -51,140 +89,69 @@ end
 
 
 
-
-
--- setup our am_contained:am_getuid() override, this defines what property makes us unique in the container.  changes to this property must go through am_setuid() from am_contained
+-- setup our am_contained:am_getuid() override, this defines what property makes us unique in the container.  changes to this property must call am_setuid() from am_contained to notify the container of our UID changes
 function am_macro.mt.__index:am_getuid()
-    return self.am_name:GetText()
+    return self:am_getproperty("name")
 end
 -- this is used by the container to sort our macros automatically.
 function am_macro.mt.__index:am_compare(other)
-    local me = self.am_name:GetText():lower()
-    local yu = other.am_name:GetText():lower()
+    local me = self:am_getproperty("name"):lower()
+    local yu = other:am_getproperty("name"):lower()
     
     return (me <= yu) and ((me < yu) and -1 or 0) or 1
 end
 
 function am_macro.mt.__index:am_onremove()
-    -- disable ourselves first (this will delete the wow macro)
-    self:am_disable()
+    self:am_deletewowmacro()
     
-    -- remove the reference in our database
-    AM_MACRO_DATABASE[self.am_name:GetText()] = nil
+    self.am_dbref:am_delete()
 end
 
 function am_macro.mt.__index:am_onadd(object)
     -- this is called everytime I insert into the container, so for New Macro button, and on load when I am initializing from the DB
     -- or whenever UPDATE_MACROS is fired and we find a new macro that was added in some other way.
     
-    self:am_setdata(object)
-    self:am_updatedb()
-    
-    -- attempt to create the wow macro
-    self:am_createwowmacro()
+    self.am_dbref = object
+    self:am_set(object)
 
     -- check our status (is the macro created, set our enabled flag etc)
     self:am_checkstatus()
 end
 
-function am_macro.mt.__index:am_setdata(object)
-    if (object.name) then self.am_name:SetText(object.name) end
-    if (object.icon) then self.am_icon:SetTexture(object.icon) end
-    if (object.modifiers) then
-        self.am_modifiers = object.modifiers
-    end
-    
-    local n = self.am_modifiers and table.getn(self.am_modifiers) or 0
-    
-    self.am_nummodifiers:SetText(n .. " mod")
-end
-
 function am_macro.mt.__index:am_checkstatus()
     local enable
     
-    if (GetMacroIndexByName(self.am_name:GetText()) > 0) then
+    if (GetMacroIndexByName(self:am_getproperty("name")) > 0) then
         enable = true
     else
         enable = false
     end
     
-    self.am_name:SetFontObject(enable and "GameFontNormal" or "GameFontDisable")
-    self.am_icon:SetDesaturated(not enable and 1 or nil)
-    self.am_nummodifiers:SetFontObject(enable and "GameFontHighlightSmall" or "GameFontDisableSmall")
+    self.amName:SetFontObject(enable and "GameFontNormal" or "GameFontDisable")
+    self.amIcon:SetDesaturated(not enable and 1 or nil)
+    self.amNumModifiers:SetFontObject(enable and "GameFontHighlightSmall" or "GameFontDisableSmall")
     self.amEnabled:SetChecked(enable)
     
     if (enable and enable ~= self.am_enabled) then
-        self.am_enabled = enable
-        
         self:am_checkconditions()
     end
-end
-
-function am_macro.mt.__index:am_updateicon()
-    local name = self.am_name:GetText()
     
-    if (GetMacroIndexByName(name) > 0) then
-        self.am_icon:SetTexture(select(2, GetMacroInfo(name)))
-    end
-end
-
-function am_macro.mt.__index:am_updatedb()
-    local name = self.am_name:GetText()
-    
-    if (not AM_MACRO_DATABASE[name]) then
-        AM_MACRO_DATABASE[name] = { }
-    end
-    
-    local dbob = AM_MACRO_DATABASE[name]
-    
-    dbob.name = self.am_name:GetText()
-    dbob.icon = self.am_icon:GetTexture()
-    dbob.modifiers = self.am_modifiers
+    self.am_enabled = enable
 end
 
 
-
-function am_macro.mt.__index:am_set(object)
-    local name = self.am_name:GetText()
-    
-    if (object.name ~= name) then
-        -- attempt to change my uid (name) to the new one in the parent container.  will fail if the new one exists.
-        if (self:am_setuid(object.name)) then
-            return 1
-        end
-    end
-
-    self:am_setdata(object)
-    self:am_updatedb()
-
-    if (object.name ~= name) then
-        -- rename the macro
-        if (self.am_enabled) then
-            EditMacro(name, object.name, nil, nil, 1, 1)
-        end
-
-        -- delete the old macro from our DB
-        AM_MACRO_DATABASE[name] = nil
-        
-        -- since my name has changed, I probably need to get resorted.  do that here
-        self.am_container:resort(self:am_getindex())
-    end
-    
-    self:am_checkconditions()
-    
-    return nil
-end
 
 function am_macro.mt.__index:am_setactivemod(mod)
     if (InCombatLockdown()) then
-        print("AM: Unable to setup macro " .. self.am_name:GetText() .. ":  You are in combat!  Changes queued for when combat ends...")
+        print("AM: Unable to setup macro " .. self:am_getproperty("name") .. ":  You are in combat!  Changes queued for when combat ends...")
         
         self:RegisterEvent("PLAYER_REGEN_ENABLED")
         
         return false
     end
     
-    local text = mod.text
+    local text = mod:am_getproperty("text")
+    local name = self:am_getproperty("name")
     
     -- okay, need to process the inline scripts here!
     -- both gsubs are necessary because something like (arena|party) is not supported in lua D:
@@ -203,7 +170,7 @@ function am_macro.mt.__index:am_setactivemod(mod)
         text = text .. "/click " .. self.am_securemacrobtn:GetName()
     end
     
-    if (not pcall(function() EditMacro(self.am_name:GetText(), nil, "INV_Misc_QuestionMark", text, 1, 1) end)) then
+    if (not pcall(function() EditMacro(name, nil, "INV_Misc_QuestionMark", text, 1, 1) end)) then
         return false
     end
 
@@ -214,6 +181,8 @@ function am_macro.mt.__index:am_setactivemod(mod)
     self.am_activemod = mod
     self.am_activemod.active = true
     
+    self:am_setproperty("icon", select(2, GetMacroInfo(name)))
+    
     return true
 end
 
@@ -222,11 +191,13 @@ function am_macro.mt.__index:am_checkconditions()
         return nil
     end
     
-    for i,m in ipairs(self.am_modifiers) do
+    print("checking ", self:am_getproperty("name"))
+    
+    for i,m in ipairs(self:am_getproperty("modifiers")) do
         local found = true
         
-        for j,c in ipairs(m.conditions) do
-            if (not am.addons.conditions[c.name].test(c.relation, c.value)) then
+        for j,c in ipairs(m:am_getproperty("conditions")) do
+            if (not am.addons.conditions[c:am_getproperty("name")].test(c:am_getproperty("relation"), c:am_getproperty("value"))) then
                 found = false
                 break
             end
@@ -242,19 +213,21 @@ end
 
 function am_macro.mt.__index:am_pickup()
     if (self.am_enabled) then
-        PickupMacro(self.am_name:GetText())
+        PickupMacro(self:am_getproperty("name"))
     end
 end
 
 function am_macro.mt.__index:am_createwowmacro()
-    if (GetMacroIndexByName(self.am_name:GetText()) == 0) then
+    local name = self:am_getproperty("name")
+    
+    if (GetMacroIndexByName(name) == 0) then
         local _, num = GetNumMacros()
         
         if (num >= MAX_CHARACTER_MACROS) then
             return false
         end
         
-        if (not pcall(function() CreateMacro(self.am_name:GetText(), "INV_Misc_QuestionMark", "", 1) end)) then
+        if (not pcall(function() CreateMacro(name, "INV_Misc_QuestionMark", "", 1) end)) then
             -- macro creation failed!  I believe this can only happen if the macro list is full, but just in case
             -- I enclosed this in a pcall so it doesn't throw errors.
             
@@ -265,14 +238,13 @@ function am_macro.mt.__index:am_createwowmacro()
     return true
 end
 
-function am_macro.mt.__index:am_disable()
-    local name = self.am_name:GetText()
+function am_macro.mt.__index:am_deletewowmacro()
+    local name = self:am_getproperty("name")
     
     if (GetMacroIndexByName(name) > 0) then
         DeleteMacro(name)
     end
 end
-
 
 function am_macro.mt.__index:am_event(event, ...)
     if (event == "PLAYER_REGEN_ENABLED") then
@@ -281,11 +253,8 @@ function am_macro.mt.__index:am_event(event, ...)
         self:am_checkconditions()
     elseif (event == "UPDATE_MACROS") then
         self:am_checkstatus()
-        self:am_updateicon()
     end
 end
-
-
 
 
 
@@ -294,20 +263,7 @@ end
 -- XML EVENTS ...
 
 function amMacro_OnClick(self, button, down)
-    SetPortraitToTexture(AMFrame.amPortrait, self.am_icon:GetTexture())
-    
-    local v1 = AMFrameTab1FrameView1
-    local v2 = AMFrameTab1FrameView2
-    
-    v2.am_name:SetText(self.am_name:GetText())
-    
-    am.modifiers:clear()
-    am.modifiers:addall(self.am_modifiers)
-    
-    am.selected_macro = self
-    
-    v1:Hide()
-    v2:Show()
+    amModifierFrame_Setup(self)
 end
 
 function amMacro_Delete(self, button, down)
@@ -316,12 +272,12 @@ end
 
 function amMacro_Enabled(self, button, down)
     if (self:GetParent().am_enabled) then
-        self:GetParent():am_disable()
+        self:GetParent():am_deletewowmacro()
     else
-        self:GetParent():am_enable()
+        print("UHHHUHUHU")
+        
+        self:GetParent():am_createwowmacro()
     end
-
-    self:SetChecked(self:GetParent().am_enabled)
 end
 
 function amMacro_Pickup(self, button, down)
