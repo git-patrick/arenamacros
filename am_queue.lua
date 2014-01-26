@@ -73,27 +73,29 @@ queue.state = {
 }
 queue.uidfromframe = { }
 
-function queue._addframes(prefix, uid, count, start, diff)
+function queue._addframes(uid, prefix, count, suffix, start, diff)
     start = start or 1
     diff = diff or 0
+    suffix = suffix or ""
     
     for i = start, count do
-        if (not queue.uidfromframe[prefix .. i]) then
-            queue.uidfromframe[prefix .. i] = uid .. (i + diff)
+        if (not queue.uidfromframe[prefix .. i .. suffix]) then
+            queue.uidfromframe[prefix .. i .. suffix] = uid .. (i + diff)
         end
     end
 end
 
 function queue._init()
-    queue._addframes("ArenaPrepFrame", "arena", 5)
-    queue._addframes("ArenaEnemyFrame", "arena", 5)
-    queue._addframes("PartyMemberFrame", "party", 4)
+    queue._addframes("arena", "ArenaPrepFrame", 5)
+    queue._addframes("arena", "ArenaEnemyFrame", 5)
+    queue._addframes("party", "PartyMemberFrame", 4)
     -- queue._addframes("CompactRaidFrame", "raid", 40)
     queue.uidfromframe["PlayerFrame"] = "player"
     queue.uidfromframe["ElvUF_Player"] = "player"
     
-    queue._addframes("ElvUF_PartyGroup1UnitButton", "party", 5, 2, -1)
-    queue._addframes("ElvUF_Arena", "arena", 5)
+    queue._addframes("party", "ElvUF_PartyGroup1UnitButton", nil, 5, 2, -1)
+    queue._addframes("arena", "ElvUF_Arena", 5, "PrepFrame")
+    queue._addframes("arena", "ElvUF_Arena", 5)
 end
 
 function queue.create()
