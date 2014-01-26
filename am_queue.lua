@@ -86,6 +86,7 @@ function queue._addframes(uid, prefix, count, suffix, start, diff)
 end
 
 function queue._init()
+    
     queue._addframes("arena", "ArenaPrepFrame", 5)
     queue._addframes("arena", "ArenaEnemyFrame", 5)
     queue._addframes("party", "PartyMemberFrame", 4)
