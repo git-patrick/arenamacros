@@ -1,0 +1,1 @@
+There is a bug with macros that have a number only name.  Ideally I come up with a way to fix that, and not prevent number named macros from being made.
