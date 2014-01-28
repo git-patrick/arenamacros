@@ -17,59 +17,79 @@
 dataclass = { mt = { __index = { } } }
 
 function dataclass.create(property_list, obj)
-    local t = setmetatable(obj or {}, dataclass.mt)
+    local t = setmetatable(obj or {}, dataclass.factory)
     
     t._properties = property_list
     
     return t
 end
 
-function dataclass.copy(value)
-    if (type(value) ~= "table") then
-        -- this is an array of dataclass objects....
-        
-end
-function dataclass.copy(from, to, factory)
-    to = { }
+function dataclass.factory.__index:create(obj)
     
-    for i,v in pairs(from) do
-        table.insert(to, factory.create():am_set(v))
-    end
 end
 
-
-
-function dataclass.mt.__index:am_property(name)
-    return self._properties[name]
+function dataclass..__index:am_property(name)
+    return self._properties(name)
 end
 function dataclass.mt.__index:am_set(to)
-    for i, v in pairs(self:am_getproperties()) do
-        self:am_property(i):set(to:am_property(i))
+    for i, v in pairs(self._properties) do
+        v:set(self, to:am_property(i):get(self))
+    end
+    
+    return self
+end
+
+
+property_custom = { }
+
+-- allows custom get and set functions, while also inheriting the defaults from property_scalar
+function property_custom.create(metatable)
+    return setmetatable({ }, metatable)
+end
+
+property_scalar = { base = { __index = { } } }
+
+function property_scalar.create()
+    return setmetatable({ }, property_scalar.base)
+end
+function property_scalar.base.__index:get(parent)
+    return self._value
+end
+function property_scalar.base.__index:set(parent, value)
+    self._value = value
+end
+
+
+property_array = { base = { __index = { } } }
+
+function property_array.create(factory)
+    local t = setmetatable({ }, property_array.base)
+    
+    t._factory = factory
+    
+    return t
+end
+function property_array.base.__index:get(parent)
+    return self._value
+end
+
+function property_array.base.__index:set(parent, value)
+    self._value = { }
+    
+    for i, v in pairs(value) do
+        table.insert(self._value, self._factory.create():am_set(v))
     end
 end
 
 -- here are the 3 classes I need
-dataclass_macro       = dataclass.create({ ["name"] = nil, ["icon"] = nil, ["modifiers"] = "array" })
+dataclass_macro       = dataclass.create({ "name", "icon", "modifiers" })
 dataclass_modifier    = dataclass.create({ "modstring", "text", "conditions" })
 dataclass_condition   = dataclass.create({ "name", "relation", "value" })
 
 
-dataclass_property = { property_base = { __index = { } } }
 
-function dataclass_property.create(name)
-    local t = setmetatable({ }, dataclass_property.property_base)
-    
-    self._property = name
-    
-    return t
-end
 
-function dataclass_property.property_base.__index:get()
-    return self[self._property]
-end
-function dataclass_property.property_base.__index:set(value)
-    self[self._property] = value
-end
+
 
 
 

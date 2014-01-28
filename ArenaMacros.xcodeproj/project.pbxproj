@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXFileReference section */
+		CD08132D1896CBCF00D1D6A4 /* tmp.lua */ = {isa = PBXFileReference; lastKnownFileType = text; path = tmp.lua; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.lua; };
 		CD1020871889D96E004DC6E2 /* am_container.lua */ = {isa = PBXFileReference; lastKnownFileType = text; path = am_container.lua; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.lua; };
 		CD1020891889D96E004DC6E2 /* list_condition.lua */ = {isa = PBXFileReference; lastKnownFileType = text; name = list_condition.lua; path = Container/Contained/list_condition.lua; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.lua; };
 		CD10208A1889D96E004DC6E2 /* am_contained.lua */ = {isa = PBXFileReference; lastKnownFileType = text; name = am_contained.lua; path = Contained/am_contained.lua; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.lua; };
@@ -94,6 +95,7 @@
 		CDF4593A1892069100B195C5 /* macro */ = {
 			isa = PBXGroup;
 			children = (
+				CD08132D1896CBCF00D1D6A4 /* tmp.lua */,
 				CDF4593D189206F000B195C5 /* database_macro.lua */,
 				CDF459401892088F00B195C5 /* dataobject_macro.lua */,
 				CD10208B1889D96E004DC6E2 /* list_macro.lua */,
