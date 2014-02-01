@@ -35,3 +35,20 @@ function e.util.create_search_indexmetatable(...)
         return nil
     end }
 end
+
+-- this is a metatable that adds a couple functions to lua arrays (integer indexed tables).  
+-- just set your tables metatable to this to use them
+-- its called "erray" for enhanced array
+e.util.erray = { __index = { } }
+
+function e.util.array:add(what)
+    table.insert(self, what)
+end
+
+function e.util.array:rm(what)
+    for i,v in ipairs(self) do
+        if v == what then
+            table.remove(self, i)
+        end
+    end
+end

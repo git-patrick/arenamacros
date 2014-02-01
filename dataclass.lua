@@ -53,16 +53,18 @@ function dc._support.product:am_get(name)
 end
 
 -- sets all our properties equal to their equivalent properties
+-- any prehook failure, set failure, or post hook failure (return value of false) stops the set WHERE IT IS
+-- it does NOT revert it back to the start.  if this is a problem in the future, its not too terrible a fix
+-- but as it is, there are not too many instances where any of those should fail (except a property being a
+-- unique identifier in a container, but since there is only one such property, and the properties are checked in the order
+-- they were specified to the dataclass creation, if the prehook on that fails, nothing will change anyways.)
+
 function dc._support.product:am_set(to)
-    local ret = true
-    
     for i, v in pairs(self._properties) do
-        if (not v.set(self, to._properties[i].get(to))) then
-            ret = false
+        if (not v:set(self, to._properties[i].get(to))) then
+            return false
         end
     end
-    
-    return ret
 end
 
 -- dump me to screen
@@ -73,27 +75,57 @@ function dc._support.product:am_print()
 end
 
 
--- OKAY so this object maintains a list of pre and post change callbacks for when the property changes!
-
--- each of these return a property object that is used by the instances of the dataclass instance classes to get/set their respective properties, 
--- or initialize them upon creation of the class (if init is non nil)
-
 dc._support.prop = { }
-
 local property = dc._support.prop
 
+-- OKAY so this object maintains a list of pre and post change callbacks for when the property changes!
+property.metatable = { __index = { } }
+
+function property.metatable.__index:clear_pre()
+    self.prehook = setmetatable({ }, e.util.erray)
+end
+
+function property.metatable.__index:clear_pst()
+    self.psthook = setmetatable({ }, e.util.erray)
+end
+
+function property.metatable.__index:set(owning_table, to_value)
+    local my_value = self.get(owning_table)
+    
+    for j,f in ipairs(self.prehook) do
+        if (not f(my_value, to_value)) then
+            return false
+        end
+    end
+    
+    if (not self._set(owning_table, to_value)) then
+        return false
+    end
+    
+    for j,f in ipairs(self.psthook) do
+        if (not f(my_value, to_value)) then
+            return false
+        end
+    end
+end
+
+-- each of these return a property object that is used by the instances of the dataclass instance classes to get/set their respective properties,
+-- or initialize them upon creation of the class (if init is non nil)
+
 function property.scalar(name)
-    return {
+    return setmetatable({
         ["get"] = function (self) return self[name] end,
-        ["set"] = function (self, value) self[name] = value end,
-        ["init"] = nil
-    }
+        ["_set"] = function (self, value) self[name] = value end,
+        ["init"] = nil,
+        ["prehook"] = setmetatable({ }, e.util.erray),
+        ["psthook"] = setmetatable({ }, e.util.erray)
+    }, property.metatable)
 end
 
 function property.array(name, dataclass_factory)
-    return {
+    return setmetatable({
         ["get"] = function (self) return self[name] end,
-        ["set"] = function (self, value)
+        ["_set"] = function (self, value)
             self[name] = { }
             
             for i, v in pairs(value) do
@@ -106,23 +138,27 @@ function property.array(name, dataclass_factory)
                     dataclass_factory:create(v)
                 end
             end
-        end
-    }
+        end,
+        ["prehook"] = setmetatable({ }, e.util.erray),
+        ["psthook"] = setmetatable({ }, e.util.erray)
+    }, property.metatable)
 end
 
 function property.custom(get, set, init)
-    return {
+    return setmetatable({
         ["get"] = get,
-        ["set"] = set,
-        ["init"] = init
-    }
+        ["_set"] = set,
+        ["init"] = init,
+        ["prehook"] = setmetatable({ }, e.util.erray),
+        ["psthook"] = setmetatable({ }, e.util.erray)
+    }, property.metatable)
 end
 
 -- PROPERTY OBJECTS HERE!  These are reused a few times below.
 
 
 
-property.scalar_name     = property.scalar("name")
+property.scalar_name     =
 property.xml_name        = property.custom(function (self) return self.amName:GetText() end, function (self, value) self.amName:SetText(value) end)
 property.modstring       = property.custom
 (
@@ -154,7 +190,7 @@ local t = dc.condition
 
 t.simple = dc.create
 ({
- ["name"]           = property.scalar_name,
+ ["name"]           = property.scalar("name"),
  ["relation"]       = property.scalar("relation"),
  ["relation_data"]  = property.scalar("relation_data"),
  ["value"]          = property.scalar("value"),
@@ -202,7 +238,7 @@ t = dc.macro
 
 t.simple = dc.create
 ({
- ["name"]       = property.scalar_name,
+ ["name"]       = property.scalar("name"),
  ["icon"]       = property.scalar("icon"),
  ["modifiers"]  = property.array("modifiers", dc.modifier.simple)
 })
