@@ -1,33 +1,14 @@
-amModifierFrame = setmetatable({ }, pat.create_index_metatable(AMFrameTab1FrameView2, dataclass_macro))
+local addon_name, addon_table = ...
+local e, L, V, P, G = unpack(addon_table) -- Engine, Locales, PrivateDB, ProfileDB, GlobalDB
 
-function amModifierFrame:am_setproperty(name,value)
-    if (name == "name") then
-        self.amName:SetText(value)
-    elseif (name == "icon") then
-        SetPortraitToTexture(AMFrame.amPortrait, value)
-    elseif (name == "modifiers") then
-        am.modifiers:clear()
-        am.modifiers:addall(value)
-    end
-    
-    return value
-end
+e.views = e.views or { }
+e.views.macro = setmetatable({ }, e.util.create_search_indexmetatable(e.dataclass.macro.frame, AMFrameTab1FrameView2))
 
-function amModifierFrame:am_getproperty(name)
-    if (name == "name") then
-        return self.amName:GetText()
-    elseif (name == "icon") then
-        return AMFrame.amPortrait:GetTexture()
-    elseif (name == "modifiers") then
-        return am.modifiers:get_frames()
-    end
 
-    return nil
-end
-
+--[[
 function amModifierFrame_Cancel(self, button, down)
-    amModifierFrame:Hide()
-    amMacroFrame:Show()
+    e.views.modifier:Hide()
+    e.views.macro:Show()
 end
 
 function amModifierFrame_Save(self, button, down)
@@ -40,8 +21,8 @@ function amModifierFrame_Save(self, button, down)
     amModifierFrame.am_macro:am_set(amModifierFrame)
     amModifierFrame.am_macro = nil
 
-    amModifierFrame:Hide()
-    amMacroFrame:Show()
+    e.views.modifier:Hide()
+    e.views.macro:Show()
 end
 
 function amModifierFrame_New(self, button, down)
@@ -49,9 +30,10 @@ function amModifierFrame_New(self, button, down)
 end
 
 function amModifierFrame_Setup(macro)
-    amModifierFrame:am_set(macro)
-    amModifierFrame.am_macro = macro
+    e.views.macro:am_set(macro)
+    e.views.macro.am_macro = macro
     
-    amMacroFrame:Hide()
-    amModifierFrame:Show()
+    e.views.modifier:Show()
+    e.views.macro:Hide()
 end
+]]--

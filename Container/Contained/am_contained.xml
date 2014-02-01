@@ -1,7 +1,7 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
     ..\..\FrameXML\UI.xsd">
     
-	<Script file="am_contained.lua"/>
+	<Script file="contained.lua"/>
 
     <Button name="amListItemTemplate" enableMouse="true" virtual="true">
         <Anchors>

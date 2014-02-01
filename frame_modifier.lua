@@ -1,30 +1,13 @@
-amConditionFrame = setmetatable({ }, pat.create_index_metatable(AMFrameTab1FrameView3, dataclass_modifier))
+local addon_name, addon_table = ...
 
-function amConditionFrame:am_setproperty(name, value)
-    if (name == "modstring") then
-        -- ignored
-    elseif (name == "text") then
-        self.amInput.EditBox:SetText(value)
-    elseif (name == "conditions") then
-        am.conditions:clear()
-        am.conditions:addall(value)
-    end
-    
-    return value
-end
+local e, L, V, P, G = unpack(addon_table) -- Engine, Locales, PrivateDB, ProfileDB, GlobalDB
 
-function amConditionFrame:am_getproperty(name)
-    if (name == "modstring") then
-        return self.amName:GetText()
-    elseif (name == "text") then
-        return { text = self.amRelation:GetText(), data = self.amRelation.am_data }
-    elseif (name == "conditions") then
-        return am.conditions:get_frames()
-    end
-    
-    return nil
-end
+e.views = e.views or { }
+e.views.modifier = setmetatable({ }, e.util.create_search_indexmetatable(e.dataclass.modifier.frame, AMFrameTab1FrameView3))
 
+
+
+--[[
 -- called by modifier's onclick
 function amConditionFrame_Setup(modifier)
     amConditionFrame:am_set(modifier)
@@ -91,3 +74,4 @@ function amConditionFrame_Cancel(self, button, down)
     v3:Hide()
     v2:Show()
 end
+]]--

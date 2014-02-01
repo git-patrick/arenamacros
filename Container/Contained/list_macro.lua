@@ -1,13 +1,21 @@
+local addon_name, addon_table = "ArenaMacros", { { }, { }, { }, { }, { } } -- ...
+
+local e, L, V, P, G = unpack(addon_table) -- Engine, Locales, PrivateDB, ProfileDB, GlobalDB
+
+e.contained.macro = { uid = 0, mt = { __index = setmetatable({ }, e.util.create_search_indexmetatable(e.dataclass.macro.li, e.contained.mt)) } }
+
+local mac = e.contained.macro
+
+
+
+
 
 if MAX_CHARACTER_MACROS == nil then
     MAX_CHARACTER_MACROS = 18
 end
 
--- OBJECTS EXPECTED TO BE INSIDE AN am_container MUST INHERIT FROM am_contained OR PROVIDE ITS METHODS AND Frames methods
-am_macro = { uid = 0, mt = { __index = setmetatable({ }, pat.create_index_metatable(dataobject_macro, am_contained.mt.__index)) } }
-
-function am_macro.create(parent_frame)
-    local f = setmetatable(CreateFrame("Button", nil, parent_frame or UIParent, "AMMacroTemplate"), am_macro.mt)
+function mac.create(parent_frame)
+    local f = setmetatable(CreateFrame("Button", nil, parent_frame or UIParent, "AMMacroTemplate"), mac.mt)
 
     f:SetScript("OnEvent", function(self, event, ...) self:am_event(event, ...) end)
     f:RegisterEvent("UPDATE_MACROS")
@@ -15,12 +23,12 @@ function am_macro.create(parent_frame)
     -- the purpose of this frame is to override the 255 character limit placed on macros.  
     -- it stores our chosen macro text, and can be run with a /click FrameName from the actual macro
     
-    f.am_securemacrobtn = CreateFrame("Button", "AMSecureMacroButtonFrame" .. am_macro.uid, UIParent, "SecureActionButtonTemplate")
+    f.am_securemacrobtn = CreateFrame("Button", "AMSecureMacroButtonFrame" .. mac.uid, UIParent, "SecureActionButtonTemplate")
     
     f.am_securemacrobtn:SetAttribute("type", "macro")
     f.am_securemacrobtn:SetAttribute("macrotext", "")
 
-    am_macro.uid = am_macro.uid + 1
+    mac.uid = mac.uid + 1
     
     return f
 end
@@ -28,64 +36,9 @@ end
 
 
 
--- overrides for the am_dataclass property functions!
-function am_macro.mt.__index:am_setproperty(name, value)
-    if (name == "name") then
-        local current = self:am_getproperty(name)
-        
-        if (value == current) then
-            return true  -- for success
-        end
-        
-        -- tell the container of our intention to change the UID.  if it fails, we fail
-        if (self:am_setuid(value)) then
-            return false
-        end
-        
-        -- succeeded (name isn't in use by another macro), so make the necessary changes...
-        
-        -- change our DB reference object to match us.  this is redundant on our inital am_set call, but afterwords it is required.
-        -- this handles moving the object around in our database etc.
-        self.am_dbref:am_setproperty(name, value)
-        
-        -- set our actual value
-        self.amName:SetText(value)
-        
-        -- rename or create the macro.
-        -- current ~= nil implies we are not a newly created macro object, and an existing macro could exist / a database entry already exists
-        if (current ~= nil) then
-            if (self.am_enabled) then
-                EditMacro(current, value, nil, nil, 1, 1)
-            end
-        else
-            self:am_createwowmacro()
-        end
-        
-        -- resort myself in the parent container
-        self:am_resort()
-    elseif (name == "icon") then
-        self.amIcon:SetTexture(value)
-        
-        self.am_dbref:am_setproperty(name,value)
-    elseif (name == "modifiers") then
-        self.amNumModifiers:SetText(self.am_modifiers and table.getn(self.am_modifiers) or "0")
-        
-        self.am_dbref:am_setproperty(name,value)
-        
-        self:am_checkconditions()
-    end
-    
-    return true   -- for success
-end
-function am_macro.mt.__index:am_getproperty(name)
-    if (name == "name") then
-        return self.amName:GetText()
-    elseif (name == "icon") then
-        return self.amIcon:GetTexture()
-    elseif (name == "modifiers") then
-        return self.am_modifiers
-    end
-end
+
+
+
 
 
 

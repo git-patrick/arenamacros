@@ -1,6 +1,12 @@
+local addon_name, addon_table = ...
+
+local e, L, V, P, G = unpack(addon_table) -- Engine, Locales, PrivateDB, ProfileDB, GlobalDB
+
+
 -- this is the base class for frames expected to function inside an am_container
 
-am_contained = {
+-- Create our namespace in the engine.
+e.contained = {
     mt = { __index = CreateFrame("Button", nil, UIParent) },
     
     colors = {
@@ -15,12 +21,12 @@ am_contained = {
 ----------------------------------------------------------------------------------------
 
 -- can be overridden in subclasses to return the uniqued identifier property.
-function am_contained.mt.__index:am_getuid()
+function e.contained.mt.__index:am_getuid()
     return nil
 end
 -- when changing your objects property chosen to be the unique identifier of your UID_MAP in the objects container, then you must notify the container.
 -- this is the appropriate way to change it.
-function am_contained.mt.__index:am_setuid(to)
+function e.contained.mt.__index:am_setuid(to)
     if (self:am_getuid()) then
         return self.am_container:get_uidmap():change_uid(self:am_getuid(), to)
     end
@@ -32,16 +38,16 @@ end
 -- APPEARANCE AND POSITION RELATED STUFF
 ----------------------------------------------------------------------------------------
 
-function am_contained.mt.__index:am_unhighlight()
+function e.contained.mt.__index:am_unhighlight()
     self.am_highlighted = nil
 end
-function am_contained.mt.__index:am_highlight()
+function e.contained.mt.__index:am_highlight()
     self.am_highlighted = true
 end
-function am_contained.mt.__index:am_detach()
+function e.contained.mt.__index:am_detach()
     self:SetPoint("TOPLEFT")
 end
-function am_contained.mt.__index:am_attach(to)
+function e.contained.mt.__index:am_attach(to)
     if (to) then
         self:SetPoint("TOPLEFT", to, "BOTTOMLEFT")
     else
@@ -54,11 +60,11 @@ end
 ------------------------------------------------------------------------------------------
 
 -- called first thing once the frame is retrieved from the pool
-function am_contained.mt.__index:am_init(container)
+function e.contained.mt.__index:am_init(container)
     self.am_container = container
 end
 
-function am_contained.mt.__index:am_onadd(dataobject)
+function e.contained.mt.__index:am_onadd(dataobject)
     -- this is called by the container in an attempt to add the object.  adding can be canceled by returning non nil
     
     self:am_set(dataobject)
@@ -66,15 +72,15 @@ function am_contained.mt.__index:am_onadd(dataobject)
     return nil  -- for success
 end
 -- called after the frame is successfully added
-function am_contained.mt.__index:am_show()
+function e.contained.mt.__index:am_show()
     self:Show()
 end
-function am_contained.mt.__index:am_onremove()
+function e.contained.mt.__index:am_onremove()
     -- this is called by the container when the object is being removed.  can be overridden if action is required (for example in macros, need to delete the actual macro)
     -- removing cannot be canceled.
 end
 -- this is called when the frame is no longer needed, and is being given back to the pool.  this should be used to clean up the frame for future reuse
-function am_contained.mt.__index:am_release()
+function e.contained.mt.__index:am_release()
     self:Hide()
     self:SetParent(UIParent)
     
@@ -90,7 +96,7 @@ end
 -- am_update is called on every am_contained in a container whenever an object is resorted or removed from the container.
 -- a resort happens on every insert.
 -- the index into the container is passed
-function am_contained.mt.__index:am_update(i)
+function e.contained.mt.__index:am_update(i)
     local c
     
     if (self.am_highlighted) then
@@ -104,10 +110,10 @@ function am_contained.mt.__index:am_update(i)
 end
 
 -- used by am_update to record our index in the container.
-function am_contained.mt.__index:am_setindex(i)
+function e.contained.mt.__index:am_setindex(i)
     self.am_index = i
 end
-function am_contained.mt.__index:am_getindex()
+function e.contained.mt.__index:am_getindex()
     return self.am_index
 end
 
@@ -121,7 +127,7 @@ end
 ----------------------------------------------------------------------------------------
 
 -- this depends on several properties defined by functions above.  if you override some above, you may need to change this.
-function am_contained.mt.__index:am_resort()
+function e.contained.mt.__index:am_resort()
     return self.am_container:resort(self:am_getindex())
 end
 
@@ -137,7 +143,7 @@ end
 ]]--
 
 -- this is just a little utility function since a wow Frame's GetPoint function takes an index for some dumb reason.
-function am_contained.mt.__index:am_getpoint(what)
+function e.contained.mt.__index:am_getpoint(what)
     for i = 1, self:GetNumPoints() do
         local pt = { self:GetPoint(i) }
         

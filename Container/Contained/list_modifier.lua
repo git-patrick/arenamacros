@@ -1,32 +1,15 @@
-am_modifier = { mt = { __index = setmetatable({ }, pat.create_index_metatable(dataclass_modifier, am_contained.mt.__index)) } }
+local addon_name, addon_table = ...
 
-function am_modifier.create(parent_frame)
-    local f = setmetatable(CreateFrame("Button", nil, parent_frame or UIParent, "amModifierTemplate"), am_modifier.mt)
+local e, L, V, P, G = unpack(addon_table) -- Engine, Locales, PrivateDB, ProfileDB, GlobalDB
+
+e.contained.modifier = { mt = { __index = setmetatable({ }, e.util.create_search_indexmetatable(e.dataclass.modifier.li, e.contained.mt)) } }
+
+local mod = e.contained.modifier
+
+function mod.create(parent_frame)
+    local f = setmetatable(CreateFrame("Button", nil, parent_frame or UIParent, "amModifierTemplate"), mod.mt)
     
     return f
-end
-
-function am_modifier.mt.__index:am_setproperty(name, value)
-    if (name == "modstring") then
-        self.amModString:SetText(value or "")
-    elseif (name == "text") then
-        self.am_text = value
-    elseif (name == "conditions") then
-        self.am_conditions = value
-        self:am_updatemodstring()
-    end
-    
-    return true
-end
-
-function am_modifier.mt.__index:am_getproperty(name)
-    if (name == "modstring") then
-        return self.amModstring:GetText()
-    elseif (name == "text") then
-        return self.am_text
-    elseif (name == "conditions") then
-        return self.am_conditions
-    end
 end
 
 function am_modifier.mt.__index:am_setindex(i)
@@ -59,21 +42,6 @@ function am_modifier.mt.__index:am_compare(other)
     
     return 0
 end
-
-
-function am_modifier.mt.__index:am_updatemodstring()
-    local s = "if "
-    
-    for i,v in pairs(self:am_getproperty("conditions")) do
-        s = s .. v:am_getproperty("name") .. " " .. v:am_getproperty("relation").text .. " " .. v:am_getproperty("value").text .. " and "
-    end
-    
-    s = s:sub(1, s:len() - 4) .. "then ..."
-    
-    self:am_setproperty("modstring", s)
-end
-
-
 
 
 

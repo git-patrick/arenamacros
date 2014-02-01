@@ -1,38 +1,19 @@
-am_condition = { mt = { __index = setmetatable({ }, pat.create_index_metatable(dataclass_condition, am_contained.mt.__index)) } }
+local addon_name, addon_table = ...
 
-function am_condition.create(parent_frame)
-    local f = setmetatable(CreateFrame("Button", nil, parent_frame or UIParent, "amConditionTemplate"), am_condition.mt)
+local e, L, V, P, G = unpack(addon_table) -- Engine, Locales, PrivateDB, ProfileDB, GlobalDB
+
+-- Create our namespace in the engine.
+e.contained.condition = { mt = { __index = setmetatable({ }, e.util.create_search_indexmetatable(e.dataclass.condition.li, e.contained.mt)) } }
+
+local cond = e.contained.condition
+
+function cond.create(parent_frame)
+    local f = setmetatable(CreateFrame("Button", nil, parent_frame or UIParent, "amConditionTemplate"), cond.mt)
     
     return f
 end
 
-function am_condition.mt.__index:am_setproperty(name, value)
-    if (name == "name") then
-        self.amName:SetText(value)
-    elseif (name == "relation") then
-        self.am_relation = value
-        self.amRelation:SetText(value.text)
-    elseif (name == "value") then
-        self.am_value = value
-        self.amValue:SetText(value.text)
-    end
-    
-    return true
-end
-
-function am_condition.mt.__index:am_getproperty(name)
-    if (name == "name") then
-        return self.amName:GetText()
-    elseif (name == "relation") then
-        return self.am_relation
-    elseif (name == "value") then
-        return self.am_value
-    end
-
-    return nil
-end
-
-function am_condition.mt.__index:am_setindex(i)
+function cond.mt.__index:am_setindex(i)
     self.am_index = i
     
     local intro = "and"
