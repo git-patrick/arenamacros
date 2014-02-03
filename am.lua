@@ -12,9 +12,7 @@
  
 ]]--
 
-am = CreateFrame("Frame", nil, UIParent)
-am.events = { }
-am.frames = { }     -- condition addon frames are added to this.
+
 
 am.blank_condition = {
     value = {
@@ -34,14 +32,32 @@ am.blank_modifier = {
     }
 }
 am.blank_macro = am_database_macro.create({
-    name = "UntitledMacro",
-    icon = "Interface\\ICONS\\INV_Misc_QuestionMark",
-    modifiers = {
-        am.blank_modifier
-    }
-}, nil)
+                                          name = "UntitledMacro",
+                                          icon = "Interface\\ICONS\\INV_Misc_QuestionMark",
+                                          modifiers = {
+                                          am.blank_modifier
+                                          }
+                                          }, nil)
 
 
+
+
+
+
+
+
+
+
+local addon_name, addon_table = ...
+local e, L, V, P, G = unpack(addon_table) -- Engine, Locales, PrivateDB, ProfileDB, GlobalDB
+
+-- Addon's main frame for events and etc.
+e.am = CreateFrame("Frame", nil, UIParent)
+
+local am = e.am
+
+am.events = { }
+am.frames = { }     -- condition addon frames are added to this.
 
 function am.slashcmd(msg, editbox)
     ShowUIPanel(AMFrame)
@@ -131,6 +147,24 @@ function am.initialize()
     am:RegisterEvent("PLAYER_ENTERING_WORLD")
 end
 
+function am.check()
+    -- this is setup to be called by the addons onchange callback.  whenever a condition's value changes, we recheck everything
+    
+    -- forget everything we used to know about the cruel, cruel world
+    am.tokens:clear()
+    
+    for i, v in ipairs(am.macros.frames) do
+		v:am_checkconditions()
+	end
+end
+
+
+
+
+
+
+
+
 --[[ INLINE TOKEN SECTION!~ ]]--
 
 am.tokens = {
@@ -191,17 +225,6 @@ am.addons = {
     conditions = { },
     menu = { { text = "Conditions", isTitle = "true", notCheckable = true } },
 }
-
-function am.addons.check()
-    -- this is setup to be called by the addons onchange callback.  whenever a condition's value changes, we recheck everything
-
-    -- forget everything we used to know about the cruel, cruel world
-    am.tokens:clear()
-    
-    for i, v in ipairs(am.macros.frames) do
-		v:am_checkconditions()
-	end
-end
 
 function am.addons.select(self, arg1, arg2, checked)
     am.selected_condition.am_name:SetText(self.value)

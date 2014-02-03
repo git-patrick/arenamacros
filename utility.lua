@@ -36,7 +36,29 @@ function e.util.create_search_indexmetatable(...)
     end }
 end
 
--- this is a metatable that adds a couple functions to lua arrays (integer indexed tables).  
+function e.util.create_or_rename_macro(old_name, new_name)
+    if (not old_name or GetMacroIndexByName(old_name) == 0) then
+        -- macro doesn't already exist, try to create it.
+        
+        if (not pcall(function() CreateMacro(new_name, "INV_Misc_QuestionMark", "", 1) end)) then
+            -- macro creation failed!  I believe this can only happen if the macro list is full
+            
+            return false
+        end
+    else
+        EditMacro(old_name, new_name, nil, nil, 1, 1)
+    end
+    
+    return true
+end
+
+function e.util.delete_macro(name)
+    if (GetMacroIndexByName(name) > 0) then
+        DeleteMacro(name)
+    end
+end
+
+-- this is a metatable that adds a couple functions to lua arrays (integer indexed tables).
 -- just set your tables metatable to this to use them
 -- its called "erray" for enhanced array
 e.util.erray = { __index = { } }

@@ -48,16 +48,17 @@ function am_uidmap.create(unique_identifier)
     
     t.uid           = unique_identifier
     t.map           = { }
-    
+    t.prehook       = function (from, to) return t:change_uid(from, to) end
+
     return          t
 end
 
--- object is expected to be an am_dataobject with a property the same as self.uid
+-- object is expected to be the product of a dataclass instance with a property the same as self.uid
 function am_uidmap.mt.__index:contains(o)
     if (type(o) == "string") then
         return (self.map[o] ~= nil)
     elseif (type(o) == "table") then
-        return (self.map[o:am_getproperty(self.uid)] ~= nil)
+        return (self.map[o:am_getproperty(self.uid):get()] ~= nil)
     end
     
     return false
@@ -66,11 +67,15 @@ end
 function am_uidmap.mt.__index:add(object)
     local p = object:am_getproperty(self.uid)
     
-    if (not p or self:contains(p)) then
+    if (not p or self:contains(object)) then
         return false
     end
     
-    self.map[p] = true
+    -- set our mapping to true!
+    self.map[p:get()] = true
+    
+    -- this hooks any changes to this property.  return values of false stop the change, true continues it.
+    p.prehook:add(self.prehook)
     
     return true
 end
@@ -82,23 +87,26 @@ function am_uidmap.mt.__index:rm(object)
         return false
     end
     
-    self.map[p] = nil
+    p.prehook:rm(self.prehook)
     
+    self.map[p] = nil
+
     return true
 end
 
 -- altering the value of our child frames UID property must call this somehow to notify the map of changes.
 -- to properly alter the UID value, you can use the set_uid() function inherited from am_contained
+-- this is now called automatically by prehooks in the dataclass property object set calls.
 
 function am_uidmap.mt.__index:change_uid(from, to)
     if (not self.uid_map:contains(from) or self.uid_map:contains(to)) then
-        return 1    -- failure
+        return false    -- failure
     end
     
     self.uid_map[from] = nil
     self.uid_map[to] = true
     
-    return nil
+    return true
 end
 
 
@@ -190,6 +198,7 @@ function am_container.mt.__index:highlight(index)
 end
 
 -- this takes a frame from our list and moves it to the appropriate place based on custom sorting requirements if they exist
+-- assumes all other frames in the list are already in their appropriate sorted position
 function am_container.mt.__index:resort(index)
     local f = self.frames[index]
     

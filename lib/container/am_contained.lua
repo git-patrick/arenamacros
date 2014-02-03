@@ -1,10 +1,12 @@
 local addon_name, addon_table = ...
-
 local e, L, V, P, G = unpack(addon_table) -- Engine, Locales, PrivateDB, ProfileDB, GlobalDB
-
 
 -- this is the base class for frames expected to function inside an am_container
 
+
+
+
+e:create_library("container")
 -- Create our namespace in the engine.
 e.contained = {
     mt = { __index = CreateFrame("Button", nil, UIParent) },
@@ -15,24 +17,6 @@ e.contained = {
         bghl = { r = 0, g = 1, b = 0, a = 0.08 }
     }
 }
-
-----------------------------------------------------------------------------------------
--- UID STUFF
-----------------------------------------------------------------------------------------
-
--- can be overridden in subclasses to return the uniqued identifier property.
-function e.contained.mt.__index:am_getuid()
-    return nil
-end
--- when changing your objects property chosen to be the unique identifier of your UID_MAP in the objects container, then you must notify the container.
--- this is the appropriate way to change it.
-function e.contained.mt.__index:am_setuid(to)
-    if (self:am_getuid()) then
-        return self.am_container:get_uidmap():change_uid(self:am_getuid(), to)
-    end
-    
-    return nil
-end
 
 ----------------------------------------------------------------------------------------
 -- APPEARANCE AND POSITION RELATED STUFF

@@ -1,12 +1,10 @@
-local addon_name, addon_table = "ArenaMacros", { { }, { }, { }, { }, { } } -- ...
-
+local addon_name, addon_table = ...
 local e, L, V, P, G = unpack(addon_table) -- Engine, Locales, PrivateDB, ProfileDB, GlobalDB
 
--- Create our namespace and an alternative in the engine.
-e.dc = { }
-e.dataclass = e.dc
+local dc = { }
 
-local dc = e.dc
+-- Create our namespace in the engine.
+e:create_library("dataclass", dc)
 
 -- used for some supporting tables and other functions required to make dataclasses work.
 dc._support = { }
@@ -92,6 +90,11 @@ end
 function property.metatable.__index:set(owning_table, to_value)
     local my_value = self.get(owning_table)
     
+    -- if the value did not change, we skip all hook calls, and the set call!!!!
+    if (my_value == to_value) then
+        return true
+    end
+    
     for j,f in ipairs(self.prehook) do
         if (not f(my_value, to_value)) then
             return false
@@ -107,6 +110,8 @@ function property.metatable.__index:set(owning_table, to_value)
             return false
         end
     end
+    
+    return true
 end
 
 -- each of these return a property object that is used by the instances of the dataclass instance classes to get/set their respective properties,
@@ -154,35 +159,34 @@ function property.custom(get, set, init)
     }, property.metatable)
 end
 
--- PROPERTY OBJECTS HERE!  These are reused a few times below.
+
+
+-- some reused property getters / setters
 
 
 
-property.scalar_name     =
-property.xml_name        = property.custom(function (self) return self.amName:GetText() end, function (self, value) self.amName:SetText(value) end)
-property.modstring       = property.custom
-(
-    function (self)
-        local s = "if "
 
-        for i,v in pairs(self:am_getproperty("conditions"):get()) do
-            s = s .. v:am_getproperty("name"):get() .. " " .. v:am_getproperty("relation"):get():am_getproperty("text"):get() .. " " .. v:am_getproperty("value"):get():am_getproperty("text"):get() .. " and "
-        end
- 
-        s = s:sub(1, s:len() - 4) .. "then ..."
- 
-        return s
-    end,
- 
-    function (self, value)
-        self.am_modstring = value
+local function xmlname_get(self)
+    return self.amName:GetText()
+end
+
+local function xmlname_set(self, value)
+    self.amName:SetText(value)
+end
+
+
+local function modstring_get(self)
+    local s = "if "
+
+    for i,v in pairs(self:am_getproperty("conditions"):get()) do
+        s = s .. v:am_getproperty("name"):get() .. " " .. v:am_getproperty("relation"):get() .. " " .. v:am_getproperty("value"):get() .. " and "
     end
-)
 
+    s = s:sub(1, s:len() - 4) .. "then ..."
 
-
-
-
+    return s
+end
+ 
 -- instance classes (or lists of them) of our dataclass class!
 dc.condition = { }
 
@@ -199,7 +203,7 @@ t.simple = dc.create
 
 t.li = dc.create
 ({
- ["name"]           = property.xml_name,
+ ["name"]           = property.custom(xmlname_get, xmlname_set),
  ["relation"]       = property.custom(function (self) return self.amRelation:GetText() end, function (self, value) self.amRelation:SetText(value); end),
  ["relation_data"]  = property.scalar("am_relation_data"),
  ["value"]          = property.custom(function (self) return self.amValue:GetText() end, function (self, value) self.amValue:SetText(value); end),
@@ -220,14 +224,14 @@ t.simple = dc.create
 t.frame = dc.create
 ({
  ["text"]        = property.custom(function (self) return self.amInput.EditBox:GetText() end, function (self, value) self.amInput.EditBox:SetText(value) end),
- ["modstring"]   = property.modstring,
+ ["modstring"]   = property.custom(modstring_get, function (self, value) self.am_modstring = value end),
  ["conditions"]  = nil -- NEED CUSTOM REFERENCE TO GLOBAL CONTAINER HERE....
  })
 
 t.li = dc.create
 ({
  ["text"]        = property.scalar("am_text"),
- ["modstring"]   = property.modstring,
+ ["modstring"]   = property.custom(function (self, value) return self.amModString:GetText() end, function (self, value) self.amModString:SetText(value)),
  ["conditions"]  = property.array("am_conditions", dc.condition.simple)
  })
 
@@ -240,68 +244,46 @@ t.simple = dc.create
 ({
  ["name"]       = property.scalar("name"),
  ["icon"]       = property.scalar("icon"),
- ["modifiers"]  = property.array("modifiers", dc.modifier.simple)
+ ["modifiers"]  = property.array("modifiers", dc.modifier.simple),
+ ["enabled"]    = property.scalar("enabled")
 })
 
 t.frame = dc.create
 ({
- ["name"]       = property.xml_name,
- ["icon"]       = property.custom(function (self) print("FRAME ICON GET"); return "INV_Misc_QuestionMark"; end, function (self, value)
+ ["name"]       = property.custom(xmlname_get, xmlname_set),
+ ["icon"]       = property.custom(function (self) print("FRAME ICON GET");
+                                    return "INV_Misc_QuestionMark";
+                                  end,
+                                  function (self, value)
                                     print("SetPortraitToTexture ", value)
-                                 --SetPortraitToTexture(AMFrame.amPortrait, value)
+                                    --SetPortraitToTexture(AMFrame.amPortrait, value)
                                  end),
- ["modifiers"]  = property.array("modifiers", dc.modifier.simple)           -- array.create("am_modifiers", am.modifiers:get_frames()), this needs to change, might change how containers work with dataclasses.
+ ["modifiers"]  = property.array("modifiers", dc.modifier.simple),
+ ["enabled"]    = property.scalar("am_enabled")
 })
 
 
-property.macroli_name = property.custom
-(
- function (self) -- get
-    return self.amName:GetText()
- end,
- 
- function (self, value) -- set
-     local current = self:am_getproperty(name)
-     
-     if (value == current) then
-        return true  -- for success
-     end
-     
-     -- tell the container of our intention to change the UID.  if it fails, we fail
-     if (self:am_setuid(value)) then
-        return false
-     end
-     
-     -- succeeded (name isn't in use by another macro), so make the necessary changes...
-     
-     -- change our DB reference object to match us.  this is redundant on our inital am_set call, but afterwords it is required.
-     -- this handles moving the object around in our database etc.
-     self.am_dbref:am_setproperty(name, value)
-     
-     -- set our actual value
-     self.amName:SetText(value)
-     
-     -- rename or create the macro.
-     -- current ~= nil implies we are not a newly created macro object, and an existing macro could exist / a database entry already exists
-     if (current ~= nil) then
-         if (self.am_enabled) then
-            EditMacro(current, value, nil, nil, 1, 1)
-         end
-     else
-        self:am_createwowmacro()
-     end
-     
-     -- resort myself in the parent container
-     self:am_resort()
- end
-)
+
 
 
 t.li = dc.create
 ({
  ["name"]       = property.macro_name,
  ["icon"]       = property.custom(function (self) return self.amIcon:GetTexture() end, function (self, value) self.amIcon:SetTexture(value) end),
- ["modifiers"]  = property.array("modifiers", dc.modifier.simple)
+ ["modifiers"]  = property.array("modifiers", dc.modifier.simple),
+ ["enabled"]    = property.custom
+    (function (self)
+        return self.am_enabled
+     end,
+
+     function (self, value)
+        self.am_enabled = value
+     
+        self.amName:SetFontObject(value and "GameFontNormal" or "GameFontDisable")
+        self.amIcon:SetDesaturated(not value and 1 or nil)
+        self.amNumModifiers:SetFontObject(value and "GameFontHighlightSmall" or "GameFontDisableSmall")
+     end
+    )
 })
 
 
@@ -310,54 +292,7 @@ t.li = dc.create
 
 
 
-function mac.mt.__index:am_setproperty(name, value)
-    if (name == "name") then
-        local current = self:am_getproperty(name)
-        
-        if (value == current) then
-            return true  -- for success
-        end
-        
-        -- tell the container of our intention to change the UID.  if it fails, we fail
-        if (self:am_setuid(value)) then
-            return false
-        end
-        
-        -- succeeded (name isn't in use by another macro), so make the necessary changes...
-        
-        -- change our DB reference object to match us.  this is redundant on our inital am_set call, but afterwords it is required.
-        -- this handles moving the object around in our database etc.
-        self.am_dbref:am_setproperty(name, value)
-        
-        -- set our actual value
-        self.amName:SetText(value)
-        
-        -- rename or create the macro.
-        -- current ~= nil implies we are not a newly created macro object, and an existing macro could exist / a database entry already exists
-        if (current ~= nil) then
-            if (self.am_enabled) then
-                EditMacro(current, value, nil, nil, 1, 1)
-            end
-        else
-            self:am_createwowmacro()
-        end
-        
-        -- resort myself in the parent container
-        self:am_resort()
-    elseif (name == "icon") then
-        self.amIcon:SetTexture(value)
-        
-        self.am_dbref:am_setproperty(name,value)
-    elseif (name == "modifiers") then
-        self.amNumModifiers:SetText(self.am_modifiers and table.getn(self.am_modifiers) or "0")
-        
-        self.am_dbref:am_setproperty(name,value)
-        
-        self:am_checkconditions()
-    end
-    
-    return true   -- for success
-end
+
 
 
 
@@ -386,7 +321,8 @@ t.db = dc.create
   end
   ),
  ["icon"]       = property.scalar("icon"),
- ["modifiers"]  = property.array("modifiers", dc.modifier.simple)
+ ["modifiers"]  = property.array("modifiers", dc.modifier.simple),
+ ["enabled"]    = property.scalar("enabled")
  },
  { _database = AM_MACRO_DATABASE_V2 })
 

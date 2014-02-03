@@ -6,28 +6,64 @@ e.contained.macro = { uid = 0, mt = { __index = setmetatable({ }, e.util.create_
 
 local mac = e.contained.macro
 
-
-
-
-
-if MAX_CHARACTER_MACROS == nil then
-    MAX_CHARACTER_MACROS = 18
-end
-
 function mac.create(parent_frame)
     local f = setmetatable(CreateFrame("Button", nil, parent_frame or UIParent, "AMMacroTemplate"), mac.mt)
 
+    -- setup our events!
     f:SetScript("OnEvent", function(self, event, ...) self:am_event(event, ...) end)
     f:RegisterEvent("UPDATE_MACROS")
     
-    -- the purpose of this frame is to override the 255 character limit placed on macros.  
+    -- setup our property hooks!
+    -- attempts to change name already are checked by the uidmap for the container, so if the new name is already taken,
+    -- property set will fail from that, and we will never even get called.
+    f:am_getproperty("name").psthook:add
+    (function (from, to)
+        f:am_resort()
+    end)
+    
+    f:am_getproperty("modifiers").psthook:add
+    (function (from, to)
+        f.amNumModifiers:SetText(to and table.getn(to) or "0")
+     
+        if (f:am_getproperty("enabled"):get()) then
+            f:am_checkconditions()
+        end
+    end)
+    
+    f:am_getproperty("enabled").prehook:add
+    (function (from, to)
+        local name = self:am_getproperty("name"):get()
+     
+        if (to) then
+            if not e.util.create_or_rename_macro(nil, name) then
+                return false
+            end
+        else
+            e.util.delete_macro(name)
+        end
+     
+        return true
+    end)
+    f:am_getproperty("enabled").psthook:add
+    (function (from, to)
+        self.amEnabled:SetChecked(to)
+     
+        if (to) then
+            f:am_checkconditions()
+        end
+    end)
+  
+    -- the purpose of this frame is to override the 255 character limit placed on macros.
     -- it stores our chosen macro text, and can be run with a /click FrameName from the actual macro
+    -- i don't need to pool this createframe, because there is already a pool controlling the macro frame itself
+    -- so this frame is indirectly pooled as a result.
     
     f.am_securemacrobtn = CreateFrame("Button", "AMSecureMacroButtonFrame" .. mac.uid, UIParent, "SecureActionButtonTemplate")
     
     f.am_securemacrobtn:SetAttribute("type", "macro")
     f.am_securemacrobtn:SetAttribute("macrotext", "")
 
+    -- increment the unique frame identifier used to create the secure buttons above.
     mac.uid = mac.uid + 1
     
     return f
@@ -37,41 +73,25 @@ end
 
 
 
-
-
-
-
-
--- setup our am_contained:am_getuid() override, this defines what property makes us unique in the container.  changes to this property must call am_setuid() from am_contained to notify the container of our UID changes
-function am_macro.mt.__index:am_getuid()
-    return self:am_getproperty("name")
-end
 -- this is used by the container to sort our macros automatically.
-function am_macro.mt.__index:am_compare(other)
-    local me = self:am_getproperty("name"):lower()
-    local yu = other:am_getproperty("name"):lower()
+function mac.mt.__index:am_compare(other)
+    local me = self:am_getproperty("name"):get():lower()
+    local yu = other:am_getproperty("name"):get():lower()
     
     return (me <= yu) and ((me < yu) and -1 or 0) or 1
 end
 
-function am_macro.mt.__index:am_onremove()
-    self:am_deletewowmacro()
+function mac.mt.__index:am_onremove()
+    self:am_getproperty("enabled"):set(self, false)
     
-    self.am_dbref:am_delete()
+    -- need to delete the database reference here!
 end
 
-function am_macro.mt.__index:am_onadd(object)
-    -- this is called everytime I insert into the container, so for New Macro button, and on load when I am initializing from the DB
-    -- or whenever UPDATE_MACROS is fired and we find a new macro that was added in some other way.
-    
-    self.am_dbref = object
-    self:am_set(object)
 
-    -- check our status (is the macro created, set our enabled flag etc)
-    self:am_checkstatus()
-end
 
-function am_macro.mt.__index:am_checkstatus()
+
+-- this basicalled checks if the wow macro exists, updates our frame appearance accordingly, and if our state has changed from not exists to exists, checks modifiers to determine the active macro text.
+function mac.mt.__index:am_checkstatus()
     local enable
     
     if (GetMacroIndexByName(self:am_getproperty("name")) > 0) then
@@ -80,21 +100,12 @@ function am_macro.mt.__index:am_checkstatus()
         enable = false
     end
     
-    self.amName:SetFontObject(enable and "GameFontNormal" or "GameFontDisable")
-    self.amIcon:SetDesaturated(not enable and 1 or nil)
-    self.amNumModifiers:SetFontObject(enable and "GameFontHighlightSmall" or "GameFontDisableSmall")
-    self.amEnabled:SetChecked(enable)
-    
-    if (enable and enable ~= self.am_enabled) then
-        self:am_checkconditions()
-    end
-    
-    self.am_enabled = enable
+    self:am_getproperty("enabled"):set(self, enable)
 end
 
 
 
-function am_macro.mt.__index:am_setactivemod(mod)
+function mac.mt.__index:am_setactivemod(mod)
     if (InCombatLockdown()) then
         print("AM: Unable to setup macro " .. self:am_getproperty("name") .. ":  You are in combat!  Changes queued for when combat ends...")
         
@@ -103,8 +114,8 @@ function am_macro.mt.__index:am_setactivemod(mod)
         return false
     end
     
-    local text = mod:am_getproperty("text")
-    local name = self:am_getproperty("name")
+    local text = mod:am_getproperty("text"):get()
+    local name = self:am_getproperty("name"):get()
     
     -- okay, need to process the inline scripts here!
     -- both gsubs are necessary because something like (arena|party) is not supported in lua D:
@@ -123,10 +134,12 @@ function am_macro.mt.__index:am_setactivemod(mod)
         text = text .. "/click " .. self.am_securemacrobtn:GetName()
     end
     
+    -- set the macro with the new text.
     if (not pcall(function() EditMacro(name, nil, "INV_Misc_QuestionMark", text, 1, 1) end)) then
         return false
     end
 
+    -- not sure what I use this for, might remove this ...
     if (self.am_activemod) then
         self.am_activemod.active = nil
     end
@@ -134,12 +147,13 @@ function am_macro.mt.__index:am_setactivemod(mod)
     self.am_activemod = mod
     self.am_activemod.active = true
     
-    self:am_setproperty("icon", select(2, GetMacroInfo(name)))
+    -- change our icon to the macros auto determined icon.
+    self:am_getproperty("icon"):set(self, select(2, GetMacroInfo(name)))
     
     return true
 end
 
-function am_macro.mt.__index:am_checkconditions()
+function mac.mt.__index:am_checkconditions()
     if (not self.am_enabled) then
         return nil
     end
@@ -164,42 +178,13 @@ function am_macro.mt.__index:am_checkconditions()
     -- no modifiers are satisified.  set macro text to empty, and icon to QuestionMark
 end
 
-function am_macro.mt.__index:am_pickup()
+function mac.mt.__index:am_pickup()
     if (self.am_enabled) then
         PickupMacro(self:am_getproperty("name"))
     end
 end
 
-function am_macro.mt.__index:am_createwowmacro()
-    local name = self:am_getproperty("name")
-    
-    if (GetMacroIndexByName(name) == 0) then
-        local _, num = GetNumMacros()
-        
-        if (num >= MAX_CHARACTER_MACROS) then
-            return false
-        end
-        
-        if (not pcall(function() CreateMacro(name, "INV_Misc_QuestionMark", "", 1) end)) then
-            -- macro creation failed!  I believe this can only happen if the macro list is full, but just in case
-            -- I enclosed this in a pcall so it doesn't throw errors.
-            
-            return false
-        end
-    end
-    
-    return true
-end
-
-function am_macro.mt.__index:am_deletewowmacro()
-    local name = self:am_getproperty("name")
-    
-    if (GetMacroIndexByName(name) > 0) then
-        DeleteMacro(name)
-    end
-end
-
-function am_macro.mt.__index:am_event(event, ...)
+function mac.mt.__index:am_event(event, ...)
     if (event == "PLAYER_REGEN_ENABLED") then
         self:UnregisterEvent("PLAYER_REGEN_ENABLED")
     

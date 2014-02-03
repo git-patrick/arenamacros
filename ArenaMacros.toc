@@ -6,6 +6,9 @@
 ## Dependencies: libpat
 ## SavedVariablesPerCharacter: AMV2_DATABASE
 
+lib/core/core.xml
+lib/container/container.xml
+
 am_queue.xml
 am_token.lua
 am_frame.xml

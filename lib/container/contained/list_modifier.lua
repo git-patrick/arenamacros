@@ -12,7 +12,7 @@ function mod.create(parent_frame)
     return f
 end
 
-function am_modifier.mt.__index:am_setindex(i)
+function mod.mt.__index:am_setindex(i)
     self.am_index = i
     self.am_moveto = nil
     
@@ -31,7 +31,7 @@ function am_modifier.mt.__index:am_setindex(i)
     self.amModID:SetText(i)
 end
 
-function am_modifier.mt.__index:am_compare(other)
+function mod.mt.__index:am_compare(other)
     if not other.am_moveto then
         return 0
     end
