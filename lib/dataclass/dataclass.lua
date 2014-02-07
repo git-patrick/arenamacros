@@ -1,23 +1,24 @@
 local addon_name, addon_table = ...
 local e, L, V, P, G = unpack(addon_table) -- Engine, Locales, PrivateDB, ProfileDB, GlobalDB
 
-local dc = { }
+local l = e:mklib("dataclass", "1.0")
 
--- Create our namespace in the engine.
-e:create_library("dataclass", dc)
+-- the dataclass class is used to create other classes based on a list of properties at runtime.
+local dataclass = l:mkclass("dataclass")
 
 -- used for some supporting tables and other functions required to make dataclasses work.
-dc._support = { }
 
 -- the varargs are a set of tables to add to the metatable search list for the newly created factory's products.
-function dc.create(property_list, ...)
-    local t = setmetatable({ }, dc._support.factory)
+function dataclass.create(property_list, ...)
+    local t = dataclass:class("instance"):create()
     
     -- this metatable is here instead of in :create below so the table is reused by each call to that :create
     t._metatable = e.util.create_search_indexmetatable(..., { ["_properties"] = property_list }, dc._support.product)
     
     return t
 end
+
+local instance = dataclass:mkclass("instance")
 
 -- this is used as the metatable for factories returned by dc.create
 dc._support.factory = { __index = { } }

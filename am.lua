@@ -12,52 +12,10 @@
  
 ]]--
 
-
-
-am.blank_condition = {
-    value = {
-        text = "true",
-        data = "true"
-    },
-    relation = {
-        text = "is",
-        data = "is"
-    },
-    name = "true"
-}
-am.blank_modifier = {
-    text = "",
-    conditions = {
-        am.blank_condition
-    }
-}
-am.blank_macro = am_database_macro.create({
-                                          name = "UntitledMacro",
-                                          icon = "Interface\\ICONS\\INV_Misc_QuestionMark",
-                                          modifiers = {
-                                          am.blank_modifier
-                                          }
-                                          }, nil)
-
-
-
-
-
-
-
-
-
-
 local addon_name, addon_table = ...
 local e, L, V, P, G = unpack(addon_table) -- Engine, Locales, PrivateDB, ProfileDB, GlobalDB
 
--- Addon's main frame for events and etc.
-e.am = CreateFrame("Frame", nil, UIParent)
-
-local am = e.am
-
-am.events = { }
-am.frames = { }     -- condition addon frames are added to this.
+addon.create(e, addon_name, 2.0)
 
 function am.slashcmd(msg, editbox)
     ShowUIPanel(AMFrame)
@@ -67,8 +25,11 @@ end
 SLASH_ARENAMACROS1 = "/am"
 SlashCmdList["ARENAMACROS"] = am.slashcmd
 
-function am.events.UPDATE_MACROS()
-    -- OKAY SO, here is what I want to happen here.
+
+
+
+
+function e.events.UPDATE_MACROS()
     --[[
         On every UPDATE_MACRO I need to recheck all the macros, make sure I have
         everyone of them in my database and on my list.
@@ -101,7 +62,7 @@ function am.events.UPDATE_MACROS()
     ]]--
 end
 
-function am.events.PLAYER_ENTERING_WORLD()
+function e.events.PLAYER_ENTERING_WORLD()
     if (am.initialized) then
         return
     end
@@ -141,12 +102,6 @@ function am.events.PLAYER_ENTERING_WORLD()
     am:RegisterEvent("UPDATE_MACROS")
 end
 
-function am.initialize()
-    am:SetScript("OnEvent", function(frame, event, ...) frame.events[event](...) end)
-
-    am:RegisterEvent("PLAYER_ENTERING_WORLD")
-end
-
 function am.check()
     -- this is setup to be called by the addons onchange callback.  whenever a condition's value changes, we recheck everything
     
@@ -158,6 +113,34 @@ function am.check()
 	end
 end
 
+
+
+
+
+am.blank_condition = {
+    value = {
+        text = "true",
+        data = "true"
+    },
+    relation = {
+        text = "is",
+        data = "is"
+    },
+    name = "true"
+}
+am.blank_modifier = {
+    text = "",
+    conditions = {
+        am.blank_condition
+    }
+}
+am.blank_macro = am_database_macro.create({
+                                          name = "UntitledMacro",
+                                          icon = "Interface\\ICONS\\INV_Misc_QuestionMark",
+                                          modifiers = {
+                                          am.blank_modifier
+                                          }
+                                          }, nil)
 
 
 

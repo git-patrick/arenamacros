@@ -1,8 +1,9 @@
 local addon_name, addon_table = ...
-
 local e, L, V, P, G = unpack(addon_table) -- Engine, Locales, PrivateDB, ProfileDB, GlobalDB
 
-e.contained.modifier = { mt = { __index = setmetatable({ }, e.util.create_search_indexmetatable(e.dataclass.modifier.li, e.contained.mt)) } }
+local c = e:lib("container")
+
+ = { mt = { __index = setmetatable({ }, e.util.create_search_indexmetatable(e.dataclass.modifier.li, e.contained.mt)) } }
 
 local mod = e.contained.modifier
 
