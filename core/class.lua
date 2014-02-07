@@ -1,4 +1,4 @@
-local addon_name, addon_table = "TEST", { { }, { }, { }, { }, { } } --...
+local addon_name, addon_table = ... -- "TEST", { { }, { }, { }, { }, { } }
 local e, L, V, P, G = unpack(addon_table) -- Engine, Locales, PrivateDB, ProfileDB, GlobalDB
 
 -- conflict is a function which takes three parameters, table, key, and new value
