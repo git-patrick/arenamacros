@@ -1,10 +1,8 @@
-local addon_name, addon_table = ...
+local addon_name, e = ...
 
-local e, L, V, P, G = unpack(addon_table) -- Engine, Locales, PrivateDB, ProfileDB, GlobalDB
+local libutil = e:addlib(lib:new({ "utility", "1.0" }))
 
-e.util = { }
-
-function e.util._tostr(o)
+function libutil.tostring(o)
     if type(o) == 'table' then
         local s = '{ '
         
@@ -20,23 +18,44 @@ function e.util._tostr(o)
     end
 end
 
-function e.util.create_search_indexmetatable(...)
-    local table_list = { ... }
-    
-    return { __index = function(object, key)
-        for i,v in pairs(table_list) do
-            if (v[key]) then
-                return v[key]
-            elseif (v.__index and v.__index[key]) then
-                return v.__index[key]
-            end
-        end
-        
-        return nil
-    end }
+
+
+
+-- copy references to my globals.lua global functions into this library.
+-- this is how I want all downstream stuff from lib util (which is all other libs and the addon itself)
+-- to access these functions.
+-- the globals are only global for the references here, and since they are required for some core setup stuff.
+libutil.table_merge = table_merge
+libutil.array_append = array_append
+libutil.apply = apply
+
+
+
+
+-- this just adds a couple simple things to lua arrays that I use on occasion
+-- erray stands for enhanced array
+local erray = libutil:addclass(class.create("erray"))
+
+function erray:add(what)
+    table.insert(self, what)
 end
 
-function e.util.create_or_rename_macro(old_name, new_name)
+function erray:rm(what)
+    for i,v in ipairs(self) do
+        if v == what then
+            table.remove(self, i)
+        end
+    end
+end
+
+
+
+
+
+
+
+-- IM GOING TO MOVE THESE OUT OF HERE, I don't like wow related stuff in this general lua related lib
+function libutil.create_or_rename_macro(old_name, new_name)
     if (not old_name or GetMacroIndexByName(old_name) == 0) then
         -- macro doesn't already exist, try to create it.
         
@@ -52,25 +71,9 @@ function e.util.create_or_rename_macro(old_name, new_name)
     return true
 end
 
-function e.util.delete_macro(name)
+function libutil.delete_macro(name)
     if (GetMacroIndexByName(name) > 0) then
         DeleteMacro(name)
     end
 end
 
--- this is a metatable that adds a couple functions to lua arrays (integer indexed tables).
--- just set your tables metatable to this to use them
--- its called "erray" for enhanced array
-e.util.erray = { __index = { } }
-
-function e.util.array:add(what)
-    table.insert(self, what)
-end
-
-function e.util.array:rm(what)
-    for i,v in ipairs(self) do
-        if v == what then
-            table.remove(self, i)
-        end
-    end
-end

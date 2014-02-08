@@ -2,9 +2,13 @@
 ## Title: Arena Macros
 ## Notes: Automatically modifies your macros when user specified conditions are met.
 ## Author: Pat
-## Version: v2.0.0
+## Version: 2.0
 
-core/core.xml
-lib/core/core.xml
+core\core.xml
 
 ArenaMacros.lua
+
+lib\utility\utility.xml
+lib\dataclass\dataclass.xml
+lib\container\container.xml
+

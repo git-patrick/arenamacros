@@ -1,25 +1,20 @@
-local addon_name, addon_table = ...
-local e, L, V, P, G = unpack(addon_table) -- Engine, Locales, PrivateDB, ProfileDB, GlobalDB
+local addon_name, e = ...
 
-local l = e:mklib("container", "1.0")
+local libcontainer = e:addlib(lib:new({ "container", "1.0" }))
 
 -- The point of this object is to allow you to reuse frames that you have previously created.
 -- the reason for that is, there is no way to tell WoW to release frames you have created, so if you don't reuse the ones you have,
 -- you just keep increasing memory consumption, or so the wiki says.
 
-local pool = l:mkclass("pool")
+local pool = libcontainer:addclass(class.create("pool"))
 
-function pool.create(create_frame_function)
-    local c = setmetatable({ }, pool.mt)
-    
-    c.create_frame = create_frame_function
-    c.free = { }
-
-    return c
+function pool:init(create_frame_function)
+    self.create_frame = create_frame_function
+    self.free = { }
 end
 
 -- grabs either a new frame, or one from the used pool
-function pool.mt.__index:get()
+function pool:get()
     local f
     local pool_index = table.getn(self.free)
     
@@ -36,38 +31,42 @@ end
 
 -- gives a frame back to the pool
 -- make sure you only give us the appropriate frames!  doesn't check to make sure it came from this pool, or even is the appropriate subclass etc.
-function pool.mt.__index:give(frame)
+function pool:give(frame)
     frame:am_release()
     
     table.insert(self.free, frame)
 end
 
 
-local uidmap = l:mkclass("uidmap")
+
+
+
+
+local uidmap = libcontainer:addclass(class.create("uidmap"))
 
 -- this object is used to record a chosen property of dataclass objects, and is used by containers to fail add if the property is already in use.
 -- for example, it demands macro names be unique.  seperated from the container itself so multiple containers can use the same map
 
-function uidmap.create(unique_identifier)
-    local t         = setmetatable({ }, uidmap.mt)
-    
+function uidmap:init(unique_identifier)
     -- unique identifier is the property name of creation objects passed to container:add
     -- that property value will be used as a UNIQUE identifier in a map to indicate whether or not
     -- the id is already in the container.  add will FAIL if that property is not specified.
     
-    t.uid           = unique_identifier
-    t.map           = { }
+    self.uid           = unique_identifier
+    self.map           = { }
 
 	-- this a prehook the dataclass objects set of the chosen uid property!
 	-- pretty sweet way to make sure our map is consistent as the UID property changes.
 	-- can fail and cancel the change by returning false
-    t.prehook       = function (from, to) return t:change_uid(from, to) end
-
-    return          t
+    
+    
+    
+    -- ERROR HERE, NEED TO COME UP WITH ELEGANT WAY TO PASS self TO THIS THING!~
+    self.prehook       = function (from, to) return t:change_uid(from, to) end
 end
 
 -- object is expected to be the product of a dataclass instance with a property the same as self.uid
-function uidmap.mt.__index:contains(o)
+function uidmap:contains(o)
     if (type(o) == "string") then
         return (self.map[o] ~= nil)
     elseif (type(o) == "table") then
@@ -77,7 +76,7 @@ function uidmap.mt.__index:contains(o)
     return false
 end
 
-function uidmap.mt.__index:add(object)
+function uidmap:add(object)
     local p = object:am_getproperty(self.uid)
     
     if (not p or self:contains(object)) then
@@ -93,7 +92,7 @@ function uidmap.mt.__index:add(object)
     return true
 end
 
-function uidmap.mt.__index:rm(object)
+function uidmap:rm(object)
     local p = object:am_getproperty(self.uid)
     
     if (not object[p] or not self:contains(object)) then
@@ -111,7 +110,7 @@ end
 -- to properly alter the UID value, you can use the set_uid() function inherited from am_contained
 -- this is now called automatically by prehooks in the dataclass property object set calls.
 
-function uidmap.mt.__index:change_uid(from, to)
+function uidmap:change_uid(from, to)
     if (not self.uid_map:contains(from) or self.uid_map:contains(to)) then
         return false    -- failure
     end
@@ -127,26 +126,20 @@ end
 
 
 
--- container class!
-local container = l:mkclass("container")
+-- container class! for lists of WoW Frames!
+local container = libcontainer:addclass(class.create("container"))
 
-function container.create(parent_frame, frame_pool, uid_map)
-    local c         = { }
-    
-    setmetatable(c, am_container.mt)
-
-    c.parent_frame  = parent_frame
-    c.frame_pool    = frame_pool
-    c.uid_map       = uid_map
-    c.frames        = { }           -- child frames
-    
-    return c
+function container:init(parent_frame, frame_pool, uid_map)
+    self.parent_frame  = parent_frame
+    self.frame_pool    = frame_pool
+    self.uid_map       = uid_map
+    self.frames        = { }           -- child frames
 end
 
 -- this is called whenever a frame is resorted or removed (resort is called by add).
--- this has the default behavior from am_contained of updating the background color by index or highlight if it is set.
--- that behavior can be overridden in subclasses.
-function container.mt.__index:update()
+-- this has the default behavior from contained of updating the background color by index or highlight if it is set.
+-- that behavior can be overridden in subclasses of contained
+function container:update()
     for i,v in ipairs(self.frames) do
         v:am_update(i)
         v:am_detach()
@@ -158,13 +151,13 @@ function container.mt.__index:update()
     end
 end
 
-function container.mt.__index:addall(objects)
+function container:addall(objects)
     for i, v in pairs(objects) do
         self:add(v)
     end
 end
 
-function container.mt.__index:add(object)
+function container:add(object)
     if (self.uid_map and self.uid_map:contains(object)) then
         return 1
     end
@@ -195,7 +188,7 @@ function container.mt.__index:add(object)
     return nil, f -- for success
 end
 
-function container.mt.__index:highlight(index)
+function container:highlight(index)
     if (self.am_highlighted) then
         self.am_highlighted:am_unhighlight()
     end
@@ -208,8 +201,8 @@ function container.mt.__index:highlight(index)
 end
 
 -- this takes a frame from our list and moves it to the appropriate place based on custom sorting requirements if they exist
--- assumes all other frames in the list are already in their appropriate sorted position
-function container.mt.__index:resort(index)
+-- assumes all other frames in the list are already in their appropriate sorted position with the possible exception of the frame at index
+function container:resort(index)
     local f = self.frames[index]
     
     if (f.am_compare) then
@@ -227,7 +220,7 @@ function container.mt.__index:resort(index)
     self:update()
 end
 
-function container.mt.__index:remove(index)
+function container:remove(index)
     local f = self.frames[index]
     
     if (self.uid_map) then
@@ -242,21 +235,21 @@ function container.mt.__index:remove(index)
     self:update()
 end
 
-function container.mt.__index:clear()
+function container:clear()
     -- go backwards so the auto indexes dont have to shuffle.  aka, faster
     for i = self:count(), 1, -1 do
         self:remove(i)
     end
 end
 
-function container.mt.__index:get_uidmap()
+function container:get_uidmap()
     return self.uid_map
 end
 
-function container.mt.__index:get_frames()
+function container:get_frames()
     return self.frames
 end
 
-function container.mt.__index:count()
+function container:count()
     return table.getn(self.frames)
 end

@@ -1,19 +1,21 @@
-local addon_name, addon_table = ...
-local e, L, V, P, G = unpack(addon_table) -- Engine, Locales, PrivateDB, ProfileDB, GlobalDB
+local addon_name, e = ...
 
-local c = e:lib("container")
+local libcontainer = e:lib("container")
+local libdc = e:lib("dataclass")
 
- = { mt = { __index = setmetatable({ }, e.util.create_search_indexmetatable(e.dataclass.modifier.li, e.contained.mt)) } }
+local modifier = libcontainer:addclass(class.create("modifier"), libcontainer:class("contained"), libdc:class("dataclass"))
 
-local mod = e.contained.modifier
+-- so when creating these things I need to do the following....
+-- modifier:new({ modifier = { parent_frame } }, CreateFrame("Button", nil, UIParent, "amModifierTemplate"))
 
-function mod.create(parent_frame)
-    local f = setmetatable(CreateFrame("Button", nil, parent_frame or UIParent, "amModifierTemplate"), mod.mt)
-    
-    return f
+
+function modifier:init(parent_frame)
+    if (parent_frame) then
+        self:SetParent(parent_frame)
+    end
 end
 
-function mod.mt.__index:am_setindex(i)
+function mod:am_setindex(i)
     self.am_index = i
     self.am_moveto = nil
     
@@ -32,7 +34,7 @@ function mod.mt.__index:am_setindex(i)
     self.amModID:SetText(i)
 end
 
-function mod.mt.__index:am_compare(other)
+function mod:am_compare(other)
     if not other.am_moveto then
         return 0
     end

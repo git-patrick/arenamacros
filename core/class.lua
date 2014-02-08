@@ -1,62 +1,22 @@
-local addon_name, addon_table = ... -- "TEST", { { }, { }, { }, { }, { } }
-local e, L, V, P, G = unpack(addon_table) -- Engine, Locales, PrivateDB, ProfileDB, GlobalDB
-
--- conflict is a function which takes three parameters, table, key, and new value
--- it is called when table[key] already has a value, but we have a new value for that key from another table.
--- conflict is expected to resolve the issue itself, and the merge continues
--- note: if nil is passed for conflict, the default behaviour is to maintain the current value and ignore the new
-
-local function table_merge(object, conflict, copy, ...)
-	local t = object or { }
-
-	for i, v in ipairs({ ... }) do
-		for j, k in pairs(v) do
-			if not t[j] then
-				t[j] = copy and copy(k) or k
-			else
-				if conflict then
-					conflict(j, t[j], k)
-				end
-			end
-		end
-	end
-
-	return t
-end
-
-local function array_append(...)
-	local t = { }
-
-	for i, v in ipairs({ ... }) do
-		for j, k in ipairs(v) do
-			table.insert(t, k)
-		end
-	end
-
-	return t
-end
-
-
-local function apply(what, ...)
-	local t = { ... }
-
-	for i, v in ipairs(t) do
-		t[i] = what(v)
-	end
-
-	return unpack(t)
-end
-
-
-
+local addon_name, addon_table = ...
 
 -- class object.  this has a static member (.create) to create a new class
-local class = { }
+class = { }
 
 function class.create(name, ...)
 	-- the vararg is a list of classes this inherits from.
 	-- copy all those class methods into a new table and set its metatable to search class table.
 	-- functions are all by reference, and this actually results in the fastest implementation I've come up with
+	
+	-- the reason we can't share a name with any superclass is because of class.base:init below.  you need to be
+	-- able to distinguish the init functions merged into t._inits from each other for parameter passing in class.base:init
+	for i, v in pairs { ... } do
+		if (v.name == name) then
+			print("class.lua: Error! Class \"", name, "\" cannot share its name with a superclass.")
+			
+			return nil
+		end
+	end
 
 	local t = { }
 
@@ -68,13 +28,14 @@ function class.create(name, ...)
 	-- these are all called in class.base:new(), but the order of calling is NOT DEFINED!
 	-- I might change that later, but we shall see if it is necessary.
 	t._inits = table_merge(nil, nil, nil, apply(function (v) return v._inits end, ...))
-
+	
 	t.name = name
 
 	-- this metatable does the following
 	-- all functions added to the returned class are treated as instance functions and put in the __index of _methods
 	-- all data object added to the returned class are treated as static class memberes
 	-- instance data should be initialized in a function called :init added to the returned class object
+    -- init is automatically called in the class method :new for this class and all subclasses
 	setmetatable(t, class.metatable)
 
 	-- now that the metatable is set, all the functions added will go in methods..
@@ -84,24 +45,46 @@ end
 
 -- provides the :new method which creates an instance of the class object and calls :init, which goes through all inherited 
 -- :init and calls them with appropriate parameters from :new
-
 class.base = { }
 
-function class.base:new(param, existing_table)
-	local t = setmetatable(existing_table or { }, self._methods)
 
-	self:init(t, param)
+-- passing parameters to
+
+function class.base:new(initparam, existing_table, baseclass_initparam)
+    local t = existing_table or { }
+    
+    -- WE WILL SEE IF THIS WORKS FOR FRAMES.  MIGHT REQUIRE MORE WORK.
+    -- setmetatable(self._methods, getmetatable(t))
+	setmetatable(t, self._methods)
+
+	self:init(t, initparam, baseclass_initparam)
 
 	return t
 end
 
-function class.base:init(t, param)
+function class.base:init(t, initparam, baseclass_initparam)
 	for name,v in pairs(self._inits) do
-		v(t, unpack(param and param[name] or { }))
+		if (name == self.name) then
+			p = initparam
+		else
+			p = baseclass_initparam and baseclass_initparam[name] or nil
+		end
+		
+		v(t, unpack(p or { }))
 	end
 end
 
-class.metatable = {	
+-- This method is useful for adding STATIC class functions to the class.
+-- Why is it useful?  Because, by default, all functions added to the class are treated as methods for class instance objects
+-- this is because of the __newindex metamethod below.  so to actually add a static function to our class, you use this.
+
+-- note: I am not checking to make sure you don't screw up any important class members like _methods, _inits, etc.
+-- so it is up to you not to break them.
+function class.base:add_static(name, value)
+	rawset(self, name, value)
+end
+
+class.metatable = {
 	__index = class.base,
 	__newindex = function (t,k,v)
 		-- all functions are treated as methods of this class' instances
@@ -112,7 +95,7 @@ class.metatable = {
 				t._methods.__index[k] = v
 			end
 		else
-			t[k] = v
+			rawset(t, k, v)
 		end
 	end
 }

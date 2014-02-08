@@ -1,53 +1,28 @@
-local addon_name, addon_table = ...
-local e, L, V, P, G = unpack(addon_table) -- Engine, Locales, PrivateDB, ProfileDB, GlobalDB
+local addon_name, e = ...
 
-local l = e:mklib("dataclass", "1.0")
+local libutil   = e:lib("utility")
+local libdc     = e:addlib(lib:new({ "dataclass", "1.0" }))
 
--- the dataclass class is used to create other classes based on a list of properties at runtime.
-local dataclass = l:mkclass("dataclass")
+function libdc:new(name, properties)
+    local c = class.create(name, dataclass)
 
--- used for some supporting tables and other functions required to make dataclasses work.
-
--- the varargs are a set of tables to add to the metatable search list for the newly created factory's products.
-function dataclass.create(property_list, ...)
-    local t = dataclass:class("instance"):create()
+    c.am_properties = properties
     
-    -- this metatable is here instead of in :create below so the table is reused by each call to that :create
-    t._metatable = e.util.create_search_indexmetatable(..., { ["_properties"] = property_list }, dc._support.product)
-    
-    return t
+    return c
 end
 
-local instance = dataclass:mkclass("instance")
 
--- this is used as the metatable for factories returned by dc.create
-dc._support.factory = { __index = { } }
 
-function dc._support.factory.__index:create(obj)
-    local t = setmetatable(obj or {}, self._metatable)
-    
-    for i,v in pairs(t._properties) do
-        if (v.init) then
-            v.init(t)
-        end
-    end
-    
-    return t
-end
+local dataclass = class.create("dataclass")
 
--- this is used as part of the search table list for the objects returned by the factories returned by dc.create
--- these are prefixed by am_ because these objects can also be frames or other objects, and I want to avoid
--- namespace conflicts
-
-dc._support.product = { }
+-- the reason for the am_ prefix in the functions below is that these will be added to WoW Frame objects namespace, and I don't want collisions
 
 -- gets the property object of the chosen name
-function dc._support.product:am_getproperty(name)
-    return self._properties[name]
+function dataclass:am_getproperty(name)
+    return self.am_properties[name]
 end
-
 -- gets the value of the property object of the chosen name
-function dc._support.product:am_get(name)
+function dataclass:am_get(name)
     return self:am_getproperty(name):get()
 end
 
@@ -58,37 +33,47 @@ end
 -- unique identifier in a container, but since there is only one such property, and the properties are checked in the order
 -- they were specified to the dataclass creation, if the prehook on that fails, nothing will change anyways.)
 
-function dc._support.product:am_set(to)
-    for i, v in pairs(self._properties) do
-        if (not v:set(self, to._properties[i].get(to))) then
+function dataclass:am_set(to)
+    for i, v in pairs(self.am_properties) do
+        if (not v:set(self, to.am_properties[i].get(to))) then
             return false
         end
     end
 end
 
 -- dump me to screen
-function dc._support.product:am_print()
-    for i, v in pairs(self._properties) do
-        print(i, " ", dc._tostr(v.get(self)))
+function dataclass:am_print()
+    for i, v in pairs(self.am_properties) do
+        print(i, " ", libutil.tostring(v.get(self)))
     end
 end
 
 
-dc._support.prop = { }
-local property = dc._support.prop
 
--- OKAY so this object maintains a list of pre and post change callbacks for when the property changes!
-property.metatable = { __index = { } }
+local property = libdc:addclass(class.create("property"))
 
-function property.metatable.__index:clear_pre()
-    self.prehook = setmetatable({ }, e.util.erray)
+function property:init(get, _set, init)
+    local erray = libutil:class("erray")
+    
+    -- _set changes the actual value, while :set below cycles through all my pre and post hooks.
+    -- you should not call _set directly.
+    self._set = _set
+    self.get = get
+    self.init = init
+    
+    self.prehook = erray:new()
+    self.psthook = erray:new()
 end
 
-function property.metatable.__index:clear_pst()
-    self.psthook = setmetatable({ }, e.util.erray)
+function property:clear_pre()
+    self.prehook = libutil:class("erray"):new()
 end
 
-function property.metatable.__index:set(owning_table, to_value)
+function property:clear_pst()
+    self.psthook = libutil:class("erray"):new()
+end
+
+function property:set(owning_table, to_value)
     local my_value = self.get(owning_table)
     
     -- if the value did not change, we skip all hook calls, and the set call!!!!
@@ -106,6 +91,8 @@ function property.metatable.__index:set(owning_table, to_value)
         return false
     end
     
+    -- post hooks can still "fail" and cause us to return false, but this does not undo the _set above.
+    -- not sure I like this behaviour, might chaneg it
     for j,f in ipairs(self.psthook) do
         if (not f(my_value, to_value)) then
             return false
@@ -115,58 +102,55 @@ function property.metatable.__index:set(owning_table, to_value)
     return true
 end
 
--- each of these return a property object that is used by the instances of the dataclass instance classes to get/set their respective properties,
--- or initialize them upon creation of the class (if init is non nil)
-
-function property.scalar(name)
-    return setmetatable({
-        ["get"] = function (self) return self[name] end,
-        ["_set"] = function (self, value) self[name] = value end,
-        ["init"] = nil,
-        ["prehook"] = setmetatable({ }, e.util.erray),
-        ["psthook"] = setmetatable({ }, e.util.erray)
-    }, property.metatable)
-end
-
-function property.array(name, dataclass_factory)
-    return setmetatable({
-        ["get"] = function (self) return self[name] end,
-        ["_set"] = function (self, value)
-            self[name] = { }
-            
-            for i, v in pairs(value) do
-                table.insert(self[name], dataclass_factory:create():am_set(v))
-            end
-        end,
-        ["init"] = function (self)
-            if (self[name]) then
-                for i,v in pairs(self[name]) do
-                    dataclass_factory:create(v)
-                end
-            end
-        end,
-        ["prehook"] = setmetatable({ }, e.util.erray),
-        ["psthook"] = setmetatable({ }, e.util.erray)
-    }, property.metatable)
-end
-
-function property.custom(get, set, init)
-    return setmetatable({
-        ["get"] = get,
-        ["_set"] = set,
-        ["init"] = init,
-        ["prehook"] = setmetatable({ }, e.util.erray),
-        ["psthook"] = setmetatable({ }, e.util.erray)
-    }, property.metatable)
-end
 
 
+
+property:add_static("scalar", function (name)
+    return property:new({ property =
+        {
+            function (t) return t[name] end,            -- get
+            function (t, value) t[name] = value end     -- _set
+        }
+    })
+end)
+
+-- this is an array of dataclass objects !  the dataclass type is passed in dc
+property:add_static("array", function (name, dc)
+    return property:new({ property =
+        {
+			function (t) return t[name] end,			-- get
+			function (t, value)							-- _set
+				t[name] = { }
+			
+				for i, v in pairs(value) do
+					table.insert(t[name], dc:new():am_set(v))
+				end
+			end,
+            function (t)								-- init
+				-- since classes can be created on existing objects (for example, the WoW stored variables table), we check if our property is set
+				-- if it is, we basically tell all of the objects in the array that they are dc objects (since they were likely just tables before
+				-- this amounts to setting their metatable up to have access to dataclass members)
+				if (t[name]) then
+					for i,v in pairs(t[name]) do
+						dc:new(v)
+					end
+				end
+			end,
+        }
+    })
+end)
+
+property:add_static("custom", function(get, _set, init)
+	return property:new({ property = { get, _set, init } })
+end)
+
+
+
+
+
+--[[
 
 -- some reused property getters / setters
-
-
-
-
 local function xmlname_get(self)
     return self.amName:GetText()
 end
@@ -326,7 +310,8 @@ t.db = dc.create
  ["enabled"]    = property.scalar("enabled")
  },
  { _database = AM_MACRO_DATABASE_V2 })
-
+ 
+]]--
 
 
 
