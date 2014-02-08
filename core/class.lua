@@ -47,14 +47,16 @@ end
 -- :init and calls them with appropriate parameters from :new
 class.base = { }
 
-
 -- passing parameters to
 
 function class.base:new(initparam, existing_table, baseclass_initparam)
     local t = existing_table or { }
     
     -- WE WILL SEE IF THIS WORKS FOR FRAMES.  MIGHT REQUIRE MORE WORK.
-    -- setmetatable(self._methods, getmetatable(t))
+	-- THIS WORKS FOR FRAMES!!  but this would probably have to change if this was used in a more general setting (with more general metatables on existing_table)
+	-- WoW Frames have a simple metatable with just __index set to a table instead of function.
+	
+    setmetatable(self._methods.__index, getmetatable(t))
 	setmetatable(t, self._methods)
 
 	self:init(t, initparam, baseclass_initparam)

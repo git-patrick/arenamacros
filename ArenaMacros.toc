@@ -12,3 +12,4 @@ lib\utility\utility.xml
 lib\dataclass\dataclass.xml
 lib\container\container.xml
 
+contained\modifier.xml

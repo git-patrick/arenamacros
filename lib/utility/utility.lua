@@ -2,24 +2,26 @@ local addon_name, e = ...
 
 local libutil = e:addlib(lib:new({ "utility", "1.0" }))
 
-function libutil.tostring(o)
-    if type(o) == 'table' then
-        local s = '{ '
-        
+-- all these prints because the WoW UI has trouble displaying prints of very large strings
+-- so just creating a string to print doesn't really work for large dumps
+function libutil.dump(o, max_recursion, current_recursion)
+	current_recursion = current_recursion or 0
+	local indent = string.rep(" ", current_recursion)
+	
+    if (type(o) == "table" and (max_recursion and current_recursion <= max_recursion)) then
+		print(indent, "{")
+		
         for k,v in pairs(o) do
-            if type(k) ~= 'number' then k = '"'..k..'"' end
-            
-            s = s .. '['..k..'] = ' .. dc._tostr(v) .. ','
+			print(indent, " [", k, "] = ")
+			
+			libutil.dump(v, max_recursion, current_recursion + 1)
         end
         
-        return s .. '} '
+        print(indent, "}")
     else
-        return tostring(o)
+        print(indent, " ", tostring(o))
     end
 end
-
-
-
 
 -- copy references to my globals.lua global functions into this library.
 -- this is how I want all downstream stuff from lib util (which is all other libs and the addon itself)

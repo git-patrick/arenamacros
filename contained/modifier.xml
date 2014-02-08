@@ -3,10 +3,11 @@
     
 	<Script file="modifier.lua"/>
     
-    <Button name="amModifierTemplate" inherits="amListItemTemplate" virtual="true">
+    <Button name="amModifier_ListItemTemplate" inherits="amContained_ListItemTemplate" virtual="true">
         <Size y="40" />
         <Scripts>
-            <OnClick function="amModifier_OnClick" />
+			<OnLoad function="amModifier_OnLoad" />
+            <OnClick function="amModifier_ListItem_OnClick" />
         </Scripts>
         <Layers>
             <Layer level="HIGHLIGHT">
@@ -51,7 +52,7 @@
                 <PushedTexture file="Interface\Buttons\Arrow-Down-Down"/>
                 <DisabledTexture file="Interface\Buttons\Arrow-Down-Disabled"/>
             </Button>
-            <Button parentKey="amDelete" inherits="amDeleteButtonTemplate" frameStrata="HIGH">
+            <Button parentKey="amDelete" inherits="amContained_DeleteButtonTemplate" frameStrata="HIGH">
                 <Anchors>
                     <Anchor point="RIGHT" />
                 </Anchors>

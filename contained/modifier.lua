@@ -1,21 +1,17 @@
 local addon_name, e = ...
 
+local libutil = e:lib("utility")
+
 local libcontainer = e:lib("container")
 local libdc = e:lib("dataclass")
 
 local modifier = libcontainer:addclass(class.create("modifier"), libcontainer:class("contained"), libdc:class("dataclass"))
 
--- so when creating these things I need to do the following....
--- modifier:new({ modifier = { parent_frame } }, CreateFrame("Button", nil, UIParent, "amModifierTemplate"))
-
-
-function modifier:init(parent_frame)
-    if (parent_frame) then
-        self:SetParent(parent_frame)
-    end
+function modifier:init()
+	
 end
 
-function mod:am_setindex(i)
+function modifier:am_setindex(i)
     self.am_index = i
     self.am_moveto = nil
     
@@ -34,7 +30,7 @@ function mod:am_setindex(i)
     self.amModID:SetText(i)
 end
 
-function mod:am_compare(other)
+function modifier:am_compare(other)
     if not other.am_moveto then
         return 0
     end
@@ -51,6 +47,10 @@ end
 
 
 
+function amModifier_OnLoad(self)
+	-- turn me into a modifier class object!
+	modifier:new(nil, self)
+end
 
 
 function amModifier_OnClick(self, button, down)

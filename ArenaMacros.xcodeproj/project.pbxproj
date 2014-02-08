@@ -8,12 +8,6 @@
 
 /* Begin PBXFileReference section */
 		CD8D534A18564CC800FE7710 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
-		CD950FD118A57B12000BA308 /* condition.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = condition.lua; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.lua; };
-		CD950FD218A57B12000BA308 /* condition.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = condition.xml; sourceTree = "<group>"; };
-		CD950FD318A57B12000BA308 /* macro.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = macro.lua; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.lua; };
-		CD950FD418A57B12000BA308 /* macro.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = macro.xml; sourceTree = "<group>"; };
-		CD950FD518A57B12000BA308 /* modifier.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = modifier.lua; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.lua; };
-		CD950FD618A57B12000BA308 /* modifier.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = modifier.xml; sourceTree = "<group>"; };
 		CD950FD718A57B12000BA308 /* contained.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = contained.lua; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.lua; };
 		CD950FD818A57B12000BA308 /* contained.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = contained.xml; sourceTree = "<group>"; };
 		CD950FD918A57B12000BA308 /* container.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = container.lua; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.lua; };
@@ -34,6 +28,12 @@
 		CDB1FB5918A0293D0025719D /* am_queue.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = am_queue.xml; sourceTree = "<group>"; };
 		CDB1FB5A18A0293D0025719D /* am_token.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = am_token.lua; sourceTree = "<group>"; };
 		CDB1FB5B18A029E50025719D /* dataclass.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = dataclass.xml; sourceTree = "<group>"; };
+		CDDF1F1518A6D2C600590795 /* condition.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = condition.lua; sourceTree = "<group>"; };
+		CDDF1F1618A6D2C600590795 /* condition.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = condition.xml; sourceTree = "<group>"; };
+		CDDF1F1718A6D2C600590795 /* macro.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = macro.lua; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.lua; };
+		CDDF1F1818A6D2C600590795 /* macro.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = macro.xml; sourceTree = "<group>"; };
+		CDDF1F1918A6D2C600590795 /* modifier.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = modifier.lua; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.lua; };
+		CDDF1F1A18A6D2C600590795 /* modifier.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = modifier.xml; sourceTree = "<group>"; };
 		CDF29D95184317090025CAC4 /* ArenaMacros.toc */ = {isa = PBXFileReference; lastKnownFileType = text; path = ArenaMacros.toc; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -41,26 +41,12 @@
 		CD950FCF18A57B12000BA308 /* container */ = {
 			isa = PBXGroup;
 			children = (
-				CD950FD018A57B12000BA308 /* contained */,
 				CD950FD718A57B12000BA308 /* contained.lua */,
 				CD950FD818A57B12000BA308 /* contained.xml */,
 				CD950FD918A57B12000BA308 /* container.lua */,
 				CD950FDA18A57B12000BA308 /* container.xml */,
 			);
 			path = container;
-			sourceTree = "<group>";
-		};
-		CD950FD018A57B12000BA308 /* contained */ = {
-			isa = PBXGroup;
-			children = (
-				CD950FD118A57B12000BA308 /* condition.lua */,
-				CD950FD218A57B12000BA308 /* condition.xml */,
-				CD950FD318A57B12000BA308 /* macro.lua */,
-				CD950FD418A57B12000BA308 /* macro.xml */,
-				CD950FD518A57B12000BA308 /* modifier.lua */,
-				CD950FD618A57B12000BA308 /* modifier.xml */,
-			);
-			path = contained;
 			sourceTree = "<group>";
 		};
 		CD950FDC18A57B84000BA308 /* core */ = {
@@ -125,11 +111,25 @@
 			path = queue;
 			sourceTree = "<group>";
 		};
+		CDDF1F1418A6D2C600590795 /* contained */ = {
+			isa = PBXGroup;
+			children = (
+				CDDF1F1518A6D2C600590795 /* condition.lua */,
+				CDDF1F1618A6D2C600590795 /* condition.xml */,
+				CDDF1F1718A6D2C600590795 /* macro.lua */,
+				CDDF1F1818A6D2C600590795 /* macro.xml */,
+				CDDF1F1918A6D2C600590795 /* modifier.lua */,
+				CDDF1F1A18A6D2C600590795 /* modifier.xml */,
+			);
+			path = contained;
+			sourceTree = "<group>";
+		};
 		CDF29D8A184315D60025CAC4 = {
 			isa = PBXGroup;
 			children = (
 				CD950FDC18A57B84000BA308 /* core */,
 				CDB1FB4018A0293D0025719D /* lib */,
+				CDDF1F1418A6D2C600590795 /* contained */,
 				CDF29D95184317090025CAC4 /* ArenaMacros.toc */,
 				CD950FDB18A57B2D000BA308 /* ArenaMacros.lua */,
 				CD8D534A18564CC800FE7710 /* .gitignore */,
