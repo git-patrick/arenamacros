@@ -108,7 +108,11 @@ function queue.create()
    
     for name, uid in pairs(queue.uidfromframe) do
         if (_G[name]) then
-            _G[name]:HookScript("OnClick", function (frame) t:_hook(frame) end)
+			if (not _G[name]:IsMouseEnabled()) then
+				_G[name]:EnableMouse(true)
+			end
+			
+			_G[name]:SetScript("OnMouseDown", function (frame) t:_hook(frame) end)
         end
     end
     
