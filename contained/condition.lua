@@ -1,11 +1,15 @@
-local addon_name, addon_table = ...
+local addon_name, e = ...
 
-local e, L, V, P, G = unpack(addon_table) -- Engine, Locales, PrivateDB, ProfileDB, GlobalDB
+local libutil = e:lib("utility")
 
--- Create our namespace in the engine.
-e.contained.condition = { mt = { __index = setmetatable({ }, e.util.create_search_indexmetatable(e.dataclass.condition.li, e.contained.mt)) } }
+local libcontainer = e:lib("container")
+local libdc = e:lib("dataclass")
 
-local cond = e.contained.condition
+local condition = libcontainer:addclass(class.create("modifier"), libcontainer:class("contained"))
+
+function condition:init()
+	
+end
 
 function cond.create(parent_frame)
     local f = setmetatable(CreateFrame("Button", nil, parent_frame or UIParent, "amConditionTemplate"), cond.mt)

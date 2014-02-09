@@ -5,7 +5,10 @@ local libutil = e:lib("utility")
 local libcontainer = e:lib("container")
 local libdc = e:lib("dataclass")
 
-local modifier = libcontainer:addclass(class.create("modifier"), libcontainer:class("contained"), libdc:class("dataclass"))
+
+-- setup the properties list here.....
+local mod_dataclass = libcontainer:addclass(libdc:new("modifier_dataclass", PROPERTIES_LIST_HERE))
+local modifier		= libcontainer:addclass(class.create("modifier"), libcontainer:class("contained"), mod_dataclass)
 
 function modifier:init()
 	
