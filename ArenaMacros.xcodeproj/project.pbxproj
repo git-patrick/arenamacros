@@ -7,6 +7,14 @@
 	objects = {
 
 /* Begin PBXFileReference section */
+		CD49041F18A80DD500FD87D5 /* dataclasses.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = dataclasses.lua; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.lua; };
+		CD49042418A8510600FD87D5 /* wow.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = wow.lua; path = lib/wow/wow.lua; sourceTree = SOURCE_ROOT; xcLanguageSpecificationIdentifier = xcode.lang.lua; };
+		CD49042518A8510600FD87D5 /* wow.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = wow.xml; path = lib/wow/wow.xml; sourceTree = SOURCE_ROOT; };
+		CD49042918A88FD300FD87D5 /* am_location.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = am_location.lua; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.lua; };
+		CD49042A18A88FD300FD87D5 /* true.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = true.lua; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.lua; };
+		CD49042B18AAA1C800FD87D5 /* true.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = true.xml; sourceTree = "<group>"; };
+		CD49043118AAA75300FD87D5 /* extension.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = extension.lua; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.lua; };
+		CD49043218AAA75300FD87D5 /* extension.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = extension.xml; sourceTree = "<group>"; };
 		CD8D534A18564CC800FE7710 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 		CD950FD718A57B12000BA308 /* contained.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = contained.lua; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.lua; };
 		CD950FD818A57B12000BA308 /* contained.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = contained.xml; sourceTree = "<group>"; };
@@ -19,10 +27,6 @@
 		CD950FE018A59B76000BA308 /* globals.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = globals.lua; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.lua; };
 		CD950FE218A59C8F000BA308 /* utility.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = utility.lua; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.lua; };
 		CD950FE318A59CD0000BA308 /* utility.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = utility.xml; sourceTree = "<group>"; };
-		CDB1FB4218A0293D0025719D /* am_addon.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = am_addon.lua; sourceTree = "<group>"; };
-		CDB1FB4318A0293D0025719D /* am_addons.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = am_addons.xml; sourceTree = "<group>"; };
-		CDB1FB4418A0293D0025719D /* am_location.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = am_location.lua; sourceTree = "<group>"; };
-		CDB1FB4518A0293D0025719D /* am_true.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = am_true.lua; sourceTree = "<group>"; };
 		CDB1FB5618A0293D0025719D /* dataclass.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = dataclass.lua; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.lua; };
 		CDB1FB5818A0293D0025719D /* am_queue.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = am_queue.lua; sourceTree = "<group>"; };
 		CDB1FB5918A0293D0025719D /* am_queue.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = am_queue.xml; sourceTree = "<group>"; };
@@ -38,6 +42,36 @@
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
+		CD49042118A822FD00FD87D5 /* wow */ = {
+			isa = PBXGroup;
+			children = (
+				CD49042418A8510600FD87D5 /* wow.lua */,
+				CD49042518A8510600FD87D5 /* wow.xml */,
+			);
+			name = wow;
+			path = frame;
+			sourceTree = "<group>";
+		};
+		CD49042618A88FD300FD87D5 /* extensions */ = {
+			isa = PBXGroup;
+			children = (
+				CD49042918A88FD300FD87D5 /* am_location.lua */,
+				CD49042A18A88FD300FD87D5 /* true.lua */,
+				CD49042B18AAA1C800FD87D5 /* true.xml */,
+			);
+			name = extensions;
+			path = addons;
+			sourceTree = "<group>";
+		};
+		CD49043018AAA75300FD87D5 /* extension */ = {
+			isa = PBXGroup;
+			children = (
+				CD49043118AAA75300FD87D5 /* extension.lua */,
+				CD49043218AAA75300FD87D5 /* extension.xml */,
+			);
+			path = extension;
+			sourceTree = "<group>";
+		};
 		CD950FCF18A57B12000BA308 /* container */ = {
 			isa = PBXGroup;
 			children = (
@@ -72,24 +106,14 @@
 		CDB1FB4018A0293D0025719D /* lib */ = {
 			isa = PBXGroup;
 			children = (
+				CD49043018AAA75300FD87D5 /* extension */,
+				CD49042118A822FD00FD87D5 /* wow */,
 				CD950FE118A59C8F000BA308 /* utility */,
 				CD950FCF18A57B12000BA308 /* container */,
-				CDB1FB4118A0293D0025719D /* addons */,
 				CDB1FB5518A0293D0025719D /* dataclass */,
 				CDB1FB5718A0293D0025719D /* queue */,
 			);
 			path = lib;
-			sourceTree = "<group>";
-		};
-		CDB1FB4118A0293D0025719D /* addons */ = {
-			isa = PBXGroup;
-			children = (
-				CDB1FB4218A0293D0025719D /* am_addon.lua */,
-				CDB1FB4318A0293D0025719D /* am_addons.xml */,
-				CDB1FB4418A0293D0025719D /* am_location.lua */,
-				CDB1FB4518A0293D0025719D /* am_true.lua */,
-			);
-			path = addons;
 			sourceTree = "<group>";
 		};
 		CDB1FB5518A0293D0025719D /* dataclass */ = {
@@ -129,9 +153,11 @@
 			children = (
 				CD950FDC18A57B84000BA308 /* core */,
 				CDB1FB4018A0293D0025719D /* lib */,
+				CD49042618A88FD300FD87D5 /* extensions */,
 				CDDF1F1418A6D2C600590795 /* contained */,
 				CDF29D95184317090025CAC4 /* ArenaMacros.toc */,
 				CD950FDB18A57B2D000BA308 /* ArenaMacros.lua */,
+				CD49041F18A80DD500FD87D5 /* dataclasses.lua */,
 				CD8D534A18564CC800FE7710 /* .gitignore */,
 			);
 			sourceTree = "<group>";

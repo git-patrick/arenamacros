@@ -1,6 +1,6 @@
 local addon_name, addon_table = ...
 
-local class_container = class.create("class_container")
+class_container = class.create("class_container")
 
 function class_container:init()
 	self.classes = { }
@@ -79,7 +79,8 @@ end
 
 lib = class.create("lib", class_container)
 
-function lib:init(name, version)
+function lib:init(name, version, onload)
 	self.name = name
 	self.version = version
+	self.onload = onload
 end

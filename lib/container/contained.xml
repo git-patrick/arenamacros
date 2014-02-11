@@ -3,7 +3,7 @@
     
 	<Script file="contained.lua"/>
 
-    <Button name="amContained_ListItemTemplate" enableMouse="true" virtual="true">
+    <Button name="amContainedTemplate" enableMouse="true" virtual="true">
         <Anchors>
             <Anchor point="TOPLEFT" />
             <Anchor point="RIGHT" />

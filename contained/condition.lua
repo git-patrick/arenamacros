@@ -1,23 +1,40 @@
 local addon_name, e = ...
 
-local libutil = e:lib("utility")
+local libutil		= e:lib("utility")
 
-local libcontainer = e:lib("container")
-local libdc = e:lib("dataclass")
+local libcontainer	= e:lib("container")
+local libdc			= e:lib("dataclass")
+local libwow		= e:lib("wow")
 
-local condition = libcontainer:addclass(class.create("modifier"), libcontainer:class("contained"))
+local property		= libdc:class("property")
 
-function condition:init()
-	
-end
+-- This part sets up our dataclass class for this "condition" representation.
+-- this is used for inheriting purposes in the condition list frame
 
-function cond.create(parent_frame)
-    local f = setmetatable(CreateFrame("Button", nil, parent_frame or UIParent, "amConditionTemplate"), cond.mt)
-    
-    return f
-end
+-- setup the properties list here.....
 
-function cond.mt.__index:am_setindex(i)
+local condition_properties = {
+	["name"]           = property.custom(
+		function (self) return self.amName:GetText() end,
+		function (self, value) self.amName:SetText(value) end,
+	),
+	["relation"]       = property.custom(
+		function (self) return self.amRelation:GetText() end,
+		function (self, value) self.amRelation:SetText(value); end
+	),
+	["value"]          = property.custom(
+		function (self) return self.amValue:GetText() end,
+		function (self, value) self.amValue:SetText(value) end
+	),
+	-- data is where the condition addon stores any of its addon specific information
+	["data"]     = property.scalar("am_data")
+}
+
+libdc:addclass(libdc:new("condition_contained", condition_properties))
+
+local condition = libcontainer:addclass(class.create("modifier", libcontainer:class("contained"), libdc:class("condition_contained"), libwow:class("button")))
+
+function condition:am_setindex(i)
     self.am_index = i
     
     local intro = "and"
@@ -27,7 +44,7 @@ function cond.mt.__index:am_setindex(i)
         intro = "if"
     end
     
-    if (i == am.conditions:count()) then
+    if (i == self.am_container:count()) then
         outro = "then"
     end
     
@@ -37,12 +54,12 @@ end
 
 
 
+-- XML EVENT CALLBACKS
 
+function amContainedCondition_OnLoad(self)
+	condition:new(nil, self)
+end
 
-
-
--- XML EVENT CALLBACKS, THESE REFERENCE THE GLOBAL am ELEMENT
-
-function amCondition_Delete(self, button, down)
-    am.conditions:remove(self:GetParent():am_getindex())
+function amContainedCondition_Delete(self, button, down)
+    self:GetParent():am_remove()
 end

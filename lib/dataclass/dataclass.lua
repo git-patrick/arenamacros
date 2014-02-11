@@ -82,7 +82,7 @@ function property:set(owning_table, to_value)
     end
     
     for j,f in ipairs(self.prehook) do
-        if (not f(my_value, to_value)) then
+        if (not f(owning_table, my_value, to_value)) then
             return false
         end
     end
@@ -91,12 +91,10 @@ function property:set(owning_table, to_value)
         return false
     end
     
-    -- post hooks can still "fail" and cause us to return false, but this does not undo the _set above.
-    -- not sure I like this behaviour, might chaneg it
+    -- post hooks can no longer cause failure of set.
+	-- all post hooks will be run no matter what previous posts have determined.
     for j,f in ipairs(self.psthook) do
-        if (not f(my_value, to_value)) then
-            return false
-        end
+        f(owning_table, my_value, to_value)
     end
     
     return true
@@ -158,60 +156,23 @@ end
 local function xmlname_set(self, value)
     self.amName:SetText(value)
 end
-
-
-local function modstring_get(self)
-    local s = "if "
-
-    for i,v in pairs(self:am_getproperty("conditions"):get()) do
-        s = s .. v:am_getproperty("name"):get() .. " " .. v:am_getproperty("relation"):get() .. " " .. v:am_getproperty("value"):get() .. " and "
-    end
-
-    s = s:sub(1, s:len() - 4) .. "then ..."
-
-    return s
-end
  
 -- instance classes (or lists of them) of our dataclass class!
 dc.condition = { }
 
 local t = dc.condition
 
-t.simple = dc.create
-({
- ["name"]           = property.scalar("name"),
- ["relation"]       = property.scalar("relation"),
- ["relation_data"]  = property.scalar("relation_data"),
- ["value"]          = property.scalar("value"),
- ["value_data"]     = property.scalar("value_data")
- })
 
-t.li = dc.create
-({
- ["name"]           = property.custom(xmlname_get, xmlname_set),
- ["relation"]       = property.custom(function (self) return self.amRelation:GetText() end, function (self, value) self.amRelation:SetText(value); end),
- ["relation_data"]  = property.scalar("am_relation_data"),
- ["value"]          = property.custom(function (self) return self.amValue:GetText() end, function (self, value) self.amValue:SetText(value); end),
- ["value_data"]     = property.scalar("am_value_data")
- })
+
+
 
 dc.modifier = { }
 
 t = dc.modifier
 
-t.simple = dc.create
-({
- ["text"]        = property.scalar("text"),
- ["modstring"]   = property.scalar("modstring"),
- ["conditions"]  = property.array("conditions", dc.condition.simple)
- })
 
-t.frame = dc.create
-({
- ["text"]        = property.custom(function (self) return self.amInput.EditBox:GetText() end, function (self, value) self.amInput.EditBox:SetText(value) end),
- ["modstring"]   = property.custom(modstring_get, function (self, value) self.am_modstring = value end),
- ["conditions"]  = nil -- NEED CUSTOM REFERENCE TO GLOBAL CONTAINER HERE....
- })
+
+
 
 t.li = dc.create
 ({
@@ -224,14 +185,6 @@ t.li = dc.create
 dc.macro = { }
 
 t = dc.macro
-
-t.simple = dc.create
-({
- ["name"]       = property.scalar("name"),
- ["icon"]       = property.scalar("icon"),
- ["modifiers"]  = property.array("modifiers", dc.modifier.simple),
- ["enabled"]    = property.scalar("enabled")
-})
 
 t.frame = dc.create
 ({
@@ -251,25 +204,7 @@ t.frame = dc.create
 
 
 
-t.li = dc.create
-({
- ["name"]       = property.macro_name,
- ["icon"]       = property.custom(function (self) return self.amIcon:GetTexture() end, function (self, value) self.amIcon:SetTexture(value) end),
- ["modifiers"]  = property.array("modifiers", dc.modifier.simple),
- ["enabled"]    = property.custom
-    (function (self)
-        return self.am_enabled
-     end,
 
-     function (self, value)
-        self.am_enabled = value
-     
-        self.amName:SetFontObject(value and "GameFontNormal" or "GameFontDisable")
-        self.amIcon:SetDesaturated(not value and 1 or nil)
-        self.amNumModifiers:SetFontObject(value and "GameFontHighlightSmall" or "GameFontDisableSmall")
-     end
-    )
-})
 
 
 

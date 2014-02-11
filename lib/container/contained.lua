@@ -3,8 +3,7 @@ local addon_name, e = ...
 -- this is the base class for frames expected to function inside a container
 local contained = e:lib("container"):addclass(class.create("contained"))
 
--- override the default mt, and setup some class static variables.
-contained.mt		= { __index = CreateFrame("Button", nil, UIParent) }
+-- setup some class static variables.
 contained.colors	= {
     bg1 = { r = 1, g = 1, b = 1, a = 0.08 },
     bg2 = { r = 0, g = 0, b = 0, a = 0 },
@@ -106,6 +105,10 @@ end
 -- this depends on several properties defined by functions above.  if you override some above, you may need to change this.
 function contained:am_resort()
     return self.am_container:resort(self:am_getindex())
+end
+
+function contained:am_remove()
+	return self.am_container:remove(self:am_getindex())
 end
 
 --[[

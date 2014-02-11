@@ -2,46 +2,6 @@ local addon_name, e = ...
 
 local libcontainer = e:addlib(lib:new({ "container", "1.0" }))
 
--- The point of this object is to allow you to reuse frames that you have previously created.
--- the reason for that is, there is no way to tell WoW to release frames you have created, so if you don't reuse the ones you have,
--- you just keep increasing memory consumption, or so the wiki says.
-
-local pool = libcontainer:addclass(class.create("pool"))
-
-function pool:init(create_frame_function)
-    self.create_frame = create_frame_function
-    self.free = { }
-end
-
--- grabs either a new frame, or one from the used pool
-function pool:get()
-    local f
-    local pool_index = table.getn(self.free)
-    
-    if (pool_index > 0) then
-        f = self.free[pool_index]
-        
-        table.remove(self.free, pool_index)
-    else
-        f = self.create_frame()
-    end
-    
-    return f
-end
-
--- gives a frame back to the pool
--- make sure you only give us the appropriate frames!  doesn't check to make sure it came from this pool, or even is the appropriate subclass etc.
-function pool:give(frame)
-    frame:am_release()
-    
-    table.insert(self.free, frame)
-end
-
-
-
-
-
-
 local uidmap = libcontainer:addclass(class.create("uidmap"))
 
 -- this object is used to record a chosen property of dataclass objects, and is used by containers to fail add if the property is already in use.
@@ -64,6 +24,9 @@ function uidmap:init(unique_identifier)
     -- ERROR HERE, NEED TO COME UP WITH ELEGANT WAY TO PASS self TO THIS THING!~
     self.prehook       = function (from, to) return t:change_uid(from, to) end
 end
+
+
+
 
 -- object is expected to be the product of a dataclass instance with a property the same as self.uid
 function uidmap:contains(o)

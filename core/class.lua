@@ -24,10 +24,11 @@ function class.create(name, ...)
 
 	t._methods = { __index = { } }
 
-	-- this is an array of init functions for our class and any superclasses.
-	-- these are all called in class.base:new(), but the order of calling is NOT DEFINED!
+	-- this is an array of init/release functions for our class and any superclasses.
+	-- these are all called in class.base:init() and class.base:release() respectively but the order of calling is NOT DEFINED!
 	-- I might change that later, but we shall see if it is necessary.
-	t._inits = table_merge(nil, nil, nil, apply(function (v) return v._inits end, ...))
+	t._inits	= table_merge(nil, nil, nil, apply(function (v) return v._inits end, ...))
+	t._releases = table_merge(nil, nil, nil, apply(function (v) return v._releases end, ....))
 	
 	t.name = name
 
@@ -37,33 +38,35 @@ function class.create(name, ...)
 	-- instance data should be initialized in a function called :init added to the returned class object
     -- init is automatically called in the class method :new for this class and all subclasses
 	setmetatable(t, class.metatable)
+	
+	-- every class instance has a method called "free" which will its class' static release method to cycle through all class release methods
+	-- add that method here...
+	function t:free()
+		t:release(self)
+	end
 
 	-- now that the metatable is set, all the functions added will go in methods..
 	-- so merge all of our parent classes methods into ourselves, and they goto the appropriate place!
 	return table_merge(t, nil, nil, apply(function (v) return v._methods.__index end, ...))
 end
 
--- provides the :new method which creates an instance of the class object and calls :init, which goes through all inherited 
+-- provides the :new method which creates an instance of the class object and calls :init, which goes through all inherited
 -- :init and calls them with appropriate parameters from :new
 class.base = { }
 
--- passing parameters to
-
 function class.base:new(initparam, existing_table, baseclass_initparam)
-    local t = existing_table or { }
-    
-    -- WE WILL SEE IF THIS WORKS FOR FRAMES.  MIGHT REQUIRE MORE WORK.
-	-- THIS WORKS FOR FRAMES!!  but this would probably have to change if this was used in a more general setting (with more general metatables on existing_table)
-	-- WoW Frames have a simple metatable with just __index set to a table instead of function.
-	
-    setmetatable(self._methods.__index, getmetatable(t))
-	setmetatable(t, self._methods)
+	local t = setmetatable(existing_table or { }, self._methods)
 
 	self:init(t, initparam, baseclass_initparam)
 
 	return t
 end
 
+function class.base:release(instance)
+	for name,v in pairs(self._releases) do
+		v(instance)
+	end
+end
 function class.base:init(t, initparam, baseclass_initparam)
 	for name,v in pairs(self._inits) do
 		if (name == self.name) then
@@ -80,7 +83,7 @@ end
 -- Why is it useful?  Because, by default, all functions added to the class are treated as methods for class instance objects
 -- this is because of the __newindex metamethod below.  so to actually add a static function to our class, you use this.
 
--- note: I am not checking to make sure you don't screw up any important class members like _methods, _inits, etc.
+-- note: I am not checking to make sure you don't screw up any important class members like name, _methods, _inits, etc.
 -- so it is up to you not to break them.
 function class.base:add_static(name, value)
 	rawset(self, name, value)
@@ -93,6 +96,8 @@ class.metatable = {
 		if (type(v) == "function") then
 			if (k == "init") then
 				t._inits[t.name] = v
+			elseif (k == "release") then
+				t._releases[t.name] = v
 			else
 				t._methods.__index[k] = v
 			end

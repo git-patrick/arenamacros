@@ -23,6 +23,11 @@ function libutil.dump(o, max_recursion, current_recursion)
     end
 end
 
+
+
+
+
+
 -- copy references to my globals.lua global functions into this library.
 -- this is how I want all downstream stuff from lib util (which is all other libs and the addon itself)
 -- to access these functions.
@@ -56,26 +61,34 @@ end
 
 
 
--- IM GOING TO MOVE THESE OUT OF HERE, I don't like wow related stuff in this general lua related lib
-function libutil.create_or_rename_macro(old_name, new_name)
-    if (not old_name or GetMacroIndexByName(old_name) == 0) then
-        -- macro doesn't already exist, try to create it.
+-- The point of this object is to allow you to reuse frames that you have previously created.
+-- the reason for that is, there is no way to tell WoW to release frames you have created, so if you don't reuse the ones you have,
+-- you just keep increasing memory consumption, or so the wiki says.
+function pool:init(create_frame_function)
+    self.create_frame = create_frame_function
+    self.free = { }
+end
+
+-- grabs either a new frame, or one from the used pool
+function pool:get()
+    local f
+    local pool_index = table.getn(self.free)
+    
+    if (pool_index > 0) then
+        f = self.free[pool_index]
         
-        if (not pcall(function() CreateMacro(new_name, "INV_Misc_QuestionMark", "", 1) end)) then
-            -- macro creation failed!  I believe this can only happen if the macro list is full
-            
-            return false
-        end
+        table.remove(self.free, pool_index)
     else
-        EditMacro(old_name, new_name, nil, nil, 1, 1)
+        f = self.create_frame()
     end
     
-    return true
+    return f
 end
 
-function libutil.delete_macro(name)
-    if (GetMacroIndexByName(name) > 0) then
-        DeleteMacro(name)
-    end
+-- gives a frame back to the pool
+-- make sure you only give us the appropriate frames!  doesn't check to make sure it came from this pool, or even is the appropriate subclass etc.
+function pool:give(frame)
+    frame:am_release()
+    
+    table.insert(self.free, frame)
 end
-

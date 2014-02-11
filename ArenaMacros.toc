@@ -1,7 +1,7 @@
 ## Interface: 50400
 ## Title: Arena Macros
 ## Notes: Automatically modifies your macros when user specified conditions are met.
-## Author: Pat
+## Author: Patrick Sauter
 ## Version: 2.0
 
 core\core.xml
@@ -11,5 +11,9 @@ ArenaMacros.lua
 lib\utility\utility.xml
 lib\dataclass\dataclass.xml
 lib\container\container.xml
+
+dataclasses.lua
+
+lib\wow\wow.xml
 
 contained\modifier.xml

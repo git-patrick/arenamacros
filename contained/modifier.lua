@@ -1,19 +1,52 @@
 local addon_name, e = ...
 
-local libutil = e:lib("utility")
+local libutil		= e:lib("utility")
 
-local libcontainer = e:lib("container")
-local libdc = e:lib("dataclass")
+local libcontainer	= e:lib("container")
+local libdc			= e:lib("dataclass")
+local libwow		= e:lib("wow")
 
+local property		= libdc:class("property")
+
+-- This part sets up our dataclass class for this "modifier" representation.
+-- this is used for inheriting purposes in the modifier
 
 -- setup the properties list here.....
-local mod_dataclass = libcontainer:addclass(libdc:new("modifier_dataclass", PROPERTIES_LIST_HERE))
-local modifier		= libcontainer:addclass(class.create("modifier"), libcontainer:class("contained"), mod_dataclass)
+local modifier_properties = {
+	["text"]        = property.custom(
+		function (self) return self.amInput.EditBox:GetText() end,
+		function (self, value) self.amInput.EditBox:SetText(value) end
+	),
+	["modstring"]   = property.custom(
+		function (self)
+			local s = "if "
 
-function modifier:init()
-	
-end
+			for i,v in pairs(self:am_getproperty("conditions"):get()) do
+				s = s .. v:am_getproperty("name"):get() .. " " .. v:am_getproperty("relation"):get() .. " " .. v:am_getproperty("value"):get() .. " and "
+			end
 
+			s = s:sub(1, s:len() - 4) .. "then ..."
+
+			return s
+		end,
+		function (self, value) self.am_modstring = value end
+	),
+	["conditions"]  = property.array("am_conditions", libdc:class("condition_simple"))
+}
+
+libdc:addclass(libdc:new("modifier_contained", modifier_properties))
+
+
+-- This is our "contained" version of the modifier for use inside the container list.
+-- is also the dataclass to allow for quick and easy get / set.
+-- you don't ever need to call modifier:new to create the object
+-- it is automatically attached to the modifier frame intended for containment when you CreateFrame(...) with the
+-- appropriate inherited frame name in modifier.xml
+-- that works becaues of the frames OnLoad function below!
+
+local modifier = libcontainer:addclass(class.create("modifier", libcontainer:class("contained"), libdc:class("modifier_contained"), libwow:class("button")))
+
+-- override for contained:am_setindex
 function modifier:am_setindex(i)
     self.am_index = i
     self.am_moveto = nil
@@ -33,6 +66,9 @@ function modifier:am_setindex(i)
     self.amModID:SetText(i)
 end
 
+-- override for contained:am_compare, bit of a sneaky way of moving things around the container.
+-- how it works it, when you press up or down, it changes your am_moveto and then resorts you
+-- which calls this for comparison, and allows you to move that element.
 function modifier:am_compare(other)
     if not other.am_moveto then
         return 0
@@ -48,32 +84,26 @@ end
 
 
 
-
-
-function amModifier_OnLoad(self)
-	-- turn me into a modifier class object!
+function amContainedModifier_OnLoad(self)
+	-- nil because we don't have any parameters to pass to a modifier init function
+	-- self tells it that we don't need a new table, use ourselves as the table.
 	modifier:new(nil, self)
 end
 
-
-function amModifier_OnClick(self, button, down)
-    amConditionFrame_Setup(self)
-end
-
-function amModifier_MoveUp(self, button, down)
+function amContainedModifier_MoveUp(self, button, down)
     local mod = self:GetParent()
     
     mod.am_moveto = math.max(mod:am_getindex() - 1, 1)
     mod:am_resort()
 end
 
-function amModifier_MoveDown(self, button, down)
+function amContainedModifier_MoveDown(self, button, down)
     local mod = self:GetParent()
     
     mod.am_moveto = math.min(mod:am_getindex() + 1, mod.am_container:count())
     mod:am_resort()
 end
 
-function amModifier_Delete(self, button, down)
-    am.modifiers:remove(self:GetParent():am_getindex())
+function amContainedModifier_Delete(self, button, down)
+    self:GetParent():am_remove()
 end
