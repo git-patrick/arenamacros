@@ -59,6 +59,7 @@ end
 
 
 
+local pool = libutil:addclass(class.create("pool"))
 
 
 -- The point of this object is to allow you to reuse frames that you have previously created.
@@ -67,6 +68,11 @@ end
 function pool:init(create_frame_function)
     self.create_frame = create_frame_function
     self.free = { }
+end
+
+function pool:release()
+	self.create_frame = nil
+	self.free = nil
 end
 
 -- grabs either a new frame, or one from the used pool
@@ -91,4 +97,31 @@ function pool:give(frame)
     frame:am_release()
     
     table.insert(self.free, frame)
+end
+
+
+
+
+
+
+
+
+
+local bind	= libutil:addclass(class.create("bind"))
+
+-- simple bind implementation 
+-- used mostly for callbacks to class methods
+
+function bind:init(func, ...)
+	self.func	= func
+	self.params	= { ... }
+end
+
+function bind:release()
+	self.params = nil
+	self.func = nil
+end
+
+function bind:call(...)
+	return self.func(unpack(self.params), ...)
 end

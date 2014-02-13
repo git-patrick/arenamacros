@@ -1,7 +1,9 @@
 local addon_name, e = ...
 
+local libwow = e:lib("wow")
+
 -- this is the base class for frames expected to function inside a container
-local contained = e:lib("container"):addclass(class.create("contained"))
+local contained = e:lib("container"):addclass(class.create("contained", libwow:class("button")))
 
 -- setup some class static variables.
 contained.colors	= {
@@ -40,12 +42,10 @@ function contained:am_init(container)
     self.am_container = container
 end
 
-function contained:am_onadd(dataobject)
-    -- this is called by the container in an attempt to add the object.  adding can be canceled by returning non nil
-    
-    self:am_set(dataobject)
-    
-    return nil  -- for success
+function contained:am_onadd(dcobject)
+    -- this is called by the container in an attempt to add the object.  adding can be canceled by returning false
+
+    return self:dc_set(self.am_container.dataclass, dcobject)
 end
 -- called after the frame is successfully added
 function contained:am_show()
@@ -76,9 +76,9 @@ function contained:am_update(i)
     local c
     
     if (self.am_highlighted) then
-        c = am_contained.colors.bghl
+        c = contained.colors.bghl
     else
-        c = (i % 2) == 1 and am_contained.colors.bg1 or am_contained.colors.bg2
+        c = (i % 2) == 1 and contained.colors.bg1 or contained.colors.bg2
     end
     
     self:am_setindex(i)

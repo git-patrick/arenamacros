@@ -10,10 +10,9 @@ ArenaMacros.lua
 
 lib\utility\utility.xml
 lib\dataclass\dataclass.xml
+lib\wow\wow.xml
 lib\container\container.xml
 
 dataclasses.lua
-
-lib\wow\wow.xml
 
 contained\modifier.xml

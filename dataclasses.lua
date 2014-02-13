@@ -2,8 +2,8 @@ local addon_name, e = ...
 
 -- this file just contains some very simple implementations of these three abstract objects "modifier", "condition", and "macro"
 
-local libdc = e:lib("dataclass")
-local property = libdc:class("property")
+local libdc		= e:lib("dataclass")
+local property	= libdc:class("property")
 
 local condition_simple_properties = {
 	["name"]    = property.scalar("name"),
@@ -12,7 +12,7 @@ local condition_simple_properties = {
 	["data"]	= property.scalar("data")
 }
 
-local condition_simple = libdc:addclass(libdc:new("condition_simple", condition_simple_properties))
+local condition_simple = libdc:addclass(libdc:create_dataclass("condition_simple", "condition", condition_simple_properties))
 
 function condition_simple:satisified()
 	-- THIS IS THE LINK TO THE ADDON PORTION OF THE PROGRAM!
@@ -24,7 +24,7 @@ local modifier_simple_properties = {
 	["conditions"]  = property.array("conditions", libdc:class("condition_simple"))
 }
 
-local modifier_simple = libdc:addclass(libdc:new("modifier_simple", modifier_simple_properties))
+local modifier_simple = libdc:addclass(libdc:create_dataclass("modifier_simple", "modifier", modifier_simple_properties))
 
 function modifier_simple:checkconditions()
 	for i,c in ipairs(self:am_getproperty("conditions"):get()) do
@@ -36,8 +36,6 @@ function modifier_simple:checkconditions()
 	return true
 end
 
-end
-
 local macro_simple_properties = {
 	["name"]       = property.scalar("name"),
 	["icon"]       = property.scalar("icon"),
@@ -45,4 +43,4 @@ local macro_simple_properties = {
 	["enabled"]    = property.scalar("enabled")
 }
 
-libdc:addclass(libdc:new("macro_simple", macro_simple_properties))
+libdc:addclass(libdc:create_dataclass("macro_simple", "macro", macro_simple_properties))

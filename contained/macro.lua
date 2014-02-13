@@ -25,9 +25,9 @@ local macro_properties = {
 	)
 })
 
-libdc:addclass(libdc:new("macro_contained", macro_properties))
+libdc:addclass(libdc:create_dataclass("macro_contained", "macro", macro_properties))
 
-local macro = libcontainer:addclass(class.create("macro", libcontainer:class("contained"), libdc:class("macro_contained"), libwow:class("button")))
+local macro = libcontainer:addclass(class.create("macro", libcontainer:class("contained"), libdc:class("macro_contained")))
 
 -- This is used as an identifier for a globally named secureactionbuttontemplate object which allows for Secure WoW functionality
 -- to be coded and acted upon by my addon as long as there is user interaction.

@@ -13,29 +13,15 @@ local property		= libdc:class("property")
 
 -- setup the properties list here.....
 local modifier_properties = {
-	["text"]        = property.custom(
-		function (self) return self.amInput.EditBox:GetText() end,
-		function (self, value) self.amInput.EditBox:SetText(value) end
-	),
+	["text"]        = property.scalar("am_text"),
 	["modstring"]   = property.custom(
-		function (self)
-			local s = "if "
-
-			for i,v in pairs(self:am_getproperty("conditions"):get()) do
-				s = s .. v:am_getproperty("name"):get() .. " " .. v:am_getproperty("relation"):get() .. " " .. v:am_getproperty("value"):get() .. " and "
-			end
-
-			s = s:sub(1, s:len() - 4) .. "then ..."
-
-			return s
-		end,
-		function (self, value) self.am_modstring = value end
+		function (self) return self.amModString:GetText() end,
+		function (self, value) self.amModString:SetText(value) end
 	),
 	["conditions"]  = property.array("am_conditions", libdc:class("condition_simple"))
 }
 
-libdc:addclass(libdc:new("modifier_contained", modifier_properties))
-
+libdc:addclass(libdc:create_dataclass("modifier_contained", "modifier", modifier_properties))
 
 -- This is our "contained" version of the modifier for use inside the container list.
 -- is also the dataclass to allow for quick and easy get / set.
@@ -44,7 +30,7 @@ libdc:addclass(libdc:new("modifier_contained", modifier_properties))
 -- appropriate inherited frame name in modifier.xml
 -- that works becaues of the frames OnLoad function below!
 
-local modifier = libcontainer:addclass(class.create("modifier", libcontainer:class("contained"), libdc:class("modifier_contained"), libwow:class("button")))
+local modifier = libcontainer:addclass(class.create("modifier", libcontainer:class("contained"), libdc:class("modifier_contained")))
 
 -- override for contained:am_setindex
 function modifier:am_setindex(i)

@@ -1,17 +1,21 @@
 local addon_name, e = ...
 
-local libcontainer = e:addlib(lib:new({ "container", "1.0" }))
+local libcontainer	= e:addlib(lib:new({ "container", "1.0" }))
+local libwow		= e:lib("wow")
+local libutil		= e:lib("utility")
 
 local uidmap = libcontainer:addclass(class.create("uidmap"))
 
 -- this object is used to record a chosen property of dataclass objects, and is used by containers to fail add if the property is already in use.
 -- for example, it demands macro names be unique.  seperated from the container itself so multiple containers can use the same map
 
-function uidmap:init(unique_identifier)
+function uidmap:init(uid_class, unique_identifier)
     -- unique identifier is the property name of creation objects passed to container:add
     -- that property value will be used as a UNIQUE identifier in a map to indicate whether or not
     -- the id is already in the container.  add will FAIL if that property is not specified.
     
+	-- the property uses dataclasses, and so we must define which dataclass the property belongs to
+	self.uid_class	   = uid_class
     self.uid           = unique_identifier
     self.map           = { }
 
@@ -20,9 +24,8 @@ function uidmap:init(unique_identifier)
 	-- can fail and cancel the change by returning false
     
     
-    
-    -- ERROR HERE, NEED TO COME UP WITH ELEGANT WAY TO PASS self TO THIS THING!~
-    self.prehook       = function (from, to) return t:change_uid(from, to) end
+    self.prehook       = function (self, from, to) return self:change_uid(from, to) end
+    self.prehook_bind  = libutil:class("bind"):new({ self.prehook, self })
 end
 
 
@@ -33,14 +36,14 @@ function uidmap:contains(o)
     if (type(o) == "string") then
         return (self.map[o] ~= nil)
     elseif (type(o) == "table") then
-        return (self.map[o:am_getproperty(self.uid):get()] ~= nil)
+        return (self.map[o:dc_get(self.uid_class,self.uid)] ~= nil)
     end
     
     return false
 end
 
 function uidmap:add(object)
-    local p = object:am_getproperty(self.uid)
+    local p = object:dc_getclass(self.uid_class)[self.uid]
     
     if (not p or self:contains(object)) then
         return false
@@ -50,19 +53,19 @@ function uidmap:add(object)
     self.map[p:get()] = true
     
     -- this hooks any changes to this property.  return values of false stop the change, true continues it.
-    p.prehook:add(self.prehook)
+    p.prehook:add(self.prehook_bind)
     
     return true
 end
 
 function uidmap:rm(object)
-    local p = object:am_getproperty(self.uid)
+    local p = object:dc_getclass(self.uid_class)[self.uid]
     
     if (not object[p] or not self:contains(object)) then
         return false
     end
     
-    p.prehook:rm(self.prehook)
+    p.prehook:rm(self.prehook_bind)
     
     self.map[p] = nil
 
@@ -90,12 +93,20 @@ end
 
 
 -- container class! for lists of WoW Frames!
-local container = libcontainer:addclass(class.create("container"))
+local container = libcontainer:addclass(class.create("container", libwow:class("frame")))
 
-function container:init(parent_frame, frame_pool, uid_map)
-    self.parent_frame  = parent_frame
+function container:init(dataclass, frame_pool, uid_map)
+	-- this is the expected dataclass of the objects passed to :add
+	-- this is what is used in the set
+	self.dataclass	   = dataclass
+	
     self.frame_pool    = frame_pool
     self.uid_map       = uid_map
+	
+	-- I should consider getting rid of self.frames here and just using the WoW method :GetChildren
+	-- the only reason this is here is this class predates my overall class implementation,
+	-- in particular, libwow:class("frame")
+	
     self.frames        = { }           -- child frames
 end
 
@@ -120,8 +131,8 @@ function container:addall(objects)
     end
 end
 
-function container:add(object)
-    if (self.uid_map and self.uid_map:contains(object)) then
+function container:add(dcobject)
+    if (self.uid_map and self.uid_map:contains(dcobject)) then
         return 1
     end
     
@@ -129,7 +140,7 @@ function container:add(object)
 
     table.insert(self.frames, f)
     
-    f:SetParent(self.parent_frame)
+    f:SetParent(self)
     
     -- I'm not sure why these are necessary.  You would think SetParent and the XML defined anchors from amListItemTemplate would be enough, but they arent.
     f:SetPoint("RIGHT")
@@ -139,13 +150,14 @@ function container:add(object)
     f:am_update(self:count())
     
     -- check if adding our object works!
-    if (f:am_onadd(object)) then
+    if (not f:am_onadd(dcobject)) then
         table.remove(self.frames, self:count())
         self.frame_pool:give(f)
         
         return 2
     end
-    
+	
+	f:am_resort()
     f:am_show()
     
     return nil, f -- for success

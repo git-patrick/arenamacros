@@ -3,27 +3,31 @@ local addon_name, e = ...
 local libutil   = e:lib("utility")
 local libdc     = e:addlib(lib:new({ "dataclass", "1.0" }))
 
-function libdc:new(name, properties)
-    local c = class.create(name, dataclass)
 
-    c.am_properties = properties
-    
-    return c
+local dataclass_object = libdc:addclass(class.create("dataclass_object"))
+
+function dataclass_object:init()
+	self.dc_classes = { }
 end
 
-
-
-local dataclass = class.create("dataclass")
-
--- the reason for the am_ prefix in the functions below is that these will be added to WoW Frame objects namespace, and I don't want collisions
-
--- gets the property object of the chosen name
-function dataclass:am_getproperty(name)
-    return self.am_properties[name]
+function dataclass_object:dc_add(dcname, property_map)
+	-- property map is just an associate map where the key is the propery name, and value is a property class instance
+	-- that has the gets / sets / hooks for property changes
+	
+	self.dc_classes[dcname] = property_map
 end
--- gets the value of the property object of the chosen name
-function dataclass:am_get(name)
-    return self:am_getproperty(name):get()
+
+function dataclass_object:dc_rm(dcname)
+	self.dc_classes[dcname] = nil
+end
+
+-- returns the property value
+function dataclass_object:dc_get(dcname, propname)
+	return self:dc_getclass(dcname)[propname].get(self)
+end
+
+function dataclass_object:dc_getclass(dcname)
+	return self.dc_classes[dcname]
 end
 
 -- sets all our properties equal to their equivalent properties
@@ -32,21 +36,39 @@ end
 -- but as it is, there are not too many instances where any of those should fail (except a property being a
 -- unique identifier in a container, but since there is only one such property, and the properties are checked in the order
 -- they were specified to the dataclass creation, if the prehook on that fails, nothing will change anyways.)
+function dataclass_object:dc_set(dcname, to)
+	for name, prop in pairs(self:dc_getclass(dcname)) do
+        if (not prop:set(self, to:dc_get(dcname, name))) then
 
-function dataclass:am_set(to)
-    for i, v in pairs(self.am_properties) do
-        if (not v:set(self, to.am_properties[i].get(to))) then
             return false
         end
     end
+	
+	return true
 end
 
--- dump me to screen
-function dataclass:am_print()
-    for i, v in pairs(self.am_properties) do
-        print(i, " ", libutil.tostring(v.get(self)))
-    end
+
+
+
+
+-- the only purpose of this is wrap up the passing of the properties list parameter.
+function libdc:create_dataclass(class_name, dataclass_name, properties)
+	local c = class.create(class_name, dataclass_object)
+	
+	function c:init()
+		self:dc_add(dataclass_name, properties)
+		
+		for i, v in pairs(properties) do
+			if (v.init) then
+				v.init(self)
+			end
+		end
+	end
+	
+	return c
 end
+
+
 
 
 
@@ -86,11 +108,11 @@ function property:set(owning_table, to_value)
             return false
         end
     end
-    
-    if (not self._set(owning_table, to_value)) then
+
+    if (self._set(owning_table, to_value)) then
         return false
     end
-    
+	
     -- post hooks can no longer cause failure of set.
 	-- all post hooks will be run no matter what previous posts have determined.
     for j,f in ipairs(self.psthook) do
@@ -104,42 +126,45 @@ end
 
 
 property:add_static("scalar", function (name)
-    return property:new({ property =
+    return property:new(
         {
             function (t) return t[name] end,            -- get
             function (t, value) t[name] = value end     -- _set
         }
-    })
+    )
 end)
 
 -- this is an array of dataclass objects !  the dataclass type is passed in dc
 property:add_static("array", function (name, dc)
-    return property:new({ property =
+    return property:new(
         {
 			function (t) return t[name] end,			-- get
 			function (t, value)							-- _set
 				t[name] = { }
 			
 				for i, v in pairs(value) do
-					table.insert(t[name], dc:new():am_set(v))
+					table.insert(t[name], dc:new():dc_set(v))
 				end
 			end,
             function (t)								-- init
 				-- since classes can be created on existing objects (for example, the WoW stored variables table), we check if our property is set
 				-- if it is, we basically tell all of the objects in the array that they are dc objects (since they were likely just tables before
 				-- this amounts to setting their metatable up to have access to dataclass members)
+
 				if (t[name]) then
 					for i,v in pairs(t[name]) do
-						dc:new(v)
+						dc:new(nil, v)
 					end
+				else
+					t[name] = { }
 				end
 			end,
         }
-    })
+    )
 end)
 
 property:add_static("custom", function(get, _set, init)
-	return property:new({ property = { get, _set, init } })
+	return property:new({ get, _set, init })
 end)
 
 
@@ -268,4 +293,57 @@ t.db = dc.create
 
  
     and I think that is it...... !  that's pretty fricking simple RIGHTW!?!?!?!?
+]]--
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- GONNA CHANGE THIS ALL, I WANT TO JUST MAKE PROPERTIES A DEFAULT PART OF CLASSES NOW.
+--[[
+
+	so, I want properties to have all the same hooks / get / set / init stuff, but I want to be able to access them very easily
+	
+	and set them very easily like this...
+	
+	
+	local object = some_class:new()
+	local other = some_class:new()
+	
+	
+	object.modifier.name:set("POOO") -- sets the property "name" for the property group "modifier" to  POOO
+	object.modifier:set(other) -- sets all properties in property group "modifier" to the equivalent in other
+	object:set(other) -- sets all property groups to the equivalent in other
+	
+	THIS IS BEAUTIFUL
+	
+	that means my class index metamethod is going to have to change.  it is first going to check a list _properties for that property and return it
+	and then it can just check the table itself and return that.
+
+
+
+
+	how are classes going to get properties?  I need to specify them to class creation and inherit them from base classes as well.
+	
+	HOOKS are instance specific?  where can I store them that won't muddy up anything if I want to save the instance table...
 ]]--

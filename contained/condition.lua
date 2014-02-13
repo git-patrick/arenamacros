@@ -30,9 +30,9 @@ local condition_properties = {
 	["data"]     = property.scalar("am_data")
 }
 
-libdc:addclass(libdc:new("condition_contained", condition_properties))
+libdc:addclass(libdc:create_dataclass("condition_contained", "condition", condition_properties))
 
-local condition = libcontainer:addclass(class.create("modifier", libcontainer:class("contained"), libdc:class("condition_contained"), libwow:class("button")))
+local condition = libcontainer:addclass(class.create("modifier", libcontainer:class("contained"), libdc:class("condition_contained")))
 
 function condition:am_setindex(i)
     self.am_index = i

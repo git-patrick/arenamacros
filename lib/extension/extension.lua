@@ -1,5 +1,6 @@
 local addon_name, e = ...
 
+local libwow		= e:lib("wow")
 local libutil		= e:lib("utility")
 local libextension	= e:addlib(lib:new({ "extension", "1.0" }))
 
@@ -10,16 +11,16 @@ local class_pool	= libutil:class("pool")
 
 local extension_pool= class_pool:new({ function() return CreateFrame("Frame", UIParent) end })
 
-function extension:init(name, frame_type, template, event_list)
+function extension:init(name, pool, event_list)
 	self.name = name
-	self.pool = class_pool:new({ function() return CreateFrame(frame_type, UIParent, nil, template) end })
+	self.pool = pool
 	self.hooks = erray:new()
 	
 	if (event_list) then
-		self.frame = amaddon_pool:get()
-		self.frame.am_amaddon = self
+		self.frame = extension_pool:get()
+		self.frame.am_extension = self
 		
-		self.frame:SetScript("OnEvent", function (frame, ...) frame.am_amaddon:onevent(...) end)
+		self.frame:SetScript("OnEvent", function (frame, ...) frame.am_extension:onevent(...) end)
 		
 		for i,event in ipairs(event_list) do
 			self.frame:RegisterEvent(event)
@@ -31,9 +32,9 @@ function extension:release()
 	if (self.frame) then
 		self.frame:UnRegisterAllEvents()
 		self.frame:SetScript("OnEvent", nil)
-		self.frame.am_amaddon = nil
+		self.frame.am_extension = nil
 		
-		amaddon_pool:give(self.frame)
+		extension_pool:give(self.frame)
 		
 		self.frame = nil
 	end
@@ -63,14 +64,6 @@ function extension:detach(contained_condition)
 	
 end
 
-function extension:add_hook(func)
-	self.hooks:add(func)
-end
-
-function extension:rm_hook(func)
-	self.hooks:rm(func)
-end
-
 function extension:onchange(from, to)
 	for i,v in ipairs(self.hooks) do
 		v(self, from, to)
@@ -79,10 +72,13 @@ end
 
 
 
+
+
 -- this should be overridden to give the appropriate value of whatever the condition is currently
 function extension:get_value()
     return nil
 end
+
 
 
 
@@ -97,3 +93,23 @@ function extension:get_name()
     return self.name
 end
 
+
+
+
+
+
+local extension_frame = libextension:addclass(class.create("extension_frame", libwow:class("button")))
+
+function extension_frame:init(ext)
+	self.am_extension = ext
+	self.am_callback = libutil:class("bind"):new(self.am_onchange, self)
+	self.am_extension.hooks:add(self.am_callback)
+end
+
+function extension_frame:release()
+	self.am_extension.hooks:rm(self.am_callback)
+end
+
+function extension_frame:am_onchange(ext, from, to)
+	print("VALUE CHANGED OMG")
+end

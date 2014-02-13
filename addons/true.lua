@@ -1,18 +1,18 @@
 local addon_name, e = ...
 
-local libwow	= e:lib("wow")
+local libwow		= e:lib("wow")
+local libutility	= e:lib("utility")
+local libextension	= e:lib("extension")
 
-local amaddon	= e:class("amaddon")
-local true		= e.amaddons
+local extension		= libextension:class("extension")
 
-(amaddon:new({ "true", "Frame", nil }))
+local true_pool		= libutility:class("pool"):new({ function() return CreateFrame("Button", UIParent, nil, "amExtensionTrueTemplate") end })
+local true			= extension:new({ "true", true_pool, nil }))
 
 function true:get_value()
     return true
 end
 
-local frame = class.create("frame", e:class("amaddon_frame"), libwow:class("button"))
-
-function amAddonTrue_OnLoad(self)
-	frame:new(nil, self)
+function amExtensionTrue_OnLoad(self)
+	libextension:class("extension_frame"):new({ true }, self)
 end

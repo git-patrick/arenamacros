@@ -3,10 +3,10 @@
     
 	<Script file="true.lua"/>
     
-    <Button name="amAddonTrue" inherits="amAddonTemplate" virtual="true">
+    <Button name="amExtensionTrue" inherits="amExtensionTemplate" virtual="true">
         <Scripts>
-			<OnLoad function="amAddonTrue_OnLoad" />
-            <OnClick function="amAddonTrue_OnClick" />
+			<OnLoad function="amExtensionTrue_OnLoad" />
+            <OnClick function="amExtensionTrue_OnClick" />
         </Scripts>
         <Layers>
             <Layer level="HIGHLIGHT">

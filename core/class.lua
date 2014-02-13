@@ -21,15 +21,18 @@ function class.create(name, ...)
 	local t = { }
 
 	-- methods is the metatable that :new uses to create instances of the class.
-
 	t._methods = { __index = { } }
-
+	
+	
+	--
+	t._properties = table_merge(nil, nil, nil, apply(function (v) return v._properties end, ...))
+	
 	-- this is an array of init/release functions for our class and any superclasses.
 	-- these are all called in class.base:init() and class.base:release() respectively but the order of calling is NOT DEFINED!
 	-- I might change that later, but we shall see if it is necessary.
 	t._inits	= table_merge(nil, nil, nil, apply(function (v) return v._inits end, ...))
-	t._releases = table_merge(nil, nil, nil, apply(function (v) return v._releases end, ....))
-	
+	t._releases = table_merge(nil, nil, nil, apply(function (v) return v._releases end, ...))
+		
 	t.name = name
 
 	-- this metatable does the following
@@ -98,6 +101,10 @@ class.metatable = {
 				t._inits[t.name] = v
 			elseif (k == "release") then
 				t._releases[t.name] = v
+				
+			-- this is used to set the call metamethod of the class incase it is a functor or something.
+			elseif (k == "call") then
+				t._methods.__call = v
 			else
 				t._methods.__index[k] = v
 			end
