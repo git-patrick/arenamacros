@@ -44,3 +44,14 @@ function apply(what, ...)
 
 	return unpack(t)
 end
+
+
+
+
+function ppairs(t)
+	if (t.next) then
+		return t.next, t
+	end
+	
+	return pairs(t)
+end

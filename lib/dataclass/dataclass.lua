@@ -326,6 +326,30 @@ t.db = dc.create
 	
 	and set them very easily like this...
 	
+	class creation!!!
+	
+	local some_class = class.create("some_class")
+	
+	function some_class:derp()
+	
+	end
+	
+	how do I want to set this up ...
+	
+		option 1...
+		some_class.modifier.name.get = function () ... end
+		some_class.modifier.name.set = function () ... end
+		
+		option 2...
+		some_class.modifier.name = { get = function() ... end, set = function () ... end, init = function () ... end }
+		
+		option 3...
+		some_class.modifier.name = class.property:new({ function () ... end, function () ... end, function () ... end })
+		
+		
+		option 3 hides less, but is more clear in what is happening.  I would need fancy metatable shenanigans to make the others work
+		which might be a bit more confusing.  I'm going to go option 3.
+	
 	
 	local object = some_class:new()
 	local other = some_class:new()
@@ -346,4 +370,12 @@ t.db = dc.create
 	how are classes going to get properties?  I need to specify them to class creation and inherit them from base classes as well.
 	
 	HOOKS are instance specific?  where can I store them that won't muddy up anything if I want to save the instance table...
+	
+	I could setup a metatable where I can store property specific data, and all access goes through that.  in fact, all instance specific class information
+	should go into this metatable for sure.
+	
+	
+	
+	
+	
 ]]--
