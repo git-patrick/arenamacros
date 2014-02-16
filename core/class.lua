@@ -144,24 +144,18 @@ class.instance_metatable = {
 
 class.class_metatable = {
 	__index = function (t,k)
-		-- first check our static class members
-		local a = rawget(t,k)
+		print("class_metatable, __index ", t.name, " ", k)
 		
+		local a =	rawget(t,k) or
+					class.base[k] or
+					t._data[k]
+					
 		if (a) then
 			return a
 		end
 		
-		print("class_metatable, __index ", t.name, " ", k)
-		
-		-- now check our class object functions
-		if (class.base[k]) then
-			return class.base[k]
-		end
-		
-		-- ANY OTHER INDEX IS TREATED AS A DATA GROUP!  AND CREATED IF IT DOESN'T EXIST
-		print("accessing datagroup ", k)
-		
-		t._data[k] = t._data[k] or class.datagroup:new({ k })
+		-- ANY OTHER INDEX IS TREATED AS A NEW DATA GROUP.
+		t._data[k] = class.datagroup:new({ k })
 		
 		return t._data[k]
 	end,
@@ -180,7 +174,7 @@ class.class_metatable = {
 				t._methods.__index[k] = v
 			end
 		else
-			rawset(t, k, v)
+			t:add_static(k, v)
 		end
 	end
 }
