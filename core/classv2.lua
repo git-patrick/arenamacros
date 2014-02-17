@@ -35,7 +35,7 @@ function class.create(name, ...)
 	local t = { }
 	
 	t.datagroups	= table_merge(nil, nil, nil, apply(function (v) return v.datagroups end, ...))
-	
+
 	t.inits			= table_merge(nil, nil, nil, apply(function (v) return v.inits end, ...))
 	t.releases		= table_merge(nil, nil, nil, apply(function (v) return v.releases end, ...))
 	t.methods		= table_merge(nil, nil, nil, apply(function (v) return v.methods end, ...))
@@ -187,7 +187,7 @@ function class.instance.base:init(cls)
 	self.info.datagroups = { }
 	
 	for name, dg in pairs(cls.datagroups) do
-		self.info.datagroups[name] = class.instance.datagroup:new(dg, self)
+		self.info.datagroups[name] = class.instance.datagroup:new(name, dg, self)
 	end
 end
 
@@ -205,9 +205,11 @@ end
 
 class.instance.datagroup = { }
 
-function class.instance.datagroup:new(datagroup, instance)
+function class.instance.datagroup:new(datagroup_name, datagroup, instance)
 	local t = { }
 	
+	t.datagroup_name = datagroup_name
+
 	t.datagroup = datagroup
 	t.instance = instance
 	
@@ -244,6 +246,11 @@ function class.instance.datagroup.base:property(prop)
 	return self.properties[prop]
 end
 
+function class.instance.datagroup.base:set(from_instance)
+	for name, prop in pairs(self.properties) do
+		prop:set(self.instance, from_instance[self.datagroup_name][name])
+	end
+end
 
 
 
