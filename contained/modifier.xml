@@ -3,10 +3,11 @@
     
 	<Script file="modifier.lua"/>
     
-    <Button name="amModifierTemplate" inherits="amListItemTemplate" virtual="true">
+    <Button name="amContainedModifierTemplate" inherits="amContainedTemplate" virtual="true">
         <Size y="40" />
         <Scripts>
-            <OnClick function="amModifier_OnClick" />
+			<OnLoad function="amContainedModifier_OnLoad" />
+            <OnClick function="amContainedModifier_OnClick" />
         </Scripts>
         <Layers>
             <Layer level="HIGHLIGHT">
@@ -33,7 +34,7 @@
                     <Anchor point="TOPLEFT" x="9" />
                 </Anchors>
                 <Scripts>
-                    <OnClick function="amModifier_MoveUp"/>
+                    <OnClick function="amContainedModifier_MoveUp"/>
                 </Scripts>
                 <NormalTexture file="Interface\Buttons\Arrow-Up-Up"/>
                 <PushedTexture file="Interface\Buttons\Arrow-Up-Down"/>
@@ -45,18 +46,18 @@
                     <Anchor point="BOTTOMLEFT" x="9" y="-2" />
                 </Anchors>
                 <Scripts>
-                    <OnClick function="amModifier_MoveDown"/>
+                    <OnClick function="amContainedModifier_MoveDown"/>
                 </Scripts>
                 <NormalTexture file="Interface\Buttons\Arrow-Down-Up"/>
                 <PushedTexture file="Interface\Buttons\Arrow-Down-Down"/>
                 <DisabledTexture file="Interface\Buttons\Arrow-Down-Disabled"/>
             </Button>
-            <Button parentKey="amDelete" inherits="amDeleteButtonTemplate" frameStrata="HIGH">
+            <Button parentKey="amDelete" inherits="amContained_DeleteButtonTemplate" frameStrata="HIGH">
                 <Anchors>
                     <Anchor point="RIGHT" />
                 </Anchors>
                 <Scripts>
-                    <OnClick function="amModifier_Delete" />
+                    <OnClick function="amContainedModifier_Delete" />
                 </Scripts>
             </Button>
         </Frames>

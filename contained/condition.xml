@@ -3,7 +3,7 @@
     
 	<Script file="condition.lua"/>
     
-    <Button name="amConditionButtonTemplate" virtual="true">
+    <Button name="amContainedCondition_ButtonTemplate" virtual="true">
         <Size>
             <AbsDimension x="32" y="32"/>
         </Size>
@@ -19,7 +19,7 @@
         <PushedTexture file="Interface\QuestFrame\UI-QuestTitleHighlight" alphaMode="ADD" />
     </Button>
     
-    <Button name="amConditionTemplate" inherits="amListItemTemplate" virtual="true">
+    <Button name="amContainedConditionTemplate" inherits="amContainedTemplate" virtual="true">
         <Size y="30" />
         <Anchors>
             <Anchor point="TOPLEFT" />
@@ -40,53 +40,53 @@
             </Layer>
         </Layers>
         <Frames>
-            <Button parentKey="amName" inherits="amConditionButtonTemplate" frameStrata="HIGH">
+            <Button parentKey="amName" inherits="amContainedCondition_ButtonTemplate" frameStrata="HIGH">
                 <Size y="22" x="120" />
                 <Anchors>
                     <Anchor point="LEFT" x="50" />
                 </Anchors>
                 <Scripts>
-                    <OnClick>
-                        am.selected_condition = self:GetParent()
+                    <!--<OnClick>
+						am.selected_condition = self:GetParent()
                         
                         AMConditionMenuFrame:SetPoint("CENTER", self, "CENTER")
                         
                         EasyMenu(am.addons.menu, AMConditionMenuFrame, AMConditionMenuFrame, 0, 0, "MENU", 1)
-                    </OnClick>
+                    </OnClick>-->
                 </Scripts>
             </Button>
-            <Button parentKey="amRelation" inherits="amConditionButtonTemplate" frameStrata="HIGH">
+            <Button parentKey="amRelation" inherits="amContainedCondition_ButtonTemplate" frameStrata="HIGH">
                 <Size y="22" x="75" />
                 <Anchors>
                     <Anchor point="LEFT" x="180" />
                 </Anchors>
                 <Scripts>
-                    <OnClick>
+                    <!--<OnClick>
                         am.selected_condition = self:GetParent()
                         
                         am.addons.conditions[am.selected_condition.am_name:GetText()].relation_onclick(self)
-                    </OnClick>
+                    </OnClick>-->
                 </Scripts>
             </Button>
-            <Button parentKey="amValue" inherits="amConditionButtonTemplate" frameStrata="HIGH">
+            <Button parentKey="amValue" inherits="amContainedCondition_ButtonTemplate" frameStrata="HIGH">
                 <Size y="22" x="120" />
                 <Anchors>
                     <Anchor point="LEFT" x="265" />
                 </Anchors>
                 <Scripts>
-                    <OnClick>
+                    <!--<OnClick>
                         am.selected_condition = self:GetParent()
                         
                         am.addons.conditions[am.selected_condition.am_name:GetText()].value_onclick(self)
-                    </OnClick>
+                    </OnClick>-->
                 </Scripts>
             </Button>
-            <Button parentKey="amDelete" inherits="amDeleteButtonTemplate" frameStrata="HIGH">
+            <Button parentKey="amDelete" inherits="amContained_DeleteButtonTemplate" frameStrata="HIGH">
                 <Anchors>
                     <Anchor point="RIGHT" />
                 </Anchors>
                 <Scripts>
-                    <OnClick function="amCondition_Delete" />
+                    <OnClick function="amContainedCondition_Delete" />
                 </Scripts>
             </Button>
         </Frames>

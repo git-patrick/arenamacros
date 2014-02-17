@@ -1,14 +1,111 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <None Include="..\..\.gitignore" />
-    <None Include="..\..\am.lua" />
-    <None Include="..\..\am_container.lua" />
-    <None Include="..\..\am_core.lua" />
-    <None Include="..\..\am_frame.lua" />
+    <None Include="..\..\lib\core\core.lua">
+      <Filter>lib\core</Filter>
+    </None>
+    <None Include="..\..\lib\dataclass\dataclass.lua">
+      <Filter>lib\dataclass</Filter>
+    </None>
+    <None Include="..\..\lib\addons\am_true.lua">
+      <Filter>lib\addons</Filter>
+    </None>
+    <None Include="..\..\lib\addons\am_addon.lua">
+      <Filter>lib\addons</Filter>
+    </None>
+    <None Include="..\..\lib\addons\am_location.lua">
+      <Filter>lib\addons</Filter>
+    </None>
+    <None Include="..\..\lib\queue\am_queue.lua">
+      <Filter>lib\queue</Filter>
+    </None>
+    <None Include="..\..\lib\queue\am_token.lua">
+      <Filter>lib\queue</Filter>
+    </None>
     <None Include="..\..\ArenaMacros.toc" />
+    <None Include="..\..\.gitignore" />
+    <None Include="..\..\lib\utility\utility.lua">
+      <Filter>lib\utility</Filter>
+    </None>
+    <None Include="..\..\lib\container\container.lua">
+      <Filter>lib\container</Filter>
+    </None>
+    <None Include="..\..\lib\container\contained.lua">
+      <Filter>lib\container</Filter>
+    </None>
+    <None Include="..\..\lib\container\contained\modifier.lua">
+      <Filter>lib\container\contained</Filter>
+    </None>
+    <None Include="..\..\lib\container\contained\macro.lua">
+      <Filter>lib\container\contained</Filter>
+    </None>
+    <None Include="..\..\lib\container\contained\condition.lua">
+      <Filter>lib\container\contained</Filter>
+    </None>
+    <None Include="..\..\core\class.lua">
+      <Filter>core</Filter>
+    </None>
+    <None Include="..\..\ArenaMacros.lua" />
   </ItemGroup>
   <ItemGroup>
-    <Xml Include="..\..\am_frame.xml" />
+    <Xml Include="..\..\lib\core\core.xml">
+      <Filter>lib\core</Filter>
+    </Xml>
+    <Xml Include="..\..\lib\dataclass\dataclass.xml">
+      <Filter>lib\dataclass</Filter>
+    </Xml>
+    <Xml Include="..\..\lib\addons\am_addons.xml">
+      <Filter>lib\addons</Filter>
+    </Xml>
+    <Xml Include="..\..\lib\queue\am_queue.xml">
+      <Filter>lib\queue</Filter>
+    </Xml>
+    <Xml Include="..\..\lib\container\container.xml">
+      <Filter>lib\container</Filter>
+    </Xml>
+    <Xml Include="..\..\lib\container\contained.xml">
+      <Filter>lib\container</Filter>
+    </Xml>
+    <Xml Include="..\..\lib\container\contained\modifier.xml">
+      <Filter>lib\container\contained</Filter>
+    </Xml>
+    <Xml Include="..\..\lib\container\contained\macro.xml">
+      <Filter>lib\container\contained</Filter>
+    </Xml>
+    <Xml Include="..\..\lib\container\contained\condition.xml">
+      <Filter>lib\container\contained</Filter>
+    </Xml>
+    <Xml Include="..\..\core\core.xml">
+      <Filter>core</Filter>
+    </Xml>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="lib">
+      <UniqueIdentifier>{4d5f7b31-3f8a-42e2-b5a2-90425abbb959}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\core">
+      <UniqueIdentifier>{6ed2cbc5-670c-4186-b408-9af9ea4c8733}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\container">
+      <UniqueIdentifier>{f3705960-0394-4645-8720-f7fe00a0f7be}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\container\contained">
+      <UniqueIdentifier>{38eb4508-e4bf-4d48-bf4b-1cb3eabf63d6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\dataclass">
+      <UniqueIdentifier>{ae094676-3e3e-4b71-93d4-7b876c95e12f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\queue">
+      <UniqueIdentifier>{0cac02c5-68d4-4bfb-8acc-1124c9cb7def}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\addons">
+      <UniqueIdentifier>{4cd17c82-06a9-468c-b0f7-28dfde4d30ec}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\utility">
+      <UniqueIdentifier>{59321239-a669-416c-8c76-be284e4e98f0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="core">
+      <UniqueIdentifier>{d060d90e-7039-43fd-8b79-478f2a30fe84}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
 </Project>

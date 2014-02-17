@@ -3,7 +3,7 @@
     
 	<Script file="contained.lua"/>
 
-    <Button name="amListItemTemplate" enableMouse="true" virtual="true">
+    <Button name="amContainedTemplate" enableMouse="true" virtual="true">
         <Anchors>
             <Anchor point="TOPLEFT" />
             <Anchor point="RIGHT" />
@@ -17,7 +17,7 @@
         </Layers>
     </Button>
     
-    <Button name="amDeleteButtonTemplate" virtual="true">
+    <Button name="amContained_DeleteButtonTemplate" virtual="true">
 		<Size>
 			<AbsDimension x="32" y="32"/>
 		</Size>

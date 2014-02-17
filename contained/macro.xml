@@ -3,10 +3,11 @@
     
 	<Script file="macro.lua"/>
 
-    <Button name="amMacroTemplate" inherits="amListItemTemplate" virtual="true">
+    <Button name="amContainedMacroTemplate" inherits="amContainedTemplate" virtual="true">
         <Size y="30" />
         <Scripts>
-            <OnClick function="amMacro_OnClick" />
+			<OnLoad function="amContainedMacro_OnLoad" />
+            <OnClick function="amContainedMacro_OnClick" />
         </Scripts>
         <Layers>
             <Layer level="HIGHLIGHT">
@@ -38,7 +39,7 @@
                     <Anchor point="TOPLEFT" />
                 </Anchors>
                 <Scripts>
-                    <OnMouseDown function="amMacro_Pickup" />
+                    <OnMouseDown function="amContainedMacro_Pickup" />
                 </Scripts>
             </Button>
             <CheckButton parentKey="amEnabled" inherits="OptionsBaseCheckButtonTemplate" frameStrata="HIGH">
@@ -53,15 +54,15 @@
                     </Anchor>
                 </Anchors>
                 <Scripts>
-                    <OnClick function="amMacro_Enabled" />
+                    <OnClick function="amContainedMacro_Enabled" />
                 </Scripts>
             </CheckButton>
-            <Button parentKey="amDelete" inherits="amDeleteButtonTemplate" frameStrata="HIGH">
+            <Button parentKey="amDelete" inherits="amContained_DeleteButtonTemplate" frameStrata="HIGH">
                 <Anchors>
                     <Anchor point="RIGHT" />
                 </Anchors>
                 <Scripts>
-                    <OnClick function="amMacro_Delete" />
+                    <OnClick function="amContainedMacro_Delete" />
                 </Scripts>
             </Button>
         </Frames>

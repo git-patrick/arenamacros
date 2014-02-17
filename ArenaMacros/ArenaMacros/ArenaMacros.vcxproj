@@ -10,6 +10,37 @@
       <Platform>Win32</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\.gitignore" />
+    <None Include="..\..\ArenaMacros.lua" />
+    <None Include="..\..\ArenaMacros.toc" />
+    <None Include="..\..\core\class.lua" />
+    <None Include="..\..\lib\addons\am_addon.lua" />
+    <None Include="..\..\lib\addons\am_location.lua" />
+    <None Include="..\..\lib\addons\am_true.lua" />
+    <None Include="..\..\lib\container\contained.lua" />
+    <None Include="..\..\lib\container\container.lua" />
+    <None Include="..\..\lib\container\contained\condition.lua" />
+    <None Include="..\..\lib\container\contained\macro.lua" />
+    <None Include="..\..\lib\container\contained\modifier.lua" />
+    <None Include="..\..\lib\core\core.lua" />
+    <None Include="..\..\lib\dataclass\dataclass.lua" />
+    <None Include="..\..\lib\queue\am_queue.lua" />
+    <None Include="..\..\lib\queue\am_token.lua" />
+    <None Include="..\..\lib\utility\utility.lua" />
+  </ItemGroup>
+  <ItemGroup>
+    <Xml Include="..\..\core\core.xml" />
+    <Xml Include="..\..\lib\addons\am_addons.xml" />
+    <Xml Include="..\..\lib\container\contained.xml" />
+    <Xml Include="..\..\lib\container\container.xml" />
+    <Xml Include="..\..\lib\container\contained\condition.xml" />
+    <Xml Include="..\..\lib\container\contained\macro.xml" />
+    <Xml Include="..\..\lib\container\contained\modifier.xml" />
+    <Xml Include="..\..\lib\core\core.xml" />
+    <Xml Include="..\..\lib\dataclass\dataclass.xml" />
+    <Xml Include="..\..\lib\queue\am_queue.xml" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{1D299106-709F-48C4-9EDB-89E566C27DB2}</ProjectGuid>
     <RootNamespace>ArenaMacros</RootNamespace>
@@ -63,17 +94,6 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <None Include="..\..\.gitignore" />
-    <None Include="..\..\am.lua" />
-    <None Include="..\..\am_container.lua" />
-    <None Include="..\..\am_core.lua" />
-    <None Include="..\..\am_frame.lua" />
-    <None Include="..\..\ArenaMacros.toc" />
-  </ItemGroup>
-  <ItemGroup>
-    <Xml Include="..\..\am_frame.xml" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

@@ -1,11 +1,11 @@
-local addon_name, addon_table = ...
-local e, L, V, P, G = unpack(addon_table) -- Engine, Locales, PrivateDB, ProfileDB, GlobalDB
+local addon_name, e = ...
 
--- this is the base class for frames expected to function inside an am_container
-local contained = e:lib("container"):mkclass("contained")
+local libwow = e:lib("wow")
 
--- override the default mt, and setup some class static variables.
-contained.mt		= { __index = CreateFrame("Button", nil, UIParent) }
+-- this is the base class for frames expected to function inside a container
+local contained = e:lib("container"):addclass(class.create("contained", libwow:class("button")))
+
+-- setup some class static variables.
 contained.colors	= {
     bg1 = { r = 1, g = 1, b = 1, a = 0.08 },
     bg2 = { r = 0, g = 0, b = 0, a = 0 },
@@ -16,16 +16,16 @@ contained.colors	= {
 -- APPEARANCE AND POSITION RELATED STUFF
 ----------------------------------------------------------------------------------------
 
-function contained.mt.__index:am_unhighlight()
+function contained:am_unhighlight()
     self.am_highlighted = nil
 end
-function contained.mt.__index:am_highlight()
+function contained:am_highlight()
     self.am_highlighted = true
 end
-function contained.mt.__index:am_detach()
+function contained:am_detach()
     self:SetPoint("TOPLEFT")
 end
-function contained.mt.__index:am_attach(to)
+function contained:am_attach(to)
     if (to) then
         self:SetPoint("TOPLEFT", to, "BOTTOMLEFT")
     else
@@ -38,27 +38,25 @@ end
 ------------------------------------------------------------------------------------------
 
 -- called first thing once the frame is retrieved from the pool
-function contained.mt.__index:am_init(container)
+function contained:am_init(container)
     self.am_container = container
 end
 
-function contained.mt.__index:am_onadd(dataobject)
-    -- this is called by the container in an attempt to add the object.  adding can be canceled by returning non nil
-    
-    self:am_set(dataobject)
-    
-    return nil  -- for success
+function contained:am_onadd(datagroup, object)
+    -- this is called by the container in an attempt to add the object.  adding can be canceled by returning false
+
+    return self[datagroup]:set(object)
 end
 -- called after the frame is successfully added
-function contained.mt.__index:am_show()
+function contained:am_show()
     self:Show()
 end
-function contained.mt.__index:am_onremove()
+function contained:am_onremove()
     -- this is called by the container when the object is being removed.  can be overridden if action is required (for example in macros, need to delete the actual macro)
     -- removing cannot be canceled.
 end
 -- this is called when the frame is no longer needed, and is being given back to the pool.  this should be used to clean up the frame for future reuse
-function contained.mt.__index:am_release()
+function contained:am_release()
     self:Hide()
     self:SetParent(UIParent)
     
@@ -74,13 +72,13 @@ end
 -- am_update is called on every am_contained in a container whenever an object is resorted or removed from the container.
 -- a resort happens on every insert.
 -- the index into the container is passed
-function contained.mt.__index:am_update(i)
+function contained:am_update(i)
     local c
     
     if (self.am_highlighted) then
-        c = am_contained.colors.bghl
+        c = contained.colors.bghl
     else
-        c = (i % 2) == 1 and am_contained.colors.bg1 or am_contained.colors.bg2
+        c = (i % 2) == 1 and contained.colors.bg1 or contained.colors.bg2
     end
     
     self:am_setindex(i)
@@ -88,10 +86,10 @@ function contained.mt.__index:am_update(i)
 end
 
 -- used by am_update to record our index in the container.
-function contained.mt.__index:am_setindex(i)
+function contained:am_setindex(i)
     self.am_index = i
 end
-function contained.mt.__index:am_getindex()
+function contained:am_getindex()
     return self.am_index
 end
 
@@ -105,8 +103,12 @@ end
 ----------------------------------------------------------------------------------------
 
 -- this depends on several properties defined by functions above.  if you override some above, you may need to change this.
-function contained.mt.__index:am_resort()
+function contained:am_resort()
     return self.am_container:resort(self:am_getindex())
+end
+
+function contained:am_remove()
+	return self.am_container:remove(self:am_getindex())
 end
 
 --[[
@@ -121,7 +123,7 @@ end
 ]]--
 
 -- this is just a little utility function since a wow Frame's GetPoint function takes an index for some dumb reason.
-function contained.mt.__index:am_getpoint(what)
+function contained:am_getpoint(what)
     for i = 1, self:GetNumPoints() do
         local pt = { self:GetPoint(i) }
         

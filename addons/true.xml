@@ -1,0 +1,24 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
+    ..\..\FrameXML\UI.xsd">
+    
+	<Script file="true.lua"/>
+    
+    <Button name="amExtensionTrue" inherits="amExtensionTemplate" virtual="true">
+        <Scripts>
+			<OnLoad function="amExtensionTrue_OnLoad" />
+            <OnClick function="amExtensionTrue_OnClick" />
+        </Scripts>
+        <Layers>
+            <Layer level="HIGHLIGHT">
+                <Texture file="Interface\QuestFrame\UI-QuestTitleHighlight" alphaMode="ADD" />
+            </Layer>
+            <Layer level="ARTWORK">
+                <FontString justifyH="LEFT" text="Always evaluates to true." inherits="GameFontNormal">
+                    <Anchors>
+                        <Anchor point="LEFT" x="10" />
+                    </Anchors>
+                </FontString>
+            </Layer>
+        </Layers>
+	</Button>
+</Ui>
