@@ -8,11 +8,10 @@ core\core.xml
 
 ArenaMacros.lua
 
-# lib\utility\utility.xml
-# lib\dataclass\dataclass.xml
-# lib\wow\wow.xml
-# lib\container\container.xml
+lib\utility\utility.xml
+lib\wow\wow.xml
+lib\container\container.xml
 
-# dataclasses.lua
+dataclasses.lua
 
-# contained\modifier.xml
+contained\modifier.xml

@@ -2,7 +2,7 @@
     ..\..\FrameXML\UI.xsd">
 
     <Script file="globals.lua" />
-    <Script file="classv2.lua" />
-    <!-- <Script file="addon.lua" />
-	<Script file="frame.lua" />-->
+    <Script file="class.lua" />
+    <Script file="addon.lua" />
+	<Script file="frame.lua" />
 </Ui>

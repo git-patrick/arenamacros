@@ -51,13 +51,13 @@ function extension:onevent()
 end
 
 function extension:attach(contained_condition)
-	local a = contained_condition:am_getamaddon()
+	local a = contained_condition:am_getextension()
 	
 	if (a) then
 		a:detach(contained_condition)
 	end
 	
-	contained_condition:am_setamaddon(self)
+	contained_condition:am_setextension(self)
 end
 
 function extension:detach(contained_condition)

@@ -9,13 +9,12 @@ local uidmap = libcontainer:addclass(class.create("uidmap"))
 -- this object is used to record a chosen property of dataclass objects, and is used by containers to fail add if the property is already in use.
 -- for example, it demands macro names be unique.  seperated from the container itself so multiple containers can use the same map
 
-function uidmap:init(uid_class, unique_identifier)
+function uidmap:init(uid_datagroup, unique_identifier)
     -- unique identifier is the property name of creation objects passed to container:add
     -- that property value will be used as a UNIQUE identifier in a map to indicate whether or not
     -- the id is already in the container.  add will FAIL if that property is not specified.
     
-	-- the property uses dataclasses, and so we must define which dataclass the property belongs to
-	self.uid_class	   = uid_class
+	self.uid_datagroup = uid_datagroup
     self.uid           = unique_identifier
     self.map           = { }
 
@@ -36,21 +35,21 @@ function uidmap:contains(o)
     if (type(o) == "string") then
         return (self.map[o] ~= nil)
     elseif (type(o) == "table") then
-        return (self.map[o:dc_get(self.uid_class,self.uid)] ~= nil)
+        return (self.map[o[self.uid_datagroup][self.uid]] ~= nil)
     end
     
     return false
 end
 
 function uidmap:add(object)
-    local p = object:dc_getclass(self.uid_class)[self.uid]
+    local p = object[self.uid_datagroup][self.uid]
     
     if (not p or self:contains(object)) then
         return false
     end
     
     -- set our mapping to true!
-    self.map[p:get()] = true
+    self.map[p] = true
     
     -- this hooks any changes to this property.  return values of false stop the change, true continues it.
     p.prehook:add(self.prehook_bind)
@@ -59,7 +58,7 @@ function uidmap:add(object)
 end
 
 function uidmap:rm(object)
-    local p = object:dc_getclass(self.uid_class)[self.uid]
+    local p = object[self.uid_datagroup][self.uid]
     
     if (not object[p] or not self:contains(object)) then
         return false
@@ -95,10 +94,10 @@ end
 -- container class! for lists of WoW Frames!
 local container = libcontainer:addclass(class.create("container", libwow:class("frame")))
 
-function container:init(dataclass, frame_pool, uid_map)
+function container:init(datagroup, frame_pool, uid_map)
 	-- this is the expected dataclass of the objects passed to :add
 	-- this is what is used in the set
-	self.dataclass	   = dataclass
+	self.datagroup	   = datagroup
 	
     self.frame_pool    = frame_pool
     self.uid_map       = uid_map
@@ -131,8 +130,8 @@ function container:addall(objects)
     end
 end
 
-function container:add(dcobject)
-    if (self.uid_map and self.uid_map:contains(dcobject)) then
+function container:add(object)
+    if (self.uid_map and self.uid_map:contains(object)) then
         return 1
     end
     
@@ -150,7 +149,7 @@ function container:add(dcobject)
     f:am_update(self:count())
     
     -- check if adding our object works!
-    if (not f:am_onadd(dcobject)) then
+    if (not f:am_onadd(self.datagroup, object)) then
         table.remove(self.frames, self:count())
         self.frame_pool:give(f)
         

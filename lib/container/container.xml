@@ -4,4 +4,11 @@
 	<Script file="container.lua"/>
     
     <Include file="contained.xml" />
+	
+	<Frame name="amContainerTemplate" virtual="true">
+		<Anchors>
+			<Anchor point="TOPLEFT" />
+			<Anchor point="RIGHT" />
+		</Anchors>
+	</Frame>
 </Ui>

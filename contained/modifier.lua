@@ -3,34 +3,25 @@ local addon_name, e = ...
 local libutil		= e:lib("utility")
 
 local libcontainer	= e:lib("container")
-local libdc			= e:lib("dataclass")
 local libwow		= e:lib("wow")
 
-local property		= libdc:class("property")
-
--- This part sets up our dataclass class for this "modifier" representation.
--- this is used for inheriting purposes in the modifier
-
--- setup the properties list here.....
-local modifier_properties = {
-	["text"]        = property.scalar("am_text"),
-	["modstring"]   = property.custom(
-		function (self) return self.amModString:GetText() end,
-		function (self, value) self.amModString:SetText(value) end
-	),
-	["conditions"]  = property.array("am_conditions", libdc:class("condition_simple"))
-}
-
-libdc:addclass(libdc:create_dataclass("modifier_contained", "modifier", modifier_properties))
+local property		= class.property
 
 -- This is our "contained" version of the modifier for use inside the container list.
--- is also the dataclass to allow for quick and easy get / set.
 -- you don't ever need to call modifier:new to create the object
 -- it is automatically attached to the modifier frame intended for containment when you CreateFrame(...) with the
 -- appropriate inherited frame name in modifier.xml
 -- that works becaues of the frames OnLoad function below!
 
-local modifier = libcontainer:addclass(class.create("modifier", libcontainer:class("contained"), libdc:class("modifier_contained")))
+local modifier = libcontainer:addclass(class.create("modifier", libcontainer:class("contained")))
+
+-- setup our modifier datagroup!
+modifier.modifier.text		= property.scalar("am_text")
+modifier.modifier.modstring	= property.custom(
+	function (self) return self.amModString:GetText() end,
+	function (self, value) self.amModString:SetText(value) end
+)
+modifier.modifier.conditions= property.array("am_conditions:", e:class("condition_simple"))
 
 -- override for contained:am_setindex
 function modifier:am_setindex(i)

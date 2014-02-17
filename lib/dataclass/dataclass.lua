@@ -1,3 +1,14 @@
+
+
+
+--[[
+
+THIS FILE IS BASICALLY NO LONGER NEEDED.  I ADDED ALL THIS FUNCTIONALITY DIRECTLY TO CLASSES
+
+This is only here incase I need something.  I will delete this file later.
+
+
+
 local addon_name, e = ...
 
 local libutil   = e:lib("utility")
@@ -125,47 +136,7 @@ end
 
 
 
-property:add_static("scalar", function (name)
-    return property:new(
-        {
-            function (t) return t[name] end,            -- get
-            function (t, value) t[name] = value end     -- _set
-        }
-    )
-end)
 
--- this is an array of dataclass objects !  the dataclass type is passed in dc
-property:add_static("array", function (name, dc)
-    return property:new(
-        {
-			function (t) return t[name] end,			-- get
-			function (t, value)							-- _set
-				t[name] = { }
-			
-				for i, v in pairs(value) do
-					table.insert(t[name], dc:new():dc_set(v))
-				end
-			end,
-            function (t)								-- init
-				-- since classes can be created on existing objects (for example, the WoW stored variables table), we check if our property is set
-				-- if it is, we basically tell all of the objects in the array that they are dc objects (since they were likely just tables before
-				-- this amounts to setting their metatable up to have access to dataclass members)
-
-				if (t[name]) then
-					for i,v in pairs(t[name]) do
-						dc:new(nil, v)
-					end
-				else
-					t[name] = { }
-				end
-			end,
-        }
-    )
-end)
-
-property:add_static("custom", function(get, _set, init)
-	return property:new({ get, _set, init })
-end)
 
 
 

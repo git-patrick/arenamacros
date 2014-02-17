@@ -42,10 +42,10 @@ function contained:am_init(container)
     self.am_container = container
 end
 
-function contained:am_onadd(dcobject)
+function contained:am_onadd(datagroup, object)
     -- this is called by the container in an attempt to add the object.  adding can be canceled by returning false
 
-    return self:dc_set(self.am_container.dataclass, dcobject)
+    return self[datagroup]:set(object)
 end
 -- called after the frame is successfully added
 function contained:am_show()

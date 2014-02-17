@@ -3,61 +3,59 @@ local addon_name, e = ...
 local libutil		= e:lib("utility")
 
 local libcontainer	= e:lib("container")
-local libdc			= e:lib("dataclass")
 local libwow		= e:lib("wow")
 
-local property		= libdc:class("property")
+local property = class.property
 
--- setup the properties list here.....
-local macro_properties = {
-	["name"]       = property.custom(
-		function (self) return self.amName:GetText() end,
-		function (self, value) self.amName:SetText(value) end,
-	),
-	["icon"]       = property.custom(
-		function (self) return self.amIcon:GetTexture() end,
-		function (self, value) self.amIcon:SetTexture(value) end
-	),
-	["modifiers"]  = property.array("modifiers", libdc:class("modifier_simple")),
-	["enabled"]    = property.custom(
-		function (self) return self.am_enabled end,
-		function (self, value) self.am_enabled = value end
-	)
-})
+local macro = libcontainer:addclass(class.create("macro", libcontainer:class("contained")))
 
-libdc:addclass(libdc:create_dataclass("macro_contained", "macro", macro_properties))
+macro.macro.name = property.custom(
+	function (self) return self.amName:GetText() end,
+	function (self, value) self.amName:SetText(value) end,
+)
+macro.macro.icon = property.custom(
+	function (self) return self.amIcon:GetTexture() end,
+	function (self, value) self.amIcon:SetTexture(value) end
+)
+macro.macro.modifiers = property.custom(
+	function (self) return self.amIcon:GetTexture() end,
+	function (self, value) self.amIcon:SetTexture(value) end
+)
+macro.macro.enabled = property.custom(
+	function (self) return self.am_enabled end,
+	function (self, value) self.am_enabled = value end
+)
 
-local macro = libcontainer:addclass(class.create("macro", libcontainer:class("contained"), libdc:class("macro_contained")))
 
 -- This is used as an identifier for a globally named secureactionbuttontemplate object which allows for Secure WoW functionality
 -- to be coded and acted upon by my addon as long as there is user interaction.
 -- ultimately, this means that you can make macros of longer length (I am not actually sure what the limit is for these buttons, but it is much longer than standard)
 
-macro.securebtn_identifier = 0
+macro:add_static("securebtn_identifier", 0)
 
 function macro:init()
 
     -- setup our property hooks!
     -- attempts to change name already are checked by the uidmap for the container, so if the new name is already taken,
     -- property set will fail from that, and we will never even get called.
-    self:am_getproperty("name").psthook:add(
+    self.macro.name.psthook:add(
 		function (o, from, to)
 			o:am_resort()
 		end
 	)
     
-    self:am_getproperty("modifiers").psthook:add(
+    self.macro.modifiers.psthook:add(
 		function (o, from, to)
 			o.amNumModifiers:SetText(to and table.getn(to) or "0")
 		 
-			if (o:am_getproperty("enabled"):get()) then
+			if (o.macro.enabled) then
 				o:am_checkmodifiers()
 			end
 		end
 	)
-    self:am_getproperty("enabled").prehook:add(
+    self.macro.enabled.prehook:add(
 		function (o, from, to)
-			local name = self:am_getproperty("name"):get()
+			local name = self.macro.name
 		 
 			if (to) then
 				if not e.util.create_or_rename_macro(nil, name) then
@@ -70,7 +68,7 @@ function macro:init()
 			return true
 		end
 	)
-    self:am_getproperty("enabled").psthook:add(
+    self.macro.enabled.psthook:add(
 		function (o, from, to)
 			o.amEnabled:SetChecked(to)
 			
@@ -110,14 +108,14 @@ end
 
 -- this is used by the container to sort our macros automatically.
 function macro:am_compare(other)
-    local me = self:am_getproperty("name"):get():lower()
-    local yu = other:am_getproperty("name"):get():lower()
+    local me = self.macro.name:lower()
+    local yu = other.macro.name:lower()
     
     return (me <= yu) and ((me < yu) and -1 or 0) or 1
 end
 
 function macro:am_onremove()
-    self:am_getproperty("enabled"):set(self, false)
+    self.macro.enabled = false
     
     -- need to delete the database reference here!
 end
@@ -129,28 +127,28 @@ end
 function macro:am_checkstatus()
     local enable
     
-    if (GetMacroIndexByName(self:am_getproperty("name"):get()) > 0) then
+    if (GetMacroIndexByName(self.macro.name) > 0) then
         enable = true
     else
         enable = false
     end
     
-    self:am_getproperty("enabled"):set(self, enable)
+    self.macro.enabled = enable
 end
 
 
 
 function macro:am_setactivemod(mod)
     if (InCombatLockdown()) then
-        print("AM: Unable to setup macro " .. self:am_getproperty("name"):get() .. ":  You are in combat!  Changes queued for when combat ends...")
+        print("AM: Unable to setup macro " .. self.macro.name .. ":  You are in combat!  Changes queued for when combat ends...")
         
         self:RegisterEvent("PLAYER_REGEN_ENABLED")
         
         return false
     end
     
-    local text = mod:am_getproperty("text"):get()
-    local name = self:am_getproperty("name"):get()
+    local text = mod.modifier.text
+    local name = self.macro.name
     
     -- okay, need to process the inline scripts here!
     
@@ -176,17 +174,17 @@ function macro:am_setactivemod(mod)
     end
   
     -- change our icon to the macros auto determined icon.
-    self:am_getproperty("icon"):set(self, select(2, GetMacroInfo(name)))
+    self.macro.icon = select(2, GetMacroInfo(name))
     
     return true
 end
 
 function macro:am_checkmodifiers()
-    if (not self:am_getproperty("enabled"):get()) then
+    if (not self.macro.enabled) then
         return nil
     end
     
-    for i,m in ipairs(self:am_getproperty("modifiers"):get()) do
+    for i,m in ipairs(self.macro.modifiers) do
         if (m:checkconditions()) then
 			return (not self:am_setactivemod(m))
         end
@@ -197,8 +195,8 @@ function macro:am_checkmodifiers()
 end
 
 function macro:am_pickup()
-    if (self:am_getproperty("enabled"):get()) then
-        PickupMacro(self:am_getproperty("name"))
+    if (self.macro.enabled) then
+        PickupMacro(self.macro.name)
     end
 end
 

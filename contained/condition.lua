@@ -3,36 +3,25 @@ local addon_name, e = ...
 local libutil		= e:lib("utility")
 
 local libcontainer	= e:lib("container")
-local libdc			= e:lib("dataclass")
 local libwow		= e:lib("wow")
 
-local property		= libdc:class("property")
+local property		= class.proeprty
 
--- This part sets up our dataclass class for this "condition" representation.
--- this is used for inheriting purposes in the condition list frame
+local condition = libcontainer:addclass(class.create("modifier", libcontainer:class("contained")))
 
--- setup the properties list here.....
-
-local condition_properties = {
-	["name"]           = property.custom(
-		function (self) return self.amName:GetText() end,
-		function (self, value) self.amName:SetText(value) end,
-	),
-	["relation"]       = property.custom(
-		function (self) return self.amRelation:GetText() end,
-		function (self, value) self.amRelation:SetText(value); end
-	),
-	["value"]          = property.custom(
-		function (self) return self.amValue:GetText() end,
-		function (self, value) self.amValue:SetText(value) end
-	),
-	-- data is where the condition addon stores any of its addon specific information
-	["data"]     = property.scalar("am_data")
-}
-
-libdc:addclass(libdc:create_dataclass("condition_contained", "condition", condition_properties))
-
-local condition = libcontainer:addclass(class.create("modifier", libcontainer:class("contained"), libdc:class("condition_contained")))
+condition.condition.name = property.custom(
+	function (self) return self.amName:GetText() end,
+	function (self, value) self.amName:SetText(value) end,
+)
+condition.condition.relation = property.custom(
+	function (self) return self.amRelation:GetText() end,
+	function (self, value) self.amRelation:SetText(value); end
+)
+condition.condition.value = property.custom(
+	function (self) return self.amValue:GetText() end,
+	function (self, value) self.amValue:SetText(value) end
+)
+condition.condition.data = property.scalar("am_data")
 
 function condition:am_setindex(i)
     self.am_index = i
@@ -50,6 +39,14 @@ function condition:am_setindex(i)
     
     self.amIntroString:SetText(intro)
     self.amOutroString:SetText(outro)
+end
+
+function condition:am_getextension()
+	return self.am_extension
+end
+
+function condition:am_setextension(extension)
+	self.am_extension = extension
 end
 
 
