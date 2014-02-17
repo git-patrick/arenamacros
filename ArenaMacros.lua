@@ -16,7 +16,8 @@ function some_class:awefawef()
 	print("some_class:awefawef")
 end
 
-some_class.fewa.name = class.property:new({
+some_class.fewa.name = class.property.create(
+	"some_class.fewa.name",
 	function(instance)
 		print("name:get");
 		return instance.name
@@ -25,16 +26,17 @@ some_class.fewa.name = class.property:new({
 		print("name:_set ", value);
 		instance.name = value
 	end
-})
+)
 
 
-local other_class = class.create("other_class", some_class)
+local other_class = class.create("other_class")
 
 function other_class:init()
 	print("other_class:init()")
 end
 
-other_class.fewa.text = class.property:new({
+other_class.fewa.text = class.property.create(
+	"other_class.fewa.text",
 	function (instance)
 		print("GET TEXT")
 		return instance.text
@@ -43,31 +45,9 @@ other_class.fewa.text = class.property:new({
 		print("SET TEXT")
 		instance.text = value
 	end
-})
-
--- AT THIS POINT other_class.fewa.name should not be accessible, since the new fewa overrides it
-
-local b = { name = "TESTING" }
-local a = some_class:new({ "HEHEHEHEHE" }, b)
-
-local c = other_class:new()
-
-c.fewa.name = "TEST"
-c.fewa.text = "DOUblE TEST"
-
-print(a.fewa.name)		-- should print("TESTING")
-
-a.fewa.name	= "POOP"	-- I want this to call the property.set of fewa's name property with "POOP" as value
-
-print(a.fewa.name)		-- this calls property.get of fewa's name property
-
-table.insert(a.fewa:property("name").prehook, function (t, from, to) print("PROPERTY NAME PREHOOK!!!"); return true end)
-
-a.fewa.name = "BLERP"
+)
 
 
-local c = some_class:new()
+local another_class = class.create("another_class", some_class, other_class)
 
-c.fewa:set(a)
-
-print(c.fewa.name)
+-- STILL NEED TO MAKE PRE AND PST HOOK ARRAYS MORE USER FRIENDLY

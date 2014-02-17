@@ -8,7 +8,7 @@ function libutil.dump(o, max_recursion, current_recursion)
 	current_recursion = current_recursion or 0
 	local indent = string.rep(" ", current_recursion)
 	
-    if (type(o) == "table" and (max_recursion and current_recursion <= max_recursion)) then
+    if (type(o) == "table" and (not max_recusion or current_recursion <= max_recursion)) then
 		print(indent, "{")
 		
         for k,v in pairs(o) do

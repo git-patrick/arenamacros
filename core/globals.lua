@@ -12,7 +12,7 @@ function table_merge(object, conflict, copy, ...)
 				t[j] = copy and copy(k) or k
 			else
 				if conflict then
-					conflict(j, t[j], k)
+					conflict(t, j, k)
 				end
 			end
 		end
@@ -54,4 +54,25 @@ function ppairs(t)
 	end
 	
 	return pairs(t)
+end
+
+
+
+function dump(o, max_recursion, current_recursion)
+	current_recursion = current_recursion or 0
+	local indent = string.rep(" ", current_recursion)
+	
+    if (type(o) == "table" and (not max_recursion or current_recursion <= max_recursion)) then
+		print(indent, "{")
+		
+        for k,v in pairs(o) do
+			print(indent, " [", k, "] = ")
+			
+			dump(v, max_recursion, current_recursion + 1)
+        end
+        
+        print(indent, "}")
+    else
+        print(indent, " ", tostring(o))
+    end
 end

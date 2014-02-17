@@ -1,15 +1,15 @@
-local addon_name, addon_table = ...
+--[[
+	My Lua Class implementation.
+	
+	DESCRIPTION:
+		TODO
+]]--
 
--- class object.  this has a static member (.create) to create a new class
+
+
 class = { }
 
 function class.create(name, ...)
-	-- the vararg is a list of classes this inherits from.
-	-- copy all those class methods into a new table and set its metatable to search class table.
-	-- functions are all by reference, and this actually results in the fastest implementation I've come up with
-	
-	-- the reason we can't share a name with any superclass is because of class.base:init below.  you need to be
-	-- able to distinguish the init functions merged into t._inits from each other for parameter passing in class.base:init
 	for i, v in pairs { ... } do
 		if (v.name == name) then
 			print("class.lua: Error! Class \"", name, "\" cannot share its name with a superclass.")
@@ -19,74 +19,52 @@ function class.create(name, ...)
 	end
 
 	local t = { }
+	
+	t.datagroups	= table_merge(
+		nil,	-- make me a new table, don't use an existing.
+		function (t, dgname, newmemberarray)
+			-- conflict resolution.  merges the new table into the one we already have
+			table_merge(t[dgname], nil, nil, newmemberarray)
+		end,
+		function (t)
+			-- our copy function.  could generalize this into a table copy with recursion limits etc,
+			-- but not sure I need it
+			
+			local r = { }
+			
+			for k,v in pairs(t) do
+				r[k] = v
+			end
+			
+			return r
+		end,
+		apply(function (v) return v.datagroups end, ...)
+	)
+	
+	t.inits			= table_merge(nil, nil, nil, apply(function (v) return v.inits end, ...))
+	t.releases		= table_merge(nil, nil, nil, apply(function (v) return v.releases end, ...))
+	t.methods		= table_merge(nil, nil, nil, apply(function (v) return v.methods end, ...))
+	
+	-- this is only here as a reminder not to use this as a static variable name.
+	-- this is used by the class instance as the CALL method of the instance table
+	t.call			= nil
+	
+	t.name			= name
 
-	-- data is a map with keys equal to the name of the data categories, and value an array of property objects
-	t._data		= table_merge(nil, nil, nil, apply(function (v) return v._data end, ...))
-	
-	-- this is an array of init/release functions for our class and any superclasses.
-	-- these are all called in class.base:init() and class.base:release() respectively but the order of calling is NOT DEFINED!
-	-- I might change that later, but we shall see if it is necessary.
-	t._inits	= table_merge(nil, nil, nil, apply(function (v) return v._inits end, ...))
-	t._releases = table_merge(nil, nil, nil, apply(function (v) return v._releases end, ...))
-	
-	-- merge in our inherited methods
-	t._methods	= table_merge(nil, nil, nil, apply(function (v) return v._methods end, ...))
-	
-	t.name = name
-
-	-- this metatable does the following
-	-- all functions added to the returned class are treated as instance functions and put in the __index of _methods
-	-- instance data should be initialized in a function called :init added to the returned class object
-    -- init is automatically called in the class method :new for this class and all subclasses
-	setmetatable(t, class.class_metatable)
-	
-	-- every class instance has a method called "free" which will its class' static release method to cycle through all class release methods
-	-- add that method here...
-	function t:free()
-		t:release(self)
-	end
-	
-	function t:get_instance()
-		return rawget(self, "_instance")
-	end
-	
-	return t
+	return setmetatable(t, class.mt)
 end
 
--- provides the :new method which creates an instance of the class object and calls :init, which goes through all inherited
--- :init and calls them with appropriate parameters from :new
 class.base = { }
 
 function class.base:new(initparam, existing_table, baseclass_initparam)
-	local t = existing_table or { }
-	
-	t._instance	= { }
-	
-	t._instance.class = self
-	t._instance.data = { }
-	
-	for dgname, dg in pairs(self._data) do
-		t._instance.data[dgname] = { }
-		
-		for pname, prop in dg.next, dg do
-			t._instance.data[dgname][dg.name] = prop:new({ t })
-		end
-	end
-	
-	setmetatable(t, class.instance_metatable)
+	local t = class.instance:new(self, existing_table)
 
 	self:init(t, initparam, baseclass_initparam)
 
 	return t
 end
-
-function class.base:release(instance)
-	for name,v in pairs(self._releases) do
-		v(instance)
-	end
-end
 function class.base:init(t, initparam, baseclass_initparam)
-	for name,v in pairs(self._inits) do
+	for name,v in pairs(self.inits) do
 		if (name == self.name) then
 			p = initparam
 		else
@@ -96,82 +74,41 @@ function class.base:init(t, initparam, baseclass_initparam)
 		v(t, unpack(p or { }))
 	end
 end
-
--- This method is useful for adding STATIC members to the class.
--- Why is it useful?  Because, by default, all functions added to the class are treated as methods for class instance objects,
--- and all non function indexes are treated as indexes in the _data member!
--- this is because of the __newindex, and __index metamethods below.  so to actually add a static function to our class, you use this.
-
--- note: I am not checking to make sure you don't screw up any important class members like name, _methods, _inits, etc.
--- so it is up to you not to break them.
-function class.base:add_static(name, value)
-	rawset(self, name, value)
+function class.base:release(instance)
+	for name,v in pairs(self.releases) do
+		v(instance)
+	end
 end
 
+function class.base:add_static(key, value)
+	rawset(self, key, value)
+end
 
-
-
-
-
-class.instance_metatable = {
-	__index = function (t, k)
-		local instance = rawget(t, "_instance")
-		
-		if (k == "_instance") then
-			return nil
-		end
-		
-		if (instance._methods[k]) then
-			return instance._methods[k]
-		end
-		
-		return rawget(t, k)
-	end,
-	__newindex = function (t, k, v)
-		if (k == "_instance") then
-			return
-		end
-		
-		rawset(t, k, v)
-	end
-}
-
-
-
-
-
-
-
-class.class_metatable = {
+class.mt = {
 	__index = function (t,k)
-		print("class_metatable, __index ", t.name, " ", k)
-		
-		local a =	rawget(t,k) or
-					class.base[k] or
-					t._data[k]
+		local a =	class.base[k] or
+					t.datagroups[k]
 					
 		if (a) then
 			return a
 		end
 		
 		-- ANY OTHER INDEX IS TREATED AS A NEW DATA GROUP.
-		t._data[k] = class.datagroup:new({ k })
+		t.datagroups[k] = { }
 		
-		return t._data[k]
+		return t.datagroups[k]
 	end,
 	__newindex = function (t,k,v)
-		print("class_metatable, __newindex, ",  t.name, " ", k, " ", type(v))
-		
 		-- all functions are treated as methods of this class' instances
 		if (type(v) == "function") then
 			if (k == "init") then
-				t._inits[t.name] = v
+				t.inits[t.name] = v
 			elseif (k == "release") then
-				t._releases[t.name] = v
+				t.releases[t.name] = v
 			elseif (k == "call") then
-				t._methods.__call = v
+				t.call = v
 			else
-				t._methods.__index[k] = v
+				t.methods[k] = v
 			end
 		else
 			t:add_static(k, v)
@@ -181,62 +118,199 @@ class.class_metatable = {
 
 
 
-class.datagroup = { }
 
--- this new is designed to mimic the standard class.base:new parameter situtation, just so this isn't different
--- even though it is not actually using the class.create class setup.
-function class.datagroup:new(params)
+
+-- this is an INSTANCE of a class created by class:new()
+class.instance = { }
+
+-- params are passed like this
+function class.instance:new(cls, existing_table)
 	local t = { }
 	
-	t._name = select(1, params)
-	t._prop = { }
+	-- object is the actual instance object.  this is what the existing table becomes if you pass one
+	-- stores member variables and the results of property sets etc.
+	t.object = existing_table or { }
 	
-	return setmetatable(t, class.datagroup_metatable)
+	-- this is the instance object's information table.  it stores the reference the creating class
+	-- has the property hook information etc.
+	t.info = { }
+	
+	setmetatable(t, class.instance.mt)
+	
+	t:init(cls)
+	
+	return t
 end
 
-class.datagroup_metatable = {
-	__index = function (t,k)
-		print("datagroup_metatable.__index ", k)
-		
-		-- first check our static class members.
-		local a = rawget(t,k)
-		
-		if (a) then
-			return a
-		end
-		
-		-- now check our class functions
-		if (class.datagroup.base[k]) then
-			return class.datagroup.base[k]
-		end
-		
-		-- finally, assume the index is a property, and return whatever we have.
-		return t._prop[k]
+class.instance.mt = {
+	__index = function (t, k)
+		return	class.instance.base[k] or		-- do we have a class instance method
+				
+				t.info.class.methods[k] or	-- does our class have a method
+				t.info.datagroups[k] or		-- do we have a datagroup
+				
+				t.object[k]					-- check the object for member variables
+												-- this will also return member variables from
+												-- the instance this instance was created from, if there is one
+												-- how that works is just a metatable set on .object to search the
+												-- creating instances .object
 	end,
 	__newindex = function (t, k, v)
-		-- all new indexes are treated as properties, and they MUST be property objects for everything to work properly.
-		print("datagroup_metatable.__newindex ", k, " ", type(v))
-		
-		t._prop[k] = v
+		t.object[k] = v						-- all newindexes are ALWAYS put directly into our object as member variables.
+	end,
+	__call = function (t, ...)
+		t.info.class.call(t, ...)
 	end
 }
 
-class.datagroup.base = { }
+class.instance.base = { }
 
-function class.datagroup.base:set(to)
-	for i, v in ppairs(self) do
-		v:set(to[self._name][i]:get())
+-- this is used to create a new instance object from our existing instance object! 
+-- the existing objects member variables are readable from the new, but cannot be changed from it.
+-- all newindexes are just overrides for the parents if you assign to them
+
+function class.instance.base:new()
+	local t = { }
+	
+	t.object = setmetatable({ }, { __index = self.object })
+	t.info = { }
+	
+	setmetatable(t, class.instance.mt)
+	
+	t:init(self.info.class)
+	
+	return t
+end
+
+function class.instance.base:init(cls)
+	-- HERE is where I need to setup instance specific information generated from the class.
+	-- datagroup instances etc all need to be setup here.
+	
+	-- use class.instance.datagroup below, which is purty.
+
+	self.info.class = cls
+	self.info.datagroups = { }
+	
+	for name, dg in pairs(cls.datagroups) do
+		self.info.datagroups[name] = class.instance.datagroup:new(name, dg, self)
 	end
 end
 
--- iterator for use in foreach
--- used by ppairs
-function class.datagroup.base:next(index)
-	return next(self._prop, index)
+
+
+
+
+
+
+
+
+-- this is the datagroup object for class instances!
+-- it automatically calls the appropriate get and set functions for our defined property objects
+-- and passes the correct instance object as well.
+
+class.instance.datagroup = { }
+
+function class.instance.datagroup:new(datagroup_name, datagroup, instance)
+	local t = { }
+	
+	t.datagroup_name = datagroup_name
+
+	t.datagroup = datagroup
+	t.instance = instance
+	
+	t.properties = { }
+	
+	for name, prop in pairs(datagroup) do
+		t.properties[name] = prop:new()
+	end
+	
+	return setmetatable(t, class.instance.datagroup.mt)
+end
+
+class.instance.datagroup.mt = {
+	__index = function (t, k)
+		return	class.instance.datagroup.base[k] or
+				t.properties[k] and t.properties[k].get(t.instance)
+	end,
+	__newindex = function (t, k, v)
+		if (t.properties[k]) then
+			t.properties[k]:set(t.instance, v)
+		end
+	end
+}
+
+class.instance.datagroup.base = { }
+
+function class.instance.datagroup.base:property(prop)
+	return self.properties[prop]
+end
+
+function class.instance.datagroup.base:set(from_instance)
+	for name, prop in pairs(self.properties) do
+		prop:set(self.instance, from_instance[self.datagroup_name][name])
+	end
 end
 
 
 
 
 
+
+
+
+
+
+class.property = { }
+
+class.property.base = class.create("property_base")
+
+function class.property.base:init()
+	self.prehook = { }
+	self.psthook = { }
+end
+
+function class.property.base:set(instance, to_value)
+	local my_value = self.get(instance)
+	
+	-- if the value did not change, we skip all hook calls, and the set call!!!!
+	if (my_value == to_value) then
+		return true
+	end
+	
+	for j,f in ipairs(self.prehook) do
+		if (not f(instance, my_value, to_value)) then
+			return false
+		end
+	end
+
+	if (self._set(instance, to_value)) then
+		return false
+	end
+	
+	-- post hooks can no longer cause failure of set.
+	-- all post hooks will be run no matter what previous posts have determined.
+	for j,f in ipairs(self.psthook) do
+		f(instance, my_value, to_value)
+	end
+	
+	return true
+end
+
+function class.property.base:clear_pre()
+	self.prehook = { }
+end
+
+function class.property.base:clear_pst()
+	self.psthook = { }
+end
+
+function class.property.create(name, get, _set, _init)
+	local p = class.create(name, class.property.base)
+	
+	p.get = get
+	p._set = _set
+	p._init = _init
+	
+	return p
+end
 
