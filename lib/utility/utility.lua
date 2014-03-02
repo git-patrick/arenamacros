@@ -48,12 +48,85 @@ function erray:add(what)
 end
 
 function erray:rm(what)
-    for i,v in ipairs(self) do
+    table.remove(self, self:get_index(what))
+end
+
+function erray:get_index(what)
+	for i,v in ipairs(self) do
         if v == what then
-            table.remove(self, i)
+            return i
         end
     end
 end
+
+function erray:count()
+	return table.getn(self)
+end
+
+
+
+
+
+-- simple linked list implementation.
+local list = libutil:addclass(class.create("list"))
+
+function list:init()
+	self.head = nil
+	self.tail = nil
+end
+
+-- inserting directly on the head or tail node without using these
+-- does not update the head or tail reference in list.
+-- could change it, but not sure I want to.
+function list:append(other)
+	self.tail = self.tail:append(other)
+end
+
+function list:prepend(other)
+	self.head = self.head:prepend(other)
+end
+
+
+
+
+
+local node = libutil:addclass(class.create("node"))
+
+function node:init(value, n, p)
+	self.next = n
+	self.prev = p
+	self.value = value
+end
+
+function node:append(other)
+	local t = self.next
+	
+	self.next	= other
+	other.prev	= self
+	other.next	= t
+	
+	if (t) then
+		t.prev	= other
+	end
+	
+	return other
+end
+
+function node:prepend(other)
+	local t = self.prev
+	
+	self.prev	= other
+	other.next	= self
+	other.prev	= t
+	
+	if (t) then
+		t.next	= other
+	end
+	
+	return other
+end
+
+
 
 
 
@@ -124,4 +197,30 @@ end
 
 function bind:call(...)
 	return self.func(unpack(self.params), ...)
+end
+
+
+
+
+
+
+
+
+-- ferray is an erray of functions that is also a functor that calls all of its array members with the passed
+-- variables.
+local ferray = libutil:addclass(class.create("ferray", libutil:class("erray"))
+
+function ferray:init(fail)
+	-- are we allowed to fail, and stop cycling through the callbacks, or must call them all?
+	self.info.fail = fail
+end
+
+function ferray:call(...)
+	for i,v in ipairs(self) do
+		if (not v(...) and self.info.fail) then
+			return false
+		end
+	end
+
+	return true
 end

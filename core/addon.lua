@@ -33,10 +33,14 @@ function addon:init(onload)
 	self.frame = CreateFrame("Frame", UIParent, nil)
 	self.frame._addon = self
     
-    self.frame:SetScript("OnEvent", function (frame, e, ...) frame._addon:onevent(e,...) end)
-	self.frame:RegisterEvent("PLAYER_ENTERING_WORLD")
-    self.frame:RegisterEvent("PLAYER_LOGIN")
-    self.frame:RegisterEvent("ADDON_LOADED")
+    self.frame:SetScript("OnEvent", function (frame, e, ...) frame._addon.event[e](...) end)
+	self.events = { }
+	
+	local t = libutil:class("bind"):new({ self.onevent, self })
+	
+	self:register("PLAYER_ENTERING_WORLD", t)
+	self:register("PLAYER_LOGIN", t)
+	self:register("ADDON_LOADED", t)
 end
 
 -- this is the event handler for the addon's primary frame used for load processing
@@ -75,6 +79,15 @@ function addon:lib(name)
 	return self.libs[name]
 end
 
+function addon:register(event, callback)
+	if (not self.events[event]) then
+		self.events[event] = libutil:class("ferray"):new()
+	end
+	
+	self.events[event]:add(callback)
+	
+	self.frame:RegisterEvent(event)
+end
 
 
 lib = class.create("lib", class_container)

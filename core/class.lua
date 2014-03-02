@@ -3,23 +3,6 @@
 	
 	DESCRIPTION:
 		TODO
-		
-		
-		
-	GOD SAKES, this implementation isnt going to work.
-	
-	I need the passed existng_table to be the core table that every works off of............
-	this is because WoW must keep track of the tables that it has created and what not, and I can't just mess around
-	with it.........
-	
-	that means my class instance implementation has to change.
-	
-	I have to make the "object" just BE the instance table, and I have to find a way to make the info table
-	accessible otherwise.
-	
-	this will also fix a few other for each / table.insert and table.remove related concerns that I had otherwise...
-	
-	still a pretty enormous pain in the rear end.
 ]]--
 
 local addon_name, e = ...
@@ -45,7 +28,7 @@ function class.create(name, ...)
 		end,
 		function (t)
 			-- our copy function.  could generalize this into a table copy with recursion limits etc,
-			-- but not sure I need it
+			-- but not sure I need it anywhere else.
 			
 			local r = { }
 			
@@ -73,17 +56,8 @@ end
 
 class.base = { }
 
-function class.base:new(initparam, existing_table, baseclass_initparam, existing_table_asinstance)
-	-- OKAY, so the existing table that you pass defaults to being used as the instance's OBJECT table
-	-- that way if you have properties set in it, those properties are used appropriately.
-	-- however, there is one situation where you want the existing table to actually be the INSTANCE table itself
-	-- this is for the single table that WoW passes to all of our files, and that the ADDON class attaches itself to
-	-- that is the purpose of the existing_table_asinstance parameter, which tells us to use the table as the instance
-	-- table, and not as the object table.
-	-- this is a bit ugly, and I don't really like it, but there is no real alternative without changing the entire
-	-- way I do classes, which isn't happening because I like my class implementation
-	
-	local t = class.instance:new(self, existing_table, existing_table_asinstance)
+function class.base:new(initparam, existing_table, baseclass_initparam)
+	local t = class.instance:new(self, existing_table)
 
 	self:init(t, initparam, baseclass_initparam)
 
@@ -387,7 +361,6 @@ function some_class:awefawef()
 end
 
 some_class.fewa.name = class.property.custom(
-	"some_class.fewa.name",
 	function(instance)
 		print("name:get");
 		return instance.name
@@ -406,7 +379,6 @@ function other_class:init()
 end
 
 other_class.fewa.text = class.property.custom(
-	"other_class.fewa.text",
 	function (instance)
 		print("GET TEXT")
 		return instance.text

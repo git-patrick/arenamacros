@@ -1,16 +1,25 @@
 local addon_name, e = ...
 
 local libwow = e:lib("wow")
+local libutil = e:lib("utility")
 
 -- this is the base class for frames expected to function inside a container
 local contained = e:lib("container"):addclass(class.create("contained", libwow:class("button")))
 
 -- setup some class static variables.
-contained.colors	= {
+contained:add_static("colors", {
     bg1 = { r = 1, g = 1, b = 1, a = 0.08 },
     bg2 = { r = 0, g = 0, b = 0, a = 0 },
     bghl = { r = 0, g = 1, b = 0, a = 0.08 }
-}
+})
+
+----------------------------------------------------------------------------------------
+-- INIT
+----------------------------------------------------------------------------------------
+
+function contained:init()
+	self.am_onclick = libutil:class("ferray"):new()
+end
 
 ----------------------------------------------------------------------------------------
 -- APPEARANCE AND POSITION RELATED STUFF
@@ -42,18 +51,23 @@ function contained:am_init(container)
     self.am_container = container
 end
 
+
+
 function contained:am_onadd(datagroup, object)
     -- this is called by the container in an attempt to add the object.  adding can be canceled by returning false
 
     return self[datagroup]:set(object)
 end
--- called after the frame is successfully added
-function contained:am_show()
-    self:Show()
-end
 function contained:am_onremove()
     -- this is called by the container when the object is being removed.  can be overridden if action is required (for example in macros, need to delete the actual macro)
     -- removing cannot be canceled.
+end
+
+
+
+-- called after the frame is successfully added
+function contained:am_show()
+    self:Show()
 end
 -- this is called when the frame is no longer needed, and is being given back to the pool.  this should be used to clean up the frame for future reuse
 function contained:am_release()
@@ -116,7 +130,7 @@ end
  this function can be used to custom sort the objects.
  if it is defined, it is called on insert of new elements to compare it with the existing.  a return value of > 0 inserts at the position of with, otherwise it continues checking.
  
-    function am_contained.mt.__index:am_compare(with)
+    function contained:am_compare(with)
      
     end
      

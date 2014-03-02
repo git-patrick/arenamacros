@@ -14,7 +14,7 @@
                     <Color a=".08" r="1" g="1" b="1"/>
                 </Texture>
             </Layer>
-        </Layers>
+        </Layers>					
     </Button>
     
     <Button name="amContained_DeleteButtonTemplate" virtual="true">
